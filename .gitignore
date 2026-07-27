@@ -1,0 +1,70 @@
+# ──────────────────────────────────────────────
+# 心理励志图书带货视频流水线 — .gitignore
+# 策略：仅版本控制 book-video-pipeline/ 插件本身
+#       排除所有每集过程素材、产物、环境配置
+# ──────────────────────────────────────────────
+
+# 排除整个 episodes 目录（每集的过程素材与成片，体量大且可重新生成）
+episodes/
+
+# 排除全局素材（品牌片头片尾、音色样本、BGM 候选 —— 均为二进制大文件）
+assets/
+
+# 排除全局配置（含账号等本地信息）
+config.yaml
+
+# ── 敏感信息 ───────────────────────────────────
+# 认证与密钥（项目内从不存储，但以防万一）
+.env
+.env.*
+*.key
+*.pem
+.baoyu-skills/
+secrets/
+
+# ── ZCode 会话/计划（本地工作状态，不进仓库）────
+.zcode/
+
+# ── 通用二进制产物（兜底）──────────────────────
+*.mp4
+*.mp3
+*.wav
+*.aac
+*.flac
+*.mov
+*.avi
+*.mkv
+
+# ── Node / hyperframes ────────────────────────
+node_modules/
+package-lock.json
+yarn.lock
+.pnpm-debug.log
+npm-debug.log
+.hyperframes/
+hyperframes/dist/
+hyperframes/output/
+
+# ── Python ────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# ── 系统文件 ──────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── 编辑器 ────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
