@@ -54,11 +54,21 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 口播稿 → TTS 定稿 → 从音频提取真实时间轴 → 分镜（含动效字段）→ 生图 → hyperframes 合成
 ```
 
-### Step 0：片头片尾（一次性，已完成）
+### Step 0：片头片尾 + 品牌水印动画（一次性，已完成）
 
 从参考视频切割品牌片头片尾，保存为固定素材 `assets/brand/intro.mp4`（1.5s）和 `assets/brand/outro.mp4`（3.04s）。
 
 **必须去除原视频音轨**（`-an`），否则会带入原片背景音。切割时避开带动画的帧段，取静止帧定格。
+
+**品牌角标**：准备 `assets/brand/corner-lockup.png`（品牌 logo 角标，透明背景 PNG），用于视频左上角水印。
+
+**logo 动画要求**：
+- intro 播放完毕后，logo 从画面居中位置缩小并动画移动至左上角
+- 动画时长约 1s，使用 `power2.out` 缓动
+- logo 缩小后（约 200×50px）持续显示于左上角（距左 40px，距上 40px），直到视频结束
+- 不透明度 0.85，不抢画面主体
+- 使用 GSAP `x/y` transform 实现（禁用 `left/top`，避免像素闪烁）
+- logo 元素需加 `class="clip"` 以被运行时正确控制可见性
 
 ### Step 1：选书 → `01-profile/book-profile.md`
 
@@ -253,16 +263,18 @@ dreamina image2video \
 - **中文不靠 AI 生成**（AI 写中文常出错），用 hyperframes 文字层渲染
 - 两种呈现：概念镜用**浮起**（从画面中浮出、轻微上飘），实景镜用**便签**（米色纸 + washi tape + 轻微旋转，贴角落）
 - 位置在画面中上部，与底部字幕分离，不打架
+- **⚠️ 背景必须透明**：金句文字不得带任何背景色块或底纹，必须叠加在画面内容上（详见 `references/hyperframes-usage.md` 金句层章节）
 
 ### Step 9：hyperframes 合成 → `04-video/output.mp4`
 
 **不烧录字幕**。字幕作为独立图层渲染，源文件可随时修改，同时导出独立 SRT。
 
 1. 按 `references/hyperframes-usage.md` 搭建项目。
-2. 图层顺序（下到上）：背景图/视频 → Ken Burns → 动效层 → 金句层 → 字幕层。
+2. 图层顺序（下到上）：背景图/视频 → Ken Burns → 动效层 → 金句层 → 字幕层 → **品牌角标层**。
 3. 字幕字号 48px（早期用 58px 偏大，压缩了画面）。
 4. 音轨：旁白 + BGM（BGM 音量 0.15，不盖人声）。
 5. 拼接 `intro.mp4`（静音）+ 正文 + `outro.mp4`（静音）。
+6. 品牌角标：`corner-lockup.png` 从居中缩小至左上角，动画 1s 后持续显示到视频结束（详见 Step 0 的 logo 动画要求）。
 6. 总时长 ≤180s，单镜不超过 15 秒——超了就拆镜或换画面。
 7. 产出 `output.mp4` + `subtitle.srt`。
 8. `npx hyperframes lint` 和 `check` 必须 0 错误，再 `render`。
