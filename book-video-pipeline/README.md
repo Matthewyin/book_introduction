@@ -28,9 +28,6 @@
 - **去 AI 味闭环**：口播稿走 `Kimi 起草 → grok 初审 → DeepSeek 二审 → humanizer-zh 收尾` 四道工序，`check-script.py` 自动校验 20 项规则必须全绿。
 - **字幕图层化**：字幕作为 hyperframes 独立 `<div>` 渲染，不烧进像素，改一句字幕只需重渲染无需重烧帧；同时导出独立 SRT。
 - **动效分层**：免费 GSAP 动效层（尘埃、光束、纸张呼吸）+ 收费的 i2v 真动画（每集 ≤2 个镜头，用量可控）。
-- **品牌角标**：`corner-lockup.png` 在视频播放期间持续显示于左上角（200×50px，opacity 0.85，透明背景）。
-- **金句透明背景**：视频中所有金句文字（ink/note 样式）强制透明背景，不得遮挡画面内容。
-- **品牌片头片尾**：`intro.mp4`（1.0s）+ `outro.mp4`（3.2s），均去除音轨。
 - **认证安全**：所有 API key 从环境变量或 shell profile 读取，项目内零硬编码、零缓存。
 
 ---
@@ -149,7 +146,7 @@ python3 scripts/kimi-call.py system.md user.md out.md --model kimi-k3
 python3 scripts/deepseek-call.py system.md user.md out.md --model deepseek-v4-pro
 
 # 3. MiniMax 配音（Step 4）
-python3 scripts/tts-minimax.py voiceover-text.txt voiceover.wav --voice danya_xuejie --speed 1.1
+python3 scripts/tts-minimax.py voiceover-text.txt voiceover.wav --voice danya_xuejie --speed 1.2
 
 # 4. 从音频提取真实时间轴（Step 5）
 python3 scripts/realign-shots.py voiceover.wav shots-input.json shot-timing.json

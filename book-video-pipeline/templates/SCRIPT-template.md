@@ -4,7 +4,7 @@
 > 格式对齐 hyperframes `hyperframes-core/references/script-format.md`。
 
 **Voice:** {{voice_id}}（MiniMax，从 `assets/voices/voice-library.json` 选）
-**Voice settings:** speed 1.1 · vol 1.0 · pitch 0 · model speech-02-hd
+**Voice settings:** speed 1.2 · vol 1.0 · pitch 0 · model speech-02-hd
 **Voice direction:** {{整体语气，例：清冷克制，像朋友深夜聊天，不煽情不说教}}
 
 **Total chars:** {{字数}}
@@ -41,7 +41,7 @@
 
 | 约束 | 要求 |
 |------|------|
-| 总字数 | ≤450 字（1.1 倍速下约 100-120 秒） |
+| 总字数 | ≤540 字（1.2 倍速下约 150-180 秒） |
 | 单句长度 | ≤20 字，口语化，可断句 |
 | 结构 | 钩子 → 扎心场景 → 引入书 → 场景演绎 → 观点拆解 → 方法实操 → 结尾引导 |
 | 引入书的过渡 | 必须有承接句（"如果你也想摆脱……这本书会帮到你"），不能硬转 |

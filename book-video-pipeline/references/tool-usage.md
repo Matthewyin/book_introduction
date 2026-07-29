@@ -111,7 +111,7 @@ Authorization: Bearer <MINIMAX_API_KEY>
 
 - **音色必须从音色素材库中选择，并经用户审核确认后再生成完整配音**（审核点⑥）
 - 音色库位置：`assets/voices/voice-library.json`（元数据）+ `assets/voices/samples/`（试听样本）
-- 当前已审核通过：`danya_xuejie`（1.1x，清冷克制）、`female-yujie`（1.1x，沉稳有力量感）
+- 当前已审核通过：`danya_xuejie`（1.2x，清冷克制）、`female-yujie`（1.2x，沉稳有力量感）
 - 每次必须用**本集口播稿**的前 40-60 字生成新样本供用户试听，不得用库内旧样本冒充
 - 新音色入库流程见 `assets/voices/README.md`
 

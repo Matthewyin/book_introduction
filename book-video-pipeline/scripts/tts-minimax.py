@@ -18,8 +18,8 @@ import sys
 from pathlib import Path
 
 API_ENDPOINT = "https://api.minimaxi.com/v1/t2a_v2"
-DEFAULT_VOICE = "female-tianmei"
-DEFAULT_SPEED = 0.95  # 略慢，适合叙事
+DEFAULT_VOICE = "danya_xuejie"
+DEFAULT_SPEED = 1.2  # 1.2 倍速，约 180 秒完播
 
 
 def get_api_key():

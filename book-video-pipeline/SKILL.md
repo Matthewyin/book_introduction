@@ -101,7 +101,7 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 
 #### 3a：Kimi K3 起草
 
-1. 调用 **Kimi K3** 基于审核通过的文案策划，写完整口播稿（≤450字，≤180秒）。
+1. 调用 **Kimi K3** 基于审核通过的文案策划，写完整口播稿（≤540字，≤180秒，1.2 倍速配音）。
 2. 结构：钩子 → 扎心场景 → 引入书 → 场景演绎 → 观点拆解 → 方法实操 → 结尾引导。
 3. 产出 `02-script/draft-01-kimi.md`。
 
@@ -151,7 +151,7 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 
 **这一步必须在分镜和生图之前完成。**
 
-1. **从音色素材库选候选**：读取 `assets/voices/voice-library.json`，在 `status: approved` 的音色中挑 1-2 个（当前库内：`danya_xuejie` 1.1x、`female-yujie` 1.1x）。
+1. **从音色素材库选候选**：读取 `assets/voices/voice-library.json`，在 `status: approved` 的音色中挑 1-2 个（当前库内：`danya_xuejie` 1.2x、`female-yujie` 1.2x）。
 2. **生成试听样本**：用本集口播稿前 40-60 字生成样本（~10 秒），不得用库内旧样本冒充。
 3. **🔴 审核点④**：用 AskUserQuestion 确认音色。
 4. 通过后生成完整配音，记录实际总时长。
