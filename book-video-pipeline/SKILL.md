@@ -41,6 +41,9 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 | 分镜结构设计 | `references/shot-structure.md` |
 | 字幕撰写 | `references/subtitle-style.md` |
 | 视频合成与动效 | `references/hyperframes-usage.md` |
+| **动效配方卡（Step 8 必读）** | `references/motion-recipes.md` |
+| **声音设计（Step 8/9 必读）** | `references/sound-design.md` |
+| **成片独立终检（Step 9 必读）** | `references/final-review.md` |
 | 发布合规 | `references/xhs-publish-rules.md` |
 | 视频技术规格 | `templates/video-spec.md` |
 
@@ -292,7 +295,8 @@ dreamina image2video \
 7. 产出 `output.mp4` + `subtitle.srt`。
 8. `npx hyperframes lint` 和 `check` 必须 0 错误，再 `render`。
 9. 运行 `scripts/validate-spec.py output.mp4` 校验规格。
-10. **🔴 审核点⑦**：用 AskUserQuestion 确认成片。
+10. **独立终检**：派一个干净上下文的 subagent，按 `references/final-review.md` 逐项审查（结构一致性、视觉质量、音频节奏、技术规格、去AI味与安全）。每条结论附帧号证据。**制作者有确认偏差，首检不能交给用户。** 必须修复项清零后才提交审核点⑦。
+11. **🔴 审核点⑦**：用 AskUserQuestion 确认成片。
 
 ### Step 9b：BGM → `03-assets/audio/bgm.mp3`
 
