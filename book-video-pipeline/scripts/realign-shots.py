@@ -156,8 +156,8 @@ def main() -> int:
     total = round(bounds[-1] + args.intro + args.outro, 3)
     print("-" * 52)
     print(f"body {bounds[-1]}s  +intro {args.intro}s +outro {args.outro}s = {total}s")
-    if total > 180:
-        print(f"ERROR: {total}s exceeds the 180s limit", file=sys.stderr)
+    if total > 200:
+        print(f"ERROR: {total}s exceeds the 200s limit", file=sys.stderr)
         return 1
 
     args.output.parent.mkdir(parents=True, exist_ok=True)

@@ -5,7 +5,7 @@
     python3 validate-spec.py <video.mp4>
 
 检查项:
-    - 时长 ≤ 180 秒（目标 175-180s，1.2 倍速完播）
+    - 时长 ≤ 200 秒（目标 195-200s，1.2 倍速完播）
     - 分辨率 = 1080×1920
     - 帧率 = 30 fps
     - 视频编码 = h264
@@ -52,10 +52,10 @@ def check_spec(info: dict) -> list:
 
     # ── 时长 ──
     duration = float(fmt.get("duration", 0))
-    if duration > 180:
-        issues.append(f"✗ 时长超限: {duration:.1f}s > 180s")
-    elif duration < 150:
-        issues.append(f"⚠ 时长偏短: {duration:.1f}s (目标 175-180s 完播)")
+    if duration > 200:
+        issues.append(f"✗ 时长超限: {duration:.1f}s > 200s")
+    elif duration < 170:
+        issues.append(f"⚠ 时长偏短: {duration:.1f}s (目标 195-200s 完播)")
 
     # ── 分辨率 ──
     width = int(video_stream.get("width", 0))

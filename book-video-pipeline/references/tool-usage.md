@@ -119,7 +119,7 @@ Authorization: Bearer <MINIMAX_API_KEY>
 
 - 片头片尾使用固定素材 `assets/brand/intro.mp4` 和 `outro.mp4`
 - 每次合成时自动拼接到视频头尾
-- 总时长 ≤180s（intro 2.5s + 正文 ≤175s + outro 2s）
+- 总时长 ≤200s（intro 1.0s + 正文 ≤195s + outro 3.2s）
 
 ## 六、审核点执行规范
 
