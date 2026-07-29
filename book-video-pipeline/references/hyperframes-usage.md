@@ -151,14 +151,14 @@ window.__timelines["main"] = tl;
 
 ## 品牌角标水印（全程显示）
 
-intro 播放完毕后，品牌 logo 从画面居中缩小并动画移动至左上角，持续显示到视频结束。
+视频播放期间，`corner-lockup.png` 持续显示在左上角作为品牌水印。
 
 | 参数 | 值 |
 |------|-----|
-| 源文件 | `assets/brand/corner-lockup.png`（透明背景 PNG） |
-| 起始状态 | 居中，600×150px，opacity 1.0 |
-| 结束状态 | 左上角（x=40, y=40），200×50px，opacity 0.85 |
-| 动画时长 | 1s，`power2.out` 缓动 |
+| 源文件 | `assets/brand/corner-lockup.png`（透明背景 PNG，720×180） |
+| 显示位置 | 左上角（x=40, y=40） |
+| 显示尺寸 | 200×50px（保持 4:1 宽高比） |
+| 不透明度 | 0.85 |
 | 实现方式 | GSAP `x/y` transform（禁用 `left/top`，避免像素闪烁） |
 | 元素要求 | `class="clip"` + `data-start` / `data-duration` 控制可见性 |
 | 图层层级 | z-index 35（在字幕层之上） |
