@@ -1,0 +1,99 @@
+# pipeline.yaml — book-video-pipeline 全管线可配置参数（唯一源）
+#
+# 本文件只存「非密钥偏好」：模型名、端点、超时、后端选择、画幅等。
+# API key（GPTSAPI_KEY / MINIMAX_API_KEY / KIMI_API_KEY / DEEPSEEK_API_KEY）
+# 继续走环境变量 / ~/.zshrc / .baoyu-skills/.env，不入此文件。
+#
+# 路径里的 ~ 会自动展开为 $HOME。
+# 加载优先级：CLI 参数 > 项目 pipeline.yaml > ~/.config/book-video-pipeline/pipeline.yaml > 内置默认
+
+# ──────────────────────────────────────────────────────────── 生图后端
+image:
+  # 无 ref 镜头的默认后端。grok 余额恢复后改成 grok 即可切换。
+  # 可选：grok | gptsapi
+  default_backend: gptsapi
+
+  # 有 charRef 的镜头（角色锁定）。grok/gptsapi 都不支持 ref，只能走 dreamina。
+  ref_backend: dreamina
+
+  # 主力后端失败时的 fallback（仅对 default_backend 生效）。
+  # grok→gptsapi；若 default_backend 已是 gptsapi 则无 fallback。
+  backup_backend: gptsapi
+
+  backends:
+    grok:
+      binary: ~/.grok/bin/grok
+      model: grok-4.5
+      always_approve: true
+      output_format: json        # 解析 JSON 输出找图片路径/URL
+      no_subagents: true
+      max_turns: 5
+      # grok 是 agent 式生图（模型自主调 image_gen 工具），输出路径靠提示词约定，
+      # 非确定性。genimage.py 会解析输出找图片并下载/复制到目标位置。
+
+    gptsapi:
+      script: ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py
+      aspect_ratio: "9:16"
+      # GPT Image 2，固定 1K (1080×1920)，中文渲染好，带卡死检测重试。
+
+    dreamina:
+      binary: ~/.local/bin/dreamina
+      model: "5.0"               # Seedream；image2image 强制 ≥2k
+      resolution: 2k
+      poll_seconds: 240
+      max_refs: 4                # 主角锁定用 1 张就够，上限 4
+
+    baoyu:                       # 备用 ref 通道（对 anime 插画锁定弱）
+      script: ~/.agents/skills/baoyu-image-gen/scripts/main.ts
+      provider: minimax
+      ref_model: image-01
+
+  aspect_ratio: "9:16"
+  # 仅 baoyu/MiniMax 通道用：防 MiniMax body 把 9:16 出成 720×1280。
+  # Seedream 出原生 2k、gptsapi 出 1080×1920，都不缩放。
+  size_map:
+    "9:16": "1080x1920"
+    "16:9": "1920x1080"
+    "3:4": "1080x1440"
+    "1:1": "1080x1080"
+  jobs: 3                        # 批量并发数
+  max_attempts: 2                # 分发层重试；各后端内部还有重试
+
+# ──────────────────────────────────────────────────────────── LLM
+llm:
+  kimi:                          # Step 2/3a 文案策划 + 口播起草
+    endpoint: https://api.kimi.com/coding/v1/chat/completions
+    model: kimi-k3
+    timeout: 600                 # K3 是推理模型，重写可能思考几分钟
+
+  deepseek:
+    endpoint: https://api.deepseek.com/v1/chat/completions
+    model_pro: deepseek-v4-pro   # 思考模式（Step 3c 二审 / Step 6 分镜）
+    model_flash: deepseek-v4-flash  # 非思考（Step 7 插画提示词）
+    timeout: 120
+
+  # Step 3b 口播初审（只出问题清单，不改稿）。
+  # 走 grok CLI 订阅；余额耗尽时可切 ocx-zai-glm-5-2 或其它 ocx-* 模型。
+  grok_review:
+    binary: ~/.grok/bin/grok
+    model: grok-4.5
+    fallback_model: ocx-zai-glm-5-2  # 主模型 402 时自动切这个
+
+# ──────────────────────────────────────────────────────────── TTS（MiniMax）
+tts:
+  endpoint: https://api.minimaxi.com/v1/t2a_v2
+  model: speech-02-hd
+  default_voice: danya_xuejie    # 音色库 assets/voices/voice-library.json 为准
+  default_speed: 1.1             # approved 音色均为 1.1x
+  sample_rate: 32000
+  bitrate: 128000
+  volume: 1.0
+  pitch: 0
+
+# ──────────────────────────────────────────────────────────── i2v（dreamina seedance）
+# 当前为 doc-only（无脚本调用），预留配置。脚本化后 genimage.py / 新脚本会读这里。
+i2v:
+  model_version: seedance2.0fast_vip
+  duration: 5                    # 秒，seedance2.0 系列 4-15
+  resolution: 720p               # 输出上限 720p
+  poll_seconds: 180

@@ -15,7 +15,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-API_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from config import cfg  # noqa: E402
 
 
 def get_api_key():
@@ -32,6 +33,8 @@ def get_api_key():
 
 
 def call_deepseek(system_prompt: str, user_prompt: str, key: str, model: str) -> str:
+    endpoint = cfg.get("llm.deepseek.endpoint", "https://api.deepseek.com/v1/chat/completions")
+    timeout = cfg.get("llm.deepseek.timeout", 120)
     body = json.dumps({
         "model": model,
         "messages": [
@@ -41,7 +44,7 @@ def call_deepseek(system_prompt: str, user_prompt: str, key: str, model: str) ->
     }, ensure_ascii=False)
 
     req = urllib.request.Request(
-        API_ENDPOINT,
+        endpoint,
         data=body.encode("utf-8"),
         method="POST",
         headers={
@@ -51,7 +54,7 @@ def call_deepseek(system_prompt: str, user_prompt: str, key: str, model: str) ->
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", errors="replace")
@@ -78,7 +81,13 @@ def main():
     user_file = Path(sys.argv[2])
     output_file = Path(sys.argv[3])
 
-    model = "deepseek-v4-pro"
+    # 默认读 model_pro（思考模式，用于二审/分镜）；--mode flash 切 model_flash（提示词）；
+    # --model 显式覆盖优先
+    mode = "pro"
+    for i, arg in enumerate(sys.argv[4:], 4):
+        if arg == "--mode" and i + 1 < len(sys.argv):
+            mode = sys.argv[i + 1]
+    model = cfg.get(f"llm.deepseek.model_{mode}", "deepseek-v4-pro")
     for i, arg in enumerate(sys.argv[4:], 4):
         if arg == "--model" and i + 1 < len(sys.argv):
             model = sys.argv[i + 1]

@@ -15,8 +15,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-API_ENDPOINT = "https://api.kimi.com/coding/v1/chat/completions"
-DEFAULT_MODEL = "kimi-k3"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from config import cfg  # noqa: E402
 
 
 def get_api_key():
@@ -33,6 +33,8 @@ def get_api_key():
 
 
 def call_kimi(system_prompt: str, user_prompt: str, key: str, model: str) -> str:
+    endpoint = cfg.get("llm.kimi.endpoint", "https://api.kimi.com/coding/v1/chat/completions")
+    timeout = cfg.get("llm.kimi.timeout", 600)
     body = json.dumps({
         "model": model,
         "messages": [
@@ -42,7 +44,7 @@ def call_kimi(system_prompt: str, user_prompt: str, key: str, model: str) -> str
     }, ensure_ascii=False)
 
     req = urllib.request.Request(
-        API_ENDPOINT,
+        endpoint,
         data=body.encode("utf-8"),
         method="POST",
         headers={
@@ -53,7 +55,7 @@ def call_kimi(system_prompt: str, user_prompt: str, key: str, model: str) -> str
 
     # K3 is a reasoning model; a heavy rewrite can think for several minutes.
     try:
-        with urllib.request.urlopen(req, timeout=600) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             data = json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", errors="replace")
@@ -80,7 +82,7 @@ def main():
     user_file = Path(sys.argv[2])
     output_file = Path(sys.argv[3])
 
-    model = DEFAULT_MODEL
+    model = cfg.get("llm.kimi.model", "kimi-k3")
     for i, arg in enumerate(sys.argv[4:], 4):
         if arg == "--model" and i + 1 < len(sys.argv):
             model = sys.argv[i + 1]

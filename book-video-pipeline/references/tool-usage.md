@@ -27,12 +27,12 @@ API key 读取优先级：
 3. `~/.baoyu-skills/.env`
 4. `--api-key` 参数（仅调试/一次性使用，不推荐写入脚本）
 
-### 2. grok CLI 账户继承原则（已退出本流程，保留备用）
+### 2. grok CLI 账户继承原则（备选生图后端，配置可选）
 
-如未来重新启用 grok CLI 生图，仍遵循：
+grok CLI 现为**配置可选的备选生图后端**：在 `pipeline.yaml` 的 `image.backends.grok` 启用后，由 `genimage.py` 自动路由调用（gptsapi 仍为默认后端）。启用时遵循：
 - 不读取 `~/.grok/auth.json` 或任何 grok 认证文件
 - 不缓存 grok API key / token / refresh_token 到项目文件
-- 不独立调用 xAI API
+- 用 `--always-approve` 走订阅，不独立调用 xAI API
 - 在项目配置、代码、环境文件中不存储 grok 认证信息
 
 ### 3. 其他工具的认证来源
@@ -117,6 +117,7 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 | gptsapi | 无 `characters` / 无 `ref`（定妆图 + 无主角镜头） | `ai-content-pipeline/scripts/gptsapi_image.py` | GPT Image 2，固定 1K，异步任务 + 卡死检测，风格质量最高 |
 | dreamina | `characters: true` + 有 `charRef` | `dreamina image2image`（Seedream 5.0） | 角色 + 风格双锁，原生 2k，实测优于 MiniMax |
 | baoyu | 有 `--ref`（无 charRef，备用） | `baoyu-image-gen/scripts/main.ts` | MiniMax image-01 subject_reference，对 anime 锁定弱 |
+| grok (备选) | `--backend grok` 或 `task.backend=grok` | grok CLI image_gen | agent 式生图，走订阅，非确定性 |
 
 **两个实测坑（已在 `genimage.py` 内处理，手工调后端时要自己注意）**：
 
@@ -132,15 +133,18 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 - image2image 强制 ≥2k（不支持 1k），素材保留原生分辨率，最终 1080×1920 由 hyperframes 渲染处理
 - 余额查询：`dreamina user_credit`
 
-### grok CLI 生图（已退出主流程，保留备用）
+### grok CLI 生图（备选后端，已集成进 genimage.py）
 
 ```bash
-# 已退出主流程；如未来启用，仍遵循账户继承原则
-~/.grok/bin/grok -p "<DeepSeek写的英文提示词>, 9:16 portrait, save to <path>" -d <workdir>
+# 通过 pipeline.yaml 的 image.backends.grok 启用后，genimage.py 自动调用，无需手动执行
+~/.grok/bin/grok --cwd <workdir> --always-approve --output-format json --tools image_gen \
+  -p "<DeepSeek写的英文提示词>, 9:16 portrait, save to <path>"
 ```
 
+- 已集成进 `genimage.py`：在 `pipeline.yaml` 配置 `image.backends.grok` 即可，无需手动调用
 - 比例通过提示词自然语言指定（如 "9:16 portrait"），无 CLI flag
 - 输出路径在提示词中指定
+- 调用必带 `--always-approve --output-format json --tools image_gen`（订阅继承、结构化输出）
 - 项目脚本只负责拼装 prompt 字符串和调用 grok 二进制
 
 ### 封面/信息图（baoyu skill）

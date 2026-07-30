@@ -204,10 +204,11 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 
 ## 组件清单
 
-### 脚本（`scripts/`，8 个）
+### 脚本（`scripts/`，9 个）
 
 | 脚本 | 作用 | 输入 → 输出 | 依赖密钥 |
 |------|------|-------------|----------|
+| `config.py` | 配置加载器（pipeline.yaml） | 读 pipeline.yaml，所有脚本共用 | — |
 | `kimi-call.py` | 调 Kimi K3 生成文案 | `<system.md> <user.md> <out.md>` | `KIMI_API_KEY` |
 | `deepseek-call.py` | 调 DeepSeek 生成/审查内容 | `<system.md> <user.md> <out.md> --model` | `DEEPSEEK_API_KEY` |
 | `tts-minimax.py` | MiniMax T2A v2 配音 | `<text.txt> <out.wav> --voice --speed` | `MINIMAX_API_KEY` |
@@ -221,6 +222,7 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 
 | 模板 | 步骤 | 产出文件 |
 |------|------|----------|
+| `pipeline.yaml` | 全流程 | 模型/端点/后端可配置参数（唯一源，密钥不入此文件） |
 | `book-profile.md` | Step 1 | 选书档案 |
 | `script-brief.md` | Step 2 | 文案策划简报 |
 | `SCRIPT-template.md` | Step 3e | 锁定旁白（对齐 hyperframes `script-format.md`） |
@@ -396,6 +398,7 @@ Step 10 发布物料 ─► publish-brief.md + cover.png
 | Step 7 | gptsapi (GPT Image 2) | 主角定妆图 + 无主角镜头（中文渲染好、风格质量最高） |
 | Step 7 | dreamina Seedream 5.0 | 主角镜头（image2image，带定妆图 ref，角色+风格双锁） |
 | Step 7 | MiniMax `image-01` | 备用参考图通道（baoyu-image-gen 触发，对 anime 锁定弱） |
+| Step 7 | grok CLI (image_gen) | 备选生图后端（pipeline.yaml 可切，走订阅） |
 | Step 4 | MiniMax T2A v2 (`speech-02-hd`) | 配音（音色库选 + 用户审核） |
 | Step 8a | seedance-prompt-zh + dreamina CLI | i2v 真动画 |
 

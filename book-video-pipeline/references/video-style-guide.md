@@ -25,6 +25,8 @@
 | 无主角镜头（书封、抽象概念、纯环境） | gptsapi | ❌ | 1080×1920 | 中文渲染好、质量高 |
 | **i2v 关键帧** | dreamina image2video (Seedance) | ✅ 首帧 | 720p | 动起来的镜头 |
 
+> **grok 为备选生图后端**：在 `pipeline.yaml` 的 `image.backends.grok` 启用即可切换（gptsapi 仍为默认）。grok 走 xAI 订阅的 agent 式生图（`image_gen` 工具），非确定性、无主角锁定，适合临时救场而非量产主力。
+
 **为什么 Seedream 是主角镜头的主力**：实测验证（2026-07-31），MiniMax image-01 的 subject_reference 对 anime 插画风格锁定弱（角色被重造、画风滑向写实）；Seedream image2image 对同一张 gptsapi 定妆图当 ref，角色身份和水彩 anime 质感都保住了。详见 `episodes/_style-exploration-v3/` 三张对比图。
 
 **关于分辨率**：dreamina image2image 强制 ≥2k（不支持 1k），素材保留原生 2k 分辨率。最终成片的 1080×1920 由 hyperframes 渲染时统一处理，不在生图阶段缩放——保住画质余量。

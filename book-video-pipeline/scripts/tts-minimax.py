@@ -18,9 +18,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-API_ENDPOINT = "https://api.minimaxi.com/v1/t2a_v2"
-DEFAULT_VOICE = "danya_xuejie"
-DEFAULT_SPEED = 1.1  # 对齐 assets/voices/voice-library.json 的 approved 音色语速
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from config import cfg  # noqa: E402
 
 
 def get_api_key():
@@ -42,18 +41,18 @@ def get_api_key():
 def synthesize(text: str, output: Path, voice: str, speed: float, key: str):
     """调用 MiniMax T2A v2 合成语音"""
     body = json.dumps({
-        "model": "speech-02-hd",
+        "model": cfg.get("tts.model", "speech-02-hd"),
         "text": text,
         "stream": False,
         "voice_setting": {
             "voice_id": voice,
             "speed": speed,
-            "vol": 1.0,
-            "pitch": 0,
+            "vol": cfg.get("tts.volume", 1.0),
+            "pitch": cfg.get("tts.pitch", 0),
         },
         "audio_setting": {
-            "sample_rate": 32000,
-            "bitrate": 128000,
+            "sample_rate": cfg.get("tts.sample_rate", 32000),
+            "bitrate": cfg.get("tts.bitrate", 128000),
             "format": "mp3",
             "channel": 1,
         },
@@ -61,7 +60,7 @@ def synthesize(text: str, output: Path, voice: str, speed: float, key: str):
 
     cmd = [
         "curl", "-s", "-w", "\n%{http_code}",
-        "-X", "POST", API_ENDPOINT,
+        "-X", "POST", cfg.get("tts.endpoint", "https://api.minimaxi.com/v1/t2a_v2"),
         "-H", f"authorization: Bearer {key}",
         "-H", "content-type: application/json",
         "-d", body,
@@ -110,8 +109,8 @@ def main():
     text_file = Path(sys.argv[1])
     output = Path(sys.argv[2])
 
-    voice = DEFAULT_VOICE
-    speed = DEFAULT_SPEED
+    voice = cfg.get("tts.default_voice", "danya_xuejie")
+    speed = cfg.get("tts.default_speed", 1.1)
     for i, arg in enumerate(sys.argv[3:], 3):
         if arg == "--voice" and i + 1 < len(sys.argv):
             voice = sys.argv[i + 1]

@@ -26,8 +26,9 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
   `baoyu-image-gen`（备用 MiniMax）。API key 从 `GPTSAPI_KEY` / `MINIMAX_API_KEY` 环境变量
   或 `.baoyu-skills/.env` 读取；dreamina 用 OAuth 登录（`dreamina login`），不读 API key。
   **项目不硬编码、不缓存 key**。
-- **grok CLI 已退出本流程**：不再使用 grok CLI 生图；如未来需要，仍遵循账户继承原则（不读取 `~/.grok/auth.json`、不缓存 token）。
+- **grok CLI 为配置可选的备选生图后端**：在 `pipeline.yaml` 的 `image.backends.grok` 启用即可切换（gptsapi 仍为默认后端）。启用时遵循订阅继承原则：用 `--always-approve` 走订阅，不读取 `~/.grok/auth.json`、不缓存 token。
 - Kimi / DeepSeek / MiniMax key 均从环境变量或 shell profile 读取，项目不存储。
+- **配置化**：所有模型 / endpoint / 生图后端的选择统一读 `pipeline.yaml`（由 `scripts/config.py` 加载）；API key 仍只走环境变量，不写入 `pipeline.yaml`。
 
 详见 `references/tool-usage.md`。
 
