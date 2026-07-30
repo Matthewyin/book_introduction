@@ -4,24 +4,25 @@
 
 ## 一、认证管理红线（不可违反）
 
-### 1. gptsapi 生图认证原则
+### 1. 生图认证原则
 
-项目通过 **baoyu ai-content-pipeline 的 `gptsapi_image.py`** 调用 gptsapi（底层 GPT Image 2）生图，**绝不**：
+生图统一走 `scripts/genimage.py`，它按有无参考图路由到两个后端，**绝不**：
 
-- 在项目中硬编码 `GPTSAPI_KEY`
-- 将 gptsapi API key 缓存到项目配置文件
-- 绕过 `gptsapi_image.py` 直接调用其他未经验证的 gptsapi 接口
+- 在项目中硬编码 `GPTSAPI_KEY` / `MINIMAX_API_KEY`
+- 将 API key 缓存到项目配置文件
+- 绕过分发层直接调用未经验证的生图接口
 
 **正确做法**：
 ```bash
-python3 ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py \
-  --prompt-file <prompt.md> --aspect-ratio 9:16 --image <out.png>
+python3 scripts/genimage.py \
+  --promptfiles templates/style-prefix.en.md 03-assets/scenes/shot_002.scene.md \
+  --image 03-assets/scenes/shot_002.png --ar 9:16
 ```
 
 API key 读取优先级：
-1. 环境变量 `GPTSAPI_KEY`
-2. `<cwd>/.baoyu-skills/.env` 中的 `GPTSAPI_KEY=...`
-3. `~/.baoyu-skills/.env` 中的 `GPTSAPI_KEY=...`
+1. 环境变量 `GPTSAPI_KEY` / `MINIMAX_API_KEY`
+2. `<cwd>/.baoyu-skills/.env`
+3. `~/.baoyu-skills/.env`
 4. `--api-key` 参数（仅调试/一次性使用，不推荐写入脚本）
 
 ### 2. grok CLI 账户继承原则（已退出本流程，保留备用）
@@ -40,6 +41,7 @@ API key 读取优先级：
 | DeepSeek | `DEEPSEEK_API_KEY` | `~/.zshrc`（env），项目不存储 |
 | MiniMax TTS | `MINIMAX_API_KEY` | `~/.zshrc`（env），项目不存储 |
 | gptsapi 生图 | `GPTSAPI_KEY` | `~/.zshrc` / `.baoyu-skills/.env`，项目不存储 |
+| MiniMax 生图（参考图通道） | `MINIMAX_API_KEY` | 同上，与 TTS 共用同一个 key |
 | grok CLI | xAI 订阅（OIDC） | 已退出本流程；如需启用，仍由 `~/.grok/` 自管理 |
 
 **项目脚本读取方式**：从环境变量或 shell profile 动态读取，不写死到项目文件中。
@@ -56,8 +58,9 @@ API key 读取优先级：
 | 口播稿去AI味 | humanizer-zh skill | — | **最后一道**，只删不加，清理前序工序留下的 AI 腔（Step 3d） |
 | 去AI味检查 | `check-script.py` | — | 自动检查 A-D 共 20 项，必须全绿 |
 | 分镜画面描述 | DeepSeek V4 Pro | `deepseek-v4-pro` | 每镜画面描述（含 camera/transition/cues/layers） |
-| 插画提示词 | DeepSeek V4 Flash | `deepseek-v4-flash` | gptsapi 生图提示词 |
-| 场景插画生成 | baoyu ai-content-pipeline `gptsapi_image.py` | gptsapi / GPT Image 2 | 场景图（中文标签/书名用 gptsapi，中文渲染好） |
+| 插画提示词（**仅内容**） | DeepSeek V4 Flash | `deepseek-v4-flash` | 每镜 `shot_00X.scene.md`；风格段落是常量，不由模型生成 |
+| 场景插画生成 | `scripts/genimage.py` | gptsapi / GPT Image 2 | 分发层，无参考图时走此通道 |
+| 人物一致性生图 | `scripts/genimage.py` | baoyu-image-gen / MiniMax image-01 | 给了 `ref` 时自动切换，用 subject_reference |
 | i2v 提示词 | seedance-prompt-zh skill | — | 即梦 Seedance 2.0 规范化提示词（@引用 + 结构公式 + 风格锁定） |
 | i2v 视频生成 | dreamina CLI | `seedance2.0fast_vip` | 图生视频 / 首尾帧视频 |
 | 封面/信息图提示词 | baoyu-cover-image / baoyu-infographic | — | 分析→提示词文件 |
@@ -74,16 +77,36 @@ API key 读取优先级：
 
 ## 三、生图工具调用规范（主流程）
 
-### gptsapi 生图（baoyu ai-content-pipeline）
+### 统一入口：`scripts/genimage.py`
+
+**所有生图都走这个入口，不直接调后端。** 它按有无 `ref` 自动路由：
 
 ```bash
-python3 ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py \
-  --prompt-file <prompt.md> --aspect-ratio 9:16 --image <out.png>
+# 单张
+python3 scripts/genimage.py \
+  --promptfiles templates/style-prefix.en.md 03-assets/scenes/shot_002.scene.md \
+  --image 03-assets/scenes/shot_002.png --ar 9:16
+
+# 批量并发
+python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 ```
 
-- 固定 1K 分辨率
-- 需要 `GPTSAPI_KEY` 从环境或 `.baoyu-skills/.env` 读取
-- 项目脚本不硬编码 key，只负责拼装 prompt 和调用脚本
+分发层职责：多文件提示词拼接、并发调度、失败重试、输出格式归一（JPEG→PNG）、
+画幅与 provider 显式钉死。提示词组织规则见 `templates/scene-prompt.md`。
+
+| 通道 | 触发条件 | 后端 | 特性 |
+|------|---------|------|------|
+| gptsapi | 无 `ref`（默认） | `ai-content-pipeline/scripts/gptsapi_image.py` | GPT Image 2，固定 1K，异步任务 + 卡死检测 |
+| baoyu | 有 `ref` | `baoyu-image-gen/scripts/main.ts` | MiniMax image-01 subject_reference，跨镜人物一致性 |
+
+**两个实测坑（已在 `genimage.py` 内处理，手工调后端时要自己注意）**：
+
+1. **画幅**：MiniMax 的 body 是 `if(aspect_ratio) else if(size)`，两个都给时
+   `size` 被忽略，只出 720×1280。要 1080×1920 必须**只给 `--size`，不给 `--ar`**。
+2. **格式**：MiniMax 不管扩展名一律回 JPEG，落成 `.png` 是假 PNG，需 `sips` 转换。
+
+另有项目级 `.baoyu-skills/baoyu-image-gen/EXTEND.md` 覆盖用户级默认值
+（用户级是 `zai` + `16:9`，在本项目会静默出横图且不支持 `ref`）。
 
 ### grok CLI 生图（已退出主流程，保留备用）
 
@@ -98,7 +121,8 @@ python3 ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py \
 
 ### 封面/信息图（baoyu skill）
 
-先用 baoyu skill 分析生成提示词文件，再用 gptsapi 生图。
+先用 `baoyu-cover-image` / `baoyu-infographic` 分析并产出提示词文件，
+再交给 `scripts/genimage.py` 生图（封面比例 `--ar 3:4`，小红书首图）。
 
 ## 四、TTS 调用规范
 

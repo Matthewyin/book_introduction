@@ -1,5 +1,10 @@
 # 视频风格规范
 
+> **本文件是插画风格的唯一控制源。** 所有生图提示词的风格段落必须由本文件派生，
+> 落地形式是 `templates/style-prefix.en.md`（英文风格前缀常量）。
+> DeepSeek 只负责写当镜的画面内容，**不得自行改写风格描述或色值**。
+> 改风格 = 改本文件 → 重新派生 `style-prefix.en.md` → 全集重生图。
+
 From the reference image provided by the user, the target illustration style for this book video is **collage / scrapbook illustration**: layered paper textures, torn edges, washi tape strips, soft pastel paper blocks, watercolor washes, paper-cut figures, hand-drawn accents, and mixed-media elements. The style feels handmade, warm, nostalgic, and intimate, like a personal journal page brought to life. It is not oil painting, not 3D render, not realistic photography, and not flat vector.
 
 When adapting for this book video, preserve the **collage / scrapbook style**: layered paper, gentle textures, torn edges, tape accents, and soft watercolor or paper-wash highlights. The bottom 1/3 of the 9:16 frame should remain visually quiet for Chinese subtitles. No readable text, no watermark, no UI elements inside the generated image.
@@ -8,8 +13,8 @@ When adapting for this book video, preserve the **collage / scrapbook style**: l
 
 | 维度 | 观察 |
 |------|------|
-| 规格 | 1080×1920 竖屏，30fps，H.264，119 秒 |
-| 画面 | 参考附件为现代扁平矢量插画风格，简洁色块、清晰轮廓、无厚重油画质感 |
+| 规格 | 1080×1920 竖屏，30fps，H.264 |
+| 画面 | 拼贴剪贴簿插画，层叠纸材、撕边、胶带、水彩晕染，无厚重油画质感 |
 | 开头 | 深色渐变背景，极简，聚焦感强 |
 | 正文 | 场景插画 + 黄字字幕，逐句叙事推进 |
 | 结尾 | 品牌色收束，logo 呈现 |
@@ -19,14 +24,15 @@ When adapting for this book video, preserve the **collage / scrapbook style**: l
 
 ### 插画风格精确描述（用于 AI 生图提示词）
 
-经用户最终确认的参考图（shot_001_collage.png），统一插画风格为：
+风格来源：ep001 用同一镜头（shot_001）跑了 6 版风格试验（扁平矢量 / 黏土 / 2D 动画 /
+线稿 / 波普 / 拼贴），用户最终选定 `shot_001_collage.png`。本节即由那条提示词反向固化而来。
 
 | 维度 | 特征 |
 |------|------|
 | **绘画媒介** | 拼贴 / 剪贴簿插画（collage / scrapbook illustration），混合纸材、水彩、手绘线条 |
 | **笔触** | 纸张边缘、撕边、胶带、手绘线条、水彩晕染，有手工温度但不粗糙 |
 | **光影** | 以纸张层次和水彩色块表达明暗，光源方向明确但不写实，无厚重体积阴影 |
-| **色彩** | 奶油纸底 #F5F1EA + 浅粉 #E8C4C4 + 雾蓝 #A8C0D0 + 暖金 #E8C37A + 牛皮纸 #C4A882；痛点场景偏冷蓝/灰，治愈场景偏暖金/粉 |
+| **色彩** | 见下方「基准色板」，五色固定，情绪只调冷暖配比，不换 hex |
 | **人物造型** | 剪纸风格人物，简洁轮廓，面部极简化，靠姿态和头发/衣服形状传情 |
 | **场景细节** | 可辨识的纸质道具（书本、手机、杯子、椅子、门、窗等），层次叠加 |
 | **质感纹理** | 纸张纹理、水彩纸纹、胶带质感、撕边，整体有手工日记感 |
@@ -49,28 +55,42 @@ When adapting for this book video, preserve the **collage / scrapbook style**: l
 - **角色**：剪纸/拼贴风格人物，姿态传情，面部简化，不强调五官细节
 - **禁止**：油画质感、厚涂笔触、写实照片、3D 渲染、复杂写实现实光影、纯扁平矢量
 
-### 配色（心理励志垂类）
+### 基准色板（唯一一套，不得新增 hex）
 
-| 调性 | 适用 | 配色 |
-|------|------|------|
-| **warm 暖色** | 治愈、成长、自我接纳 | 奶油底 #F5F0E8 + 暖金 #E8B565 + 赭石 #B85C38 |
-| **calm 沉静** | 深度思考、哲学、内省 | 浅灰蓝 #D6E0E8 + 雾蓝 #7B9EA8 + 米白 #F8F6F2 |
-| **contrast 强对比** | 痛点觉醒、反常识、冲击 | 冷灰底 #E8E4E0 + 暗蓝 #2C3E50 + 强调红/金 |
+五个色值固定，**任何镜头、任何情绪都只用这五个**：
+
+| 角色 | hex | 英文名（写进提示词用这个） |
+|------|-----|---------------------------|
+| 奶油纸底 | `#F5F1EA` | `cream paper #F5F1EA` |
+| 浅粉 | `#E8C4C4` | `soft pink #E8C4C4` |
+| 雾蓝 | `#A8C0D0` | `muted blue #A8C0D0` |
+| 暖金 | `#E8C37A` | `warm gold paper #E8C37A` |
+| 牛皮纸 | `#C4A882` | `kraft brown #C4A882` |
+
+情绪差异**靠配比表达，不靠换色**：
+
+| 调性 | 适用段落 | 配比 |
+|------|---------|------|
+| **cool 冷** | 钩子、扎心场景、痛点 | 雾蓝/牛皮纸为主，暖金仅作微弱光源 |
+| **neutral 中** | 引入书、观点拆解 | 奶油纸底为主，冷暖均衡 |
+| **warm 暖** | 方法实操、结尾引导 | 暖金/浅粉为主，雾蓝退为背景阴影 |
+
+> ⚠️ ep001 教训：正式版提示词里出现过 `#8B6F52`、`#7A93A8`、`#D4E4EC` 三个本表之外的
+> 色值——因为当时每镜风格段落都由模型重写。改用 `style-prefix.en.md` 常量拼接后，
+> 色板物理上不可能漂移。
 
 ### 字幕规范
 
+> 字幕/金句的完整规范以 `references/subtitle-style.md` 为准，本节只列生图相关约束。
+
 ```
-位置：底部 1/3 处（距底部约 180px）
-颜色：#FFD700（金黄）
-字体：Noto Sans CJK SC（思源黑体）
-字号：52px
-描边：黑色 2px
-阴影：1px
-对齐：水平居中
+位置：底部 1/3 处（距底部约 190px）
+字号：48px
 每行：≤16 字
-每条：≤4 秒
-风格：叙事性短句，不堆关键词
 ```
+
+**对生图的要求**：9:16 画面底部 1/3 必须视觉安静——不放主体、不放高对比细节，
+留给字幕叠加。这条要写进每一条生图提示词（已固化在 `templates/style-prefix.en.md`）。
 
 ### 品牌 logo
 

@@ -64,7 +64,8 @@ ffmpeg -version      # 任意版本，无需 libass（字幕由 hyperframes 渲�
 | **ego-browser** | Step 9b BGM 下载（绕过 pixabay Cloudflare） | ZCode Skill `ego-browser` |
 | **humanizer-zh** | Step 3d 去 AI 味 | ZCode Skill `humanizer-zh` |
 | **seedance-prompt-zh** | Step 8a i2v 提示词 | ZCode Skill `seedance-prompt-zh` |
-| **baoyu ai-content-pipeline** | Step 7 生图（gptsapi） | ZCode Skill `ai-content-pipeline`，脚本 `~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py` |
+| **baoyu ai-content-pipeline** | Step 7 生图（gptsapi 通道） | ZCode Skill `ai-content-pipeline`，脚本 `~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py` |
+| **baoyu-image-gen** | Step 7 参考图通道（人物一致性） | ZCode Skill `baoyu-image-gen`，需 `bun`（`brew install oven-sh/bun/bun`） |
 
 ### 4. API 密钥
 
@@ -74,11 +75,21 @@ ffmpeg -version      # 任意版本，无需 libass（字幕由 hyperframes 渲�
 # ~/.zshrc
 export KIMI_API_KEY="..."        # Kimi K3，文案策划 + 口播起草
 export DEEPSEEK_API_KEY="..."    # DeepSeek V4 Pro/Flash，二审 + 分镜 + 提示词
-export MINIMAX_API_KEY="..."     # MiniMax T2A v2，配音
+export MINIMAX_API_KEY="..."     # MiniMax T2A v2 配音 + image-01 参考图生图（共用）
 export GPTSAPI_KEY="..."         # gptsapi（GPT Image 2），场景插画
 ```
 
-gptsapi key 读取优先级：环境变量 `GPTSAPI_KEY` → `<cwd>/.baoyu-skills/.env` → `~/.baoyu-skills/.env` → `--api-key` 参数（仅调试）。
+生图 key 读取优先级：环境变量 → `<cwd>/.baoyu-skills/.env` → `~/.baoyu-skills/.env` → `--api-key` 参数（仅调试）。
+
+⚠️ **项目级 EXTEND.md（安装时需手动拷一次）**：
+
+```bash
+mkdir -p .baoyu-skills/baoyu-image-gen
+cp book-video-pipeline/templates/baoyu-image-gen-EXTEND.md \
+   .baoyu-skills/baoyu-image-gen/EXTEND.md
+```
+
+用户级 EXTEND.md 通常是 `default_provider: zai` + `default_aspect_ratio: "16:9"`，在本项目下会静默出横图且不支持参考图。`.baoyu-skills/` 被 gitignore（防泄密兜底），所以模板放在插件里、安装时拷贝。
 
 grok CLI **已退出主流程**（保留备用），如需重新启用仍遵循账户继承原则——不读 `~/.grok/auth.json`、不缓存 token。
 
@@ -120,7 +131,7 @@ Agent 会自动：选书 → 写档案 → 弹出**审核点①**等你确认。
 | **Step 4** TTS 配音 | `03-assets/audio/voiceover.wav` | MiniMax T2A v2 | 🔴 ④ |
 | **Step 5** 真实时间轴 | `02-script/shot-timing.json` | `realign-shots.py` + ffmpeg | — |
 | **Step 6** 分镜 | `02-script/STORYBOARD.md` | DeepSeek V4 Pro | 🔴 ⑤ |
-| **Step 7** 生图 | `03-assets/scenes/shot_*.png` | gptsapi（GPT Image 2） | 🔴 ⑥ |
+| **Step 7** 生图 | `03-assets/scenes/shot_*.png` | `genimage.py` → gptsapi / MiniMax | 🔴 ⑥ |
 | **Step 8** 动效设计 | `02-script/motion-plan.md` | GSAP / 即梦 i2v | — |
 | **Step 9** 合成 | `04-video/output.mp4` + `subtitle.srt` | hyperframes | 🔴 ⑦ |
 | **Step 9b** BGM | `03-assets/audio/bgm.mp3` | ego-browser → pixabay | 🔴 ⑦b |
@@ -157,7 +168,13 @@ python3 scripts/make-cues.py shot-timing.json --out subtitle-cues.json
 # 6. 去 AI 味自动校验（Step 3d，必须全绿）
 python3 scripts/check-script.py 02-script/draft-04-final.md --before 02-script/draft-03-reviewed.md
 
-# 7. 成片规格校验（Step 9 收尾）
+# 7. 生图（Step 7）—— 统一入口，按有无 ref 自动路由后端
+python3 scripts/genimage.py \
+  --promptfiles templates/style-prefix.en.md 03-assets/scenes/shot_002.scene.md \
+  --image 03-assets/scenes/shot_002.png --ar 9:16
+python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
+
+# 8. 成片规格校验（Step 9 收尾）
 python3 scripts/validate-spec.py 04-video/output.mp4
 ```
 
@@ -175,7 +192,7 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 
 ## 组件清单
 
-### 脚本（`scripts/`，7 个）
+### 脚本（`scripts/`，8 个）
 
 | 脚本 | 作用 | 输入 → 输出 | 依赖密钥 |
 |------|------|-------------|----------|
@@ -186,8 +203,9 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `make-cues.py` | 逐句字幕切分（按标点不破词） | `<shot-timing.json> --out` | — |
 | `check-script.py` | 去 AI 味自动校验（20 项规则） | `<script.md> [--before <early.md>]` | — |
 | `validate-spec.py` | 成片规格校验 | `<video.mp4>` | ffmpeg/ffprobe |
+| `genimage.py` | 生图统一入口（分发层） | `--promptfiles ... --image` 或 `--batchfile` | `GPTSAPI_KEY` / `MINIMAX_API_KEY` |
 
-### 模板（`templates/`，8 个）
+### 模板（`templates/`，11 个）
 
 | 模板 | 步骤 | 产出文件 |
 |------|------|----------|
@@ -196,20 +214,26 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `SCRIPT-template.md` | Step 3e | 锁定旁白（对齐 hyperframes `script-format.md`） |
 | `STORYBOARD-template.md` | Step 6 | 分镜（对齐 hyperframes `storyboard-format.md`） |
 | `video-spec.md` | 全流程 | 视频技术规格红线 |
-| `scene-prompt.md` | Step 7 | 场景插画提示词 |
+| `scene-prompt.md` | Step 7 | 提示词组织方式（拼接规则、通道分工、一致性清单） |
+| `style-prefix.en.md` | Step 7 | **风格常量**，由 `video-style-guide.md` 派生，逐字节复用 |
+| `scene-content.en.md` | Step 7 | 单镜内容字段骨架（DeepSeek 填这个） |
 | `cover-prompt.md` | Step 10 | 封面提示词 |
 | `publish-brief.md` | Step 10 | 发布物料简报 |
+| `baoyu-image-gen-EXTEND.md` | 安装 | 拷到仓库根 `.baoyu-skills/baoyu-image-gen/EXTEND.md`，覆盖用户级默认值 |
 
-### 参考（`references/`，9 个）
+### 参考（`references/`，11 个）
 
 | 参考 | 内容 |
 |------|------|
-| `tool-usage.md` | 工具与认证管理红线、LLM 分工表 |
+| `tool-usage.md` | 工具与认证管理红线、LLM 分工表、生图通道分工 |
 | `deai-checklist.md` | 口播稿去 AI 味检查清单（A-D 共 20 项 + 人工判断 4 项） |
 | `hyperframes-usage.md` | hyperframes 合成规范、seek-safe 动效规则、常见坑 |
-| `video-style-guide.md` | 视觉风格（拼贴 / 剪贴簿插画） |
-| `shot-structure.md` | 三段式叙事结构模板 |
-| `subtitle-style.md` | 字幕视觉规范 |
+| `video-style-guide.md` | **插画风格唯一控制源**（拼贴 / 剪贴簿，五色固定色板） |
+| `shot-structure.md` | **结构唯一控制源**：7 段式 + 能量曲线 + 审美规则清单 |
+| `subtitle-style.md` | 字幕层 / 金句层视觉规范 |
+| `motion-recipes.md` | GSAP seek-safe 动效配方卡（5 类） |
+| `sound-design.md` | BGM 选型、SFX 词汇表、钉帧方法 |
+| `final-review.md` | 成片独立终检清单（干净上下文子 Agent 执行） |
 | `book-category-playbook.md` | 心理励志垂类选题库与带货策略 |
 | `xhs-publish-rules.md` | 小红书发布合规要点 |
 
@@ -327,7 +351,9 @@ Step 5 ffmpeg silencedetect + realign-shots.py
 Step 6 DeepSeek 分镜 ─► STORYBOARD.md ─► (审核点⑤)
         │   └─ duration 字段必须来自 shot-timing.json，不可估算
         ▼
-Step 7 DeepSeek Flash 写提示词 → gptsapi 生图 ─► scenes/shot_*.png ─► (审核点⑥)
+Step 7 DeepSeek Flash 写 shot_*.scene.md（仅内容）
+        │   └─ 风格常量 style-prefix.en.md 拼在前面，模型不碰风格
+        └─ genimage.py 分发 ─► scenes/shot_*.png ─► (审核点⑥)
         │
         ▼
 Step 8 动效设计
@@ -354,7 +380,8 @@ Step 10 发布物料 ─► publish-brief.md + cover.png
 | Step 3c / 6 | DeepSeek V4 Pro (`deepseek-v4-pro`) | 二审修复、分镜（思考模式） |
 | Step 7 | DeepSeek V4 Flash (`deepseek-v4-flash`) | 插画提示词（非思考模式） |
 | Step 3d | humanizer-zh skill | 去 AI 味收尾（唯一减法工序，只删不加） |
-| Step 7 | gptsapi (GPT Image 2) | 场景插画（中文渲染优于 grok） |
+| Step 7 | gptsapi (GPT Image 2) | 场景插画默认通道（中文渲染优于 grok） |
+| Step 7 | MiniMax `image-01` | 参考图通道，跨镜人物一致性（subject_reference） |
 | Step 4 | MiniMax T2A v2 (`speech-02-hd`) | 配音（音色库选 + 用户审核） |
 | Step 8a | seedance-prompt-zh + dreamina CLI | i2v 真动画 |
 
@@ -365,7 +392,8 @@ Step 10 发布物料 ─► publish-brief.md + cover.png
 | Skill | 触发点 | 作用 |
 |-------|--------|------|
 | `humanizer-zh` | Step 3d | 口播稿去 AI 味收尾 |
-| `ai-content-pipeline` | Step 7 | 通过 `gptsapi_image.py` 调用生图 |
+| `ai-content-pipeline` | Step 7 | 通过 `gptsapi_image.py` 生图（默认通道） |
+| `baoyu-image-gen` | Step 7 | 参考图生图（有 `ref` 时由 `genimage.py` 自动路由） |
 | `seedance-prompt-zh` | Step 8a | 生成符合 Seedance 2.0 规范的 i2v 提示词 |
 | `ego-browser` | Step 9b | 浏览器下载 pixabay BGM（绕过 Cloudflare） |
 | `baoyu-cover-image` | Step 10 | 封面图提示词分析 |

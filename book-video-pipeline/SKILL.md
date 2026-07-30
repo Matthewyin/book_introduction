@@ -19,9 +19,12 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 
 ## 认证管理红线（不可违反）
 
-**gptsapi / baoyu ai-content-pipeline 生图认证原则**：
+**生图认证原则**：
 
-- 生图通过 `~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py` 调用，API key 从 `GPTSAPI_KEY` 环境变量或 `.baoyu-skills/.env` 读取，**项目不硬编码、不缓存 key**。
+- 生图统一走 `scripts/genimage.py`（薄分发层），它按有无参考图路由到
+  `ai-content-pipeline/scripts/gptsapi_image.py` 或 `baoyu-image-gen/scripts/main.ts`。
+  API key 从 `GPTSAPI_KEY` / `MINIMAX_API_KEY` 环境变量或 `.baoyu-skills/.env` 读取，
+  **项目不硬编码、不缓存 key**。
 - **grok CLI 已退出本流程**：不再使用 grok CLI 生图；如未来需要，仍遵循账户继承原则（不读取 `~/.grok/auth.json`、不缓存 token）。
 - Kimi / DeepSeek / MiniMax key 均从环境变量或 shell profile 读取，项目不存储。
 
@@ -35,7 +38,8 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 |------|----------|
 | 工具与认证规范 | `references/tool-usage.md` |
 | **口播稿去 AI 味（Step 3d 必读）** | `references/deai-checklist.md` |
-| 视觉风格判断 | `references/video-style-guide.md` |
+| **插画风格唯一控制源** | `references/video-style-guide.md` |
+| **生图提示词组织（Step 7 必读）** | `templates/scene-prompt.md` |
 | 音色选择 | `assets/voices/README.md` + `assets/voices/voice-library.json` |
 | 选书与选题 | `references/book-category-playbook.md` |
 | 分镜结构设计 | `references/shot-structure.md` |
@@ -191,15 +195,33 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 
 ### Step 7：生图 → `03-assets/scenes/shot_*.png`
 
-1. 调用 **DeepSeek V4 Flash**（`deepseek-v4-flash`）根据分镜写英文插画提示词。
+**风格唯一控制源是 `references/video-style-guide.md`**，其落地形式是常量文件
+`templates/style-prefix.en.md`。提示词 = 风格常量 + 当镜内容，**拼接**而成，
+DeepSeek 只写内容那一半。详见 `templates/scene-prompt.md`。
+
+1. 调用 **DeepSeek V4 Flash**（`deepseek-v4-flash`）按分镜为每镜写 `shot_00X.scene.md`，
+   字段骨架见 `templates/scene-content.en.md`。
+   **system prompt 必须约束：只写画面内容，不写风格、不写色值、不写画幅和禁止项**
+   ——这些已在前缀常量里，重复写会与前缀冲突、导致色板漂移。
 2. **先生成 1 张测试图**，确认风格后再批量：
    ```bash
-   python3 ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py \
-     --prompt-file <prompt.md> --aspect-ratio 9:16 --image <out.png>
+   python3 scripts/genimage.py \
+     --promptfiles templates/style-prefix.en.md 03-assets/scenes/shot_002.scene.md \
+     --image 03-assets/scenes/shot_002.png --ar 9:16
    ```
-3. 提示词必须写明：风格、配色（含 hex）、人物年龄和造型、9:16、底部留白、禁止项（文字/水印/写实/霓虹）。
-4. 涉及中文（书名、标签）时用 gptsapi，其中文渲染优于 grok。
-5. **🔴 审核点⑥**：用 AskUserQuestion 确认插画风格，通过后批量生成。
+3. **🔴 审核点⑥**：用 AskUserQuestion 确认插画风格，通过后批量生成：
+   ```bash
+   python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
+   ```
+4. 生成后逐张核对 `templates/scene-prompt.md` 末尾的一致性清单
+   （五色色板 / 拼贴质感 / 底部留白 / 尺寸 1080×1920 / 真 PNG）。
+
+**通道分工**（`genimage.py` 按有无 `ref` 自动路由，不用手工选）：
+
+| 场景 | 后端 | 原因 |
+|------|------|------|
+| 常规场景插画 | gptsapi + gpt-image-2 | 中文渲染好，固定 1K，带卡死检测重试 |
+| 跨镜人物一致性（给了 `ref`） | baoyu-image-gen + MiniMax | gptsapi 接口不支持参考图 |
 
 ### Step 8：动效设计 → `02-script/motion-plan.md`
 

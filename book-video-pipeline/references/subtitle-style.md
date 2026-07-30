@@ -7,12 +7,14 @@
 ```
 字体：Noto Sans CJK SC（思源黑体）Bold
 颜色：#FFD700（金黄）
-描边：黑色，2px
+描边：黑色，3.5px
 阴影：黑色，1px，偏移 1px
-字号：52px（1080×1920 画面下）
-位置：水平居中，距底部 180px（约画面下 1/3）
+字号：48px（1080×1920 画面下；早期用 58px / 52px 偏大，压缩了画面）
+位置：水平居中，距底部 190px（约画面下 1/3）
 对齐：Alignment=2（底部居中）
 ```
+
+> 数值以下方「字幕层 vs 金句层」表为准，本节与该表必须一致。
 
 ## ASS 字幕格式模板
 
@@ -25,7 +27,7 @@ PlayResY: 1920
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Noto Sans CJK SC,52,&H00D6D600,&H000000FF,&H00000000,&H00000000,1,0,0,0,100,100,0,0,1,2,1,2,60,60,180,1
+Style: Default,Noto Sans CJK SC,48,&H0000D7FF,&H000000FF,&H00000000,&H00000000,1,0,0,0,100,100,0,0,1,3.5,1,2,60,60,190,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
