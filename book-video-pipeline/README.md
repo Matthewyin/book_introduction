@@ -4,7 +4,7 @@
 
 本流水线是一个 **ZCode Skill**（也可作为独立的文档+脚本框架使用）。它不承诺播放量或成交额，只提供一套**带 7 个人工审核点**的确定性生产流程：从选书、文案、口播、分镜、素材生成、动效设计到最终合成，每一步都停下等你确认。
 
-视觉风格采用**拼贴 / 剪贴簿叙事插画**（layered paper, torn edges, washi tape, watercolor washes），参考标杆 `ep001-v3-v9-jimeng-release-75mb.mp4`。
+视觉风格采用**日系软萌 anime 水彩插画**（soft cel-shaded anime, watercolor edges, pastel palette），当前主力风格卡 `templates/styles/people/cute-anime-girl.md`。风格卡库支持人物线 / 萌宠线多套风格切换，每集先选风格并审核。
 
 ---
 
@@ -64,8 +64,9 @@ ffmpeg -version      # 任意版本，无需 libass（字幕由 hyperframes 渲�
 | **ego-browser** | Step 9b BGM 下载（绕过 pixabay Cloudflare） | ZCode Skill `ego-browser` |
 | **humanizer-zh** | Step 3d 去 AI 味 | ZCode Skill `humanizer-zh` |
 | **seedance-prompt-zh** | Step 8a i2v 提示词 | ZCode Skill `seedance-prompt-zh` |
-| **baoyu ai-content-pipeline** | Step 7 生图（gptsapi 通道） | ZCode Skill `ai-content-pipeline`，脚本 `~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py` |
-| **baoyu-image-gen** | Step 7 参考图通道（人物一致性） | ZCode Skill `baoyu-image-gen`，需 `bun`（`brew install oven-sh/bun/bun`） |
+| **baoyu ai-content-pipeline** | Step 7 生图（gptsapi 通道：定妆图 + 无主角镜头） | ZCode Skill `ai-content-pipeline`，脚本 `~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py` |
+| **dreamina CLI** | Step 7 主角镜头（Seedream 5.0 image2image）+ Step 8a i2v | `~/.local/bin/dreamina`，需 `dreamina login`（OAuth） |
+| **baoyu-image-gen** | Step 7 备用参考图通道（MiniMax） | ZCode Skill `baoyu-image-gen`，需 `bun`（`brew install oven-sh/bun/bun`） |
 
 ### 4. API 密钥
 
@@ -76,8 +77,11 @@ ffmpeg -version      # 任意版本，无需 libass（字幕由 hyperframes 渲�
 export KIMI_API_KEY="..."        # Kimi K3，文案策划 + 口播起草
 export DEEPSEEK_API_KEY="..."    # DeepSeek V4 Pro/Flash，二审 + 分镜 + 提示词
 export MINIMAX_API_KEY="..."     # MiniMax T2A v2 配音 + image-01 参考图生图（共用）
-export GPTSAPI_KEY="..."         # gptsapi（GPT Image 2），场景插画
+export GPTSAPI_KEY="..."         # gptsapi（GPT Image 2），定妆图 + 无主角镜头
 ```
+
+dreamina CLI 用 OAuth 登录（不用 API key）：`dreamina login`，登录态存 `~/.dreamina/`。
+项目不读取、不缓存 dreamina 认证。
 
 生图 key 读取优先级：环境变量 → `<cwd>/.baoyu-skills/.env` → `~/.baoyu-skills/.env` → `--api-key` 参数（仅调试）。
 
@@ -168,10 +172,18 @@ python3 scripts/make-cues.py shot-timing.json --out subtitle-cues.json
 # 6. 去 AI 味自动校验（Step 3d，必须全绿）
 python3 scripts/check-script.py 02-script/draft-04-final.md --before 02-script/draft-03-reviewed.md
 
-# 7. 生图（Step 7）—— 统一入口，按有无 ref 自动路由后端
+# 7. 生图（Step 7）—— 统一入口，按 characters + charRef 自动路由后端
+# 主角定妆图（gptsapi，无 ref）
 python3 scripts/genimage.py \
-  --promptfiles templates/style-prefix.en.md 03-assets/scenes/shot_002.scene.md \
-  --image 03-assets/scenes/shot_002.png --ar 9:16
+  --style templates/styles/people/cute-anime-girl.md \
+  --promptfiles 03-assets/scenes/_protagonist.scene.md \
+  --image 03-assets/protagonist-ref.png --ar 9:16
+# 含主角镜头（dreamina Seedream，带定妆图 ref）
+python3 scripts/genimage.py \
+  --style templates/styles/people/cute-anime-girl.md \
+  --promptfiles 03-assets/scenes/shot_002.scene.md \
+  --image 03-assets/scenes/shot_002.png --ar 9:16 \
+  --charRef 03-assets/protagonist-ref.png
 python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 
 # 8. 成片规格校验（Step 9 收尾）
@@ -203,7 +215,7 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `make-cues.py` | 逐句字幕切分（按标点不破词） | `<shot-timing.json> --out` | — |
 | `check-script.py` | 去 AI 味自动校验（20 项规则） | `<script.md> [--before <early.md>]` | — |
 | `validate-spec.py` | 成片规格校验 | `<video.mp4>` | ffmpeg/ffprobe |
-| `genimage.py` | 生图统一入口（分发层） | `--promptfiles ... --image` 或 `--batchfile` | `GPTSAPI_KEY` / `MINIMAX_API_KEY` |
+| `genimage.py` | 生图统一入口（分发层：gptsapi / dreamina Seedream / MiniMax） | `--style ... --promptfiles ... --image` 或 `--batchfile` | `GPTSAPI_KEY` / `MINIMAX_API_KEY` / dreamina OAuth |
 
 ### 模板（`templates/`，11 个）
 
@@ -215,7 +227,8 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `STORYBOARD-template.md` | Step 6 | 分镜（对齐 hyperframes `storyboard-format.md`） |
 | `video-spec.md` | 全流程 | 视频技术规格红线 |
 | `scene-prompt.md` | Step 7 | 提示词组织方式（拼接规则、通道分工、一致性清单） |
-| `style-prefix.en.md` | Step 7 | **风格常量**，由 `video-style-guide.md` 派生，逐字节复用 |
+| `style-prefix.en.md` | Step 7 | （旧版风格常量，已被 `styles/` 风格卡库取代，保留兼容） |
+| `styles/` 风格卡库 | Step 7.0 | 风格卡（当前主力 `people/cute-anime-girl.md`）+ README |
 | `scene-content.en.md` | Step 7 | 单镜内容字段骨架（DeepSeek 填这个） |
 | `cover-prompt.md` | Step 10 | 封面提示词 |
 | `publish-brief.md` | Step 10 | 发布物料简报 |
@@ -380,8 +393,9 @@ Step 10 发布物料 ─► publish-brief.md + cover.png
 | Step 3c / 6 | DeepSeek V4 Pro (`deepseek-v4-pro`) | 二审修复、分镜（思考模式） |
 | Step 7 | DeepSeek V4 Flash (`deepseek-v4-flash`) | 插画提示词（非思考模式） |
 | Step 3d | humanizer-zh skill | 去 AI 味收尾（唯一减法工序，只删不加） |
-| Step 7 | gptsapi (GPT Image 2) | 场景插画默认通道（中文渲染优于 grok） |
-| Step 7 | MiniMax `image-01` | 参考图通道，跨镜人物一致性（subject_reference） |
+| Step 7 | gptsapi (GPT Image 2) | 主角定妆图 + 无主角镜头（中文渲染好、风格质量最高） |
+| Step 7 | dreamina Seedream 5.0 | 主角镜头（image2image，带定妆图 ref，角色+风格双锁） |
+| Step 7 | MiniMax `image-01` | 备用参考图通道（baoyu-image-gen 触发，对 anime 锁定弱） |
 | Step 4 | MiniMax T2A v2 (`speech-02-hd`) | 配音（音色库选 + 用户审核） |
 | Step 8a | seedance-prompt-zh + dreamina CLI | i2v 真动画 |
 

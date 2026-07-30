@@ -58,9 +58,10 @@ API key 读取优先级：
 | 口播稿去AI味 | humanizer-zh skill | — | **最后一道**，只删不加，清理前序工序留下的 AI 腔（Step 3d） |
 | 去AI味检查 | `check-script.py` | — | 自动检查 A-D 共 20 项，必须全绿 |
 | 分镜画面描述 | DeepSeek V4 Pro | `deepseek-v4-pro` | 每镜画面描述（含 camera/transition/cues/layers） |
-| 插画提示词（**仅内容**） | DeepSeek V4 Flash | `deepseek-v4-flash` | 每镜 `shot_00X.scene.md`；风格段落是常量，不由模型生成 |
-| 场景插画生成 | `scripts/genimage.py` | gptsapi / GPT Image 2 | 分发层，无参考图时走此通道 |
-| 人物一致性生图 | `scripts/genimage.py` | baoyu-image-gen / MiniMax image-01 | 给了 `ref` 时自动切换，用 subject_reference |
+| 插画提示词（**仅内容**） | DeepSeek V4 Flash | `deepseek-v4-flash` | 每镜 `shot_00X.scene.md`；风格段落是风格卡常量，不由模型生成 |
+| 定妆图 + 无主角镜头 | `scripts/genimage.py` | gptsapi / GPT Image 2 | 分发层，无 characters/ref 时走此通道 |
+| 含主角镜头（角色锁定） | `scripts/genimage.py` | dreamina image2image / Seedream 5.0 | `characters: true` + `charRef` 时走此通道，角色+风格双锁 |
+| 备用参考图生图 | `scripts/genimage.py` | baoyu-image-gen / MiniMax image-01 | 显式 `--ref` 时走此通道（备用，对 anime 锁定弱） |
 | i2v 提示词 | seedance-prompt-zh skill | — | 即梦 Seedance 2.0 规范化提示词（@引用 + 结构公式 + 风格锁定） |
 | i2v 视频生成 | dreamina CLI | `seedance2.0fast_vip` | 图生视频 / 首尾帧视频 |
 | 封面/信息图提示词 | baoyu-cover-image / baoyu-infographic | — | 分析→提示词文件 |
@@ -79,25 +80,41 @@ API key 读取优先级：
 
 ### 统一入口：`scripts/genimage.py`
 
-**所有生图都走这个入口，不直接调后端。** 它按有无 `ref` 自动路由：
+**所有生图都走这个入口，不直接调后端。** 它按镜头类型（`characters` + `charRef`）自动路由三档后端：
 
 ```bash
-# 单张
+# 主角定妆图（gptsapi，无 ref）
 python3 scripts/genimage.py \
-  --promptfiles templates/style-prefix.en.md 03-assets/scenes/shot_002.scene.md \
-  --image 03-assets/scenes/shot_002.png --ar 9:16
+  --style templates/styles/people/cute-anime-girl.md \
+  --promptfiles 03-assets/scenes/_protagonist.scene.md \
+  --image 03-assets/protagonist-ref.png --ar 9:16
+
+# 含主角镜头（dreamina Seedream，带定妆图 ref）
+python3 scripts/genimage.py \
+  --style templates/styles/people/cute-anime-girl.md \
+  --promptfiles 03-assets/scenes/shot_002.scene.md \
+  --image 03-assets/scenes/shot_002.png --ar 9:16 \
+  --charRef 03-assets/protagonist-ref.png
+
+# 无主角镜头（gptsapi，无 ref）
+python3 scripts/genimage.py \
+  --style templates/styles/people/cute-anime-girl.md \
+  --promptfiles 03-assets/scenes/shot_005.scene.md \
+  --image 03-assets/scenes/shot_005.png --ar 9:16
 
 # 批量并发
 python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 ```
 
-分发层职责：多文件提示词拼接、并发调度、失败重试、输出格式归一（JPEG→PNG）、
-画幅与 provider 显式钉死。提示词组织规则见 `templates/scene-prompt.md`。
+分发层职责：风格卡 + 场景内容多文件提示词拼接、并发调度、失败重试、
+输出格式归一（JPEG→PNG）、画幅与 provider 显式钉死。
+提示词组织规则见 `templates/scene-prompt.md`。
 
 | 通道 | 触发条件 | 后端 | 特性 |
 |------|---------|------|------|
-| gptsapi | 无 `ref`（默认） | `ai-content-pipeline/scripts/gptsapi_image.py` | GPT Image 2，固定 1K，异步任务 + 卡死检测 |
-| baoyu | 有 `ref` | `baoyu-image-gen/scripts/main.ts` | MiniMax image-01 subject_reference，跨镜人物一致性 |
+| gptsapi | 无 `characters` / 无 `ref`（定妆图 + 无主角镜头） | `ai-content-pipeline/scripts/gptsapi_image.py` | GPT Image 2，固定 1K，异步任务 + 卡死检测，风格质量最高 |
+| dreamina | `characters: true` + 有 `charRef` | `dreamina image2image`（Seedream 5.0） | 角色 + 风格双锁，原生 2k，实测优于 MiniMax |
+| baoyu | 有 `--ref`（无 charRef，备用） | `baoyu-image-gen/scripts/main.ts` | MiniMax image-01 subject_reference，对 anime 锁定弱 |
 
 **两个实测坑（已在 `genimage.py` 内处理，手工调后端时要自己注意）**：
 
@@ -107,6 +124,11 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 
 另有项目级 `.baoyu-skills/baoyu-image-gen/EXTEND.md` 覆盖用户级默认值
 （用户级是 `zai` + `16:9`，在本项目会静默出横图且不支持 `ref`）。
+
+**dreamina 通道注意事项**：
+- 用 OAuth 登录（`dreamina login`），登录态存 `~/.dreamina/`，项目不读认证
+- image2image 强制 ≥2k（不支持 1k），素材保留原生分辨率，最终 1080×1920 由 hyperframes 渲染处理
+- 余额查询：`dreamina user_credit`
 
 ### grok CLI 生图（已退出主流程，保留备用）
 

@@ -21,9 +21,10 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 
 **生图认证原则**：
 
-- 生图统一走 `scripts/genimage.py`（薄分发层），它按有无参考图路由到
-  `ai-content-pipeline/scripts/gptsapi_image.py` 或 `baoyu-image-gen/scripts/main.ts`。
-  API key 从 `GPTSAPI_KEY` / `MINIMAX_API_KEY` 环境变量或 `.baoyu-skills/.env` 读取，
+- 生图统一走 `scripts/genimage.py`（薄分发层），它按镜头类型路由到三个后端：
+  `gptsapi_image.py`（无主角 / 定妆图）、`dreamina image2image`（Seedream 主角镜头）、
+  `baoyu-image-gen`（备用 MiniMax）。API key 从 `GPTSAPI_KEY` / `MINIMAX_API_KEY` 环境变量
+  或 `.baoyu-skills/.env` 读取；dreamina 用 OAuth 登录（`dreamina login`），不读 API key。
   **项目不硬编码、不缓存 key**。
 - **grok CLI 已退出本流程**：不再使用 grok CLI 生图；如未来需要，仍遵循账户继承原则（不读取 `~/.grok/auth.json`、不缓存 token）。
 - Kimi / DeepSeek / MiniMax key 均从环境变量或 shell profile 读取，项目不存储。
@@ -195,33 +196,81 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 
 ### Step 7：生图 → `03-assets/scenes/shot_*.png`
 
-**风格唯一控制源是 `references/video-style-guide.md`**，其落地形式是常量文件
-`templates/style-prefix.en.md`。提示词 = 风格常量 + 当镜内容，**拼接**而成，
-DeepSeek 只写内容那一半。详见 `templates/scene-prompt.md`。
+**风格控制源是风格卡库 `templates/styles/`**（见 `references/video-style-guide.md`）。
+提示词 = 选定的风格卡（常量）+ 当镜内容，**拼接**而成，DeepSeek 只写内容那一半。
+详见 `templates/scene-prompt.md`。
+
+#### 7.0：风格选择 + 主角定妆（每集第一步）
+
+1. **选风格卡**：从 `templates/styles/` 选定本集风格（当前主力 `people/cute-anime-girl.md`）。
+   展示风格卡给用户确认。
+2. **🔴 审核点⑤b（风格确认）**：用 AskUserQuestion 确认风格卡。
+3. **生成主角定妆图**：用 **gptsapi**（风格质量最高）生 1 张主角标准像
+   （全身或 3/4 身，正面，中性表情，纯背景），存为 `03-assets/protagonist-ref.png`：
+   ```bash
+   python3 scripts/genimage.py \
+     --style templates/styles/people/cute-anime-girl.md \
+     --promptfiles 03-assets/scenes/_protagonist.scene.md \
+     --image 03-assets/protagonist-ref.png --ar 9:16
+   ```
+   定妆图的提示词只描述主角外貌和姿态，不含具体场景。
+4. **🔴 审核点⑤c（定妆确认）**：用 AskUserQuestion 确认主角形象。这是全集角色锚点。
+
+#### 7.1：写场景内容
 
 1. 调用 **DeepSeek V4 Flash**（`deepseek-v4-flash`）按分镜为每镜写 `shot_00X.scene.md`，
    字段骨架见 `templates/scene-content.en.md`。
    **system prompt 必须约束：只写画面内容，不写风格、不写色值、不写画幅和禁止项**
-   ——这些已在前缀常量里，重复写会与前缀冲突、导致色板漂移。
-2. **先生成 1 张测试图**，确认风格后再批量：
-   ```bash
-   python3 scripts/genimage.py \
-     --promptfiles templates/style-prefix.en.md 03-assets/scenes/shot_002.scene.md \
-     --image 03-assets/scenes/shot_002.png --ar 9:16
-   ```
-3. **🔴 审核点⑥**：用 AskUserQuestion 确认插画风格，通过后批量生成：
-   ```bash
-   python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
-   ```
-4. 生成后逐张核对 `templates/scene-prompt.md` 末尾的一致性清单
-   （五色色板 / 拼贴质感 / 底部留白 / 尺寸 1080×1920 / 真 PNG）。
+   ——这些已在风格卡里，重复写会与风格卡冲突、导致色板漂移。
+2. 同时为每镜标注 `characters: true/false`（是否含主角），用于 batch 路由。
 
-**通道分工**（`genimage.py` 按有无 `ref` 自动路由，不用手工选）：
+#### 7.2：生成测试图
 
-| 场景 | 后端 | 原因 |
-|------|------|------|
-| 常规场景插画 | gptsapi + gpt-image-2 | 中文渲染好，固定 1K，带卡死检测重试 |
-| 跨镜人物一致性（给了 `ref`） | baoyu-image-gen + MiniMax | gptsapi 接口不支持参考图 |
+先生成 1 张含主角的测试图（走 Seedream 通道），确认角色锁定和风格一致：
+
+```bash
+python3 scripts/genimage.py \
+  --style templates/styles/people/cute-anime-girl.md \
+  --promptfiles 03-assets/scenes/shot_002.scene.md \
+  --image 03-assets/scenes/shot_002.png --ar 9:16 \
+  --charRef 03-assets/protagonist-ref.png
+```
+
+**🔴 审核点⑥**：用 AskUserQuestion 确认主角一致性 + 风格。通过后再批量。
+
+#### 7.3：批量生成
+
+```bash
+python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
+```
+
+batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` 自动路由：
+
+```json
+{
+  "jobs": 3,
+  "style": "templates/styles/people/cute-anime-girl.md",
+  "charRef": "03-assets/protagonist-ref.png",
+  "tasks": [
+    {"id": "shot_002", "characters": true,
+     "promptFiles": ["shot_002.scene.md"], "image": "shot_002.png", "ar": "9:16"},
+    {"id": "shot_005", "characters": false,
+     "promptFiles": ["shot_005.scene.md"], "image": "shot_005.png", "ar": "9:16"}
+  ]
+}
+```
+
+生成后逐张核对 `templates/scene-prompt.md` 末尾的一致性清单
+（五色色板 / 风格质感 / 主角形象一致 / 真 PNG）。
+
+**通道分工**（`genimage.py` 按 `characters` + `charRef` 自动路由）：
+
+| 场景 | 后端 | 参考图 | 原因 |
+|------|------|--------|------|
+| 主角定妆图 | gptsapi + GPT Image 2 | ❌ | 风格质量最高，定义角色锚点 |
+| 含主角的镜头（`characters: true`） | dreamina image2image + Seedream 5.0 | ✅ 定妆图 | 角色 + 风格双锁（实测优于 MiniMax） |
+| 无主角镜头（书封、抽象概念、纯环境） | gptsapi + GPT Image 2 | ❌ | 中文渲染好、质量高 |
+| i2v 关键帧首帧 | dreamina image2image | ✅ 定妆图 | 保证 i2v 输出与静帧角色同源 |
 
 ### Step 8：动效设计 → `02-script/motion-plan.md`
 
@@ -253,13 +302,16 @@ DeepSeek 只写内容那一半。详见 `templates/scene-prompt.md`。
 | 风格保持 | **必须显式要求保持首帧画风**，否则模型会"优化"成写实 |
 | 分辨率上限 | Seedance 2.0 输出 480p–720p，不要要求 1080p |
 
-风格保持的写法（拼贴风必写）：
+风格保持的写法（必写，按实际风格替换画风描述）：
 
 ```
-严格保持 @图片1 的拼贴剪纸画风和纸张质感，
-不要渲染成写实风格，不要磨平纸纹，不要加 3D 光影。
+严格保持 @图片1 的画风（软萌日系 anime 水彩），保持角色五官、发型、服装一致。
+不要渲染成写实风格，不要加 3D 光影。
 只让 <具体动作> 动起来，其余保持静止。固定镜头。
 ```
+
+**首帧必须是 Seedream 通道生成的图**（带定妆图 ref），保证 i2v 输出与周围静帧角色同源。
+不要拿 gptsapi 单独生的图当 i2v 首帧——会和 Seedream 帧的角色对不上。
 
 产出写入 `02-script/i2v-prompt-镜N.md`，便于复查和复用。
 
