@@ -5,7 +5,7 @@
     python3 validate-spec.py <video.mp4>
 
 检查项:
-    - 时长 ≤ 200 秒（目标 195-200s，1.2 倍速完播）
+    - 时长 ≤ 200 秒（目标 195-200s，1.1 倍速完播）
     - 分辨率 = 1080×1920
     - 帧率 = 30 fps
     - 视频编码 = h264
@@ -36,8 +36,8 @@ def probe_video(video_path: str) -> dict:
     return json.loads(result.stdout)
 
 
-def check_spec(info: dict) -> list:
-    """校验规格，返回问题列表"""
+def check_spec(info: dict) -> tuple[list, dict]:
+    """校验规格，返回 (问题列表, 规格摘要 dict)"""
     issues = []
 
     fmt = info.get("format", {})

@@ -58,7 +58,7 @@ episodes/ep00X-书名/
 </div>
 ```
 
-样式按 `references/subtitle-style.md`：金黄 #FFD700、黑色描边 4px、底部居中、每行 ≤14 字。
+样式按 `references/subtitle-style.md`：金黄 #FFD700、黑色描边 3.5px（以 video-spec.md 为准）、底部居中、每行 ≤16 字（以 video-spec.md 为准）。
 
 ### 底部渐变 scrim（保证字幕可读性）
 
@@ -113,7 +113,7 @@ scrim 层写在字幕层之下，金句层之上（金句在画面中上部，�
 
 ## 片头片尾拼接
 
-固定素材 `assets/brand/intro.mp4`（1.5s）+ `assets/brand/outro.mp4`（3.04s），已去音轨。
+固定素材 `assets/brand/intro.mp4`（1.0s）+ `assets/brand/outro.mp4`（3.2s），已去音轨。时长以 `templates/video-spec.md` 为准。
 
 切割注意事项（Step 0 的教训）：
 - 参考视频的品牌页可能**自带动画**（如 logo 飞向左上角），直接截取会把动画带进来；循环拉长会导致动画重复播放。

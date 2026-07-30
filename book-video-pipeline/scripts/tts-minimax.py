@@ -7,7 +7,8 @@
 环境变量:
     MINIMAX_API_KEY — MiniMax API 密钥
 
-默认音色: female-tianmei（甜美女声，适合心理励志类）
+默认音色: danya_xuejie（淡雅学姐，清冷克制，从 assets/voices/voice-library.json 选）。
+语速/音色以 assets/voices/voice-library.json 为准（当前 approved 音色均为 1.1x）。
 """
 
 import base64
@@ -19,7 +20,7 @@ from pathlib import Path
 
 API_ENDPOINT = "https://api.minimaxi.com/v1/t2a_v2"
 DEFAULT_VOICE = "danya_xuejie"
-DEFAULT_SPEED = 1.2  # 1.2 倍速，约 200 秒完播
+DEFAULT_SPEED = 1.1  # 对齐 assets/voices/voice-library.json 的 approved 音色语速
 
 
 def get_api_key():
@@ -87,11 +88,15 @@ def synthesize(text: str, output: Path, voice: str, speed: float, key: str):
     if output.suffix == ".wav":
         mp3_temp = output.with_suffix(".mp3")
         mp3_temp.write_bytes(audio_bytes)
-        subprocess.run(
+        result = subprocess.run(
             ["ffmpeg", "-y", "-i", str(mp3_temp), "-ar", "48000", "-ac", "2",
              "-acodec", "pcm_s16le", str(output)],
             capture_output=True,
         )
+        if result.returncode != 0:
+            # 转换失败：保留 mp3 以便排查，不静默留下空 wav
+            err = result.stderr.decode("utf-8", errors="replace")[-500:]
+            raise SystemExit(f"ffmpeg mp3→wav 转换失败（mp3 保留在 {mp3_temp}）：{err}")
         mp3_temp.unlink()
 
     return {"size": len(audio_bytes), "voice": voice, "speed": speed}

@@ -1,6 +1,6 @@
 # 动效配方卡
 
-> 来源：从 video-shotcraft 的 104 张镜头配方卡中，挑选适合图书带货视频（拼贴插画 + hyperframes GSAP）的动效，移植为 GSAP seek-safe 实现。
+> 来源：从 video-shotcraft 的 104 张镜头配方卡中，挑选适合图书带货视频（日系软萌 anime 水彩插画 + hyperframes GSAP）的动效，移植为 GSAP seek-safe 实现。
 >
 > 每张卡 = 意图 + 动效核心 + 参数表（含调校值）+ GSAP 实现 + 已知坑。
 >

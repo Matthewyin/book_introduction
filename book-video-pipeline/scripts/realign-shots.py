@@ -111,8 +111,10 @@ def main() -> int:
     ap.add_argument("audio", type=Path)
     ap.add_argument("shots", type=Path, help="JSON list of {shot, voiceover}")
     ap.add_argument("output", type=Path)
-    ap.add_argument("--intro", type=float, default=1.5)
-    ap.add_argument("--outro", type=float, default=3.04)
+    ap.add_argument("--intro", type=float, default=1.0,
+                    help="片头时长（秒），对齐 assets/brand/intro.mp4 真实时长")
+    ap.add_argument("--outro", type=float, default=3.2,
+                    help="片尾时长（秒），对齐 assets/brand/outro.mp4 真实时长")
     args = ap.parse_args()
 
     shots = json.loads(args.shots.read_text(encoding="utf-8"))

@@ -5,9 +5,9 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 
 # 心理励志图书带货视频流水线
 
-从小红书心理励志垂类出发，批量生产拼贴 / 剪贴簿叙事插画风格的图书带货视频。
+从小红书心理励志垂类出发，批量生产日系软萌 anime 水彩叙事插画风格的图书带货视频。当前主力风格卡：`templates/styles/people/cute-anime-girl.md`。
 
-参考标杆：`ep001-v3-v9-jimeng-release-75mb.mp4`（1080×1920，119s；本集视觉风格最终采用拼贴 / 剪贴簿插画）。
+参考标杆：`ep001-v3-v9-jimeng-release-75mb.mp4`（1080×1920，119s；早期采用拼贴 / 剪贴簿插画，现已迁移至日系软萌 anime 水彩，见风格卡库 `templates/styles/`）。
 
 ## 核心姿态
 
@@ -113,7 +113,7 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 
 #### 3a：Kimi K3 起草
 
-1. 调用 **Kimi K3** 基于审核通过的文案策划，写完整口播稿（≤570字，正文≤195秒，1.2 倍速配音）。
+1. 调用 **Kimi K3** 基于审核通过的文案策划，写完整口播稿（≤570字，正文≤195秒，1.1 倍速配音）。
 2. 结构：钩子 → 扎心场景 → 引入书 → 场景演绎 → 观点拆解 → 方法实操 → 结尾引导。
 3. 产出 `02-script/draft-01-kimi.md`。
 
@@ -163,7 +163,7 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 
 **这一步必须在分镜和生图之前完成。**
 
-1. **从音色素材库选候选**：读取 `assets/voices/voice-library.json`，在 `status: approved` 的音色中挑 1-2 个（当前库内：`danya_xuejie` 1.2x、`female-yujie` 1.2x）。
+1. **从音色素材库选候选**：读取 `assets/voices/voice-library.json`，在 `status: approved` 的音色中挑 1-2 个（当前库内：`danya_xuejie` 1.1x、`female-yujie` 1.1x）。语速/音色以库为准，见 `templates/video-spec.md`。
 2. **生成试听样本**：用本集口播稿前 40-60 字生成样本（~10 秒），不得用库内旧样本冒充。
 3. **🔴 审核点④**：用 AskUserQuestion 确认音色。
 4. 通过后生成完整配音，记录实际总时长。
@@ -327,7 +327,7 @@ dreamina image2video \
   --poll=180
 ```
 
-生成后**必须看片**确认风格没崩（拼贴质感是否被渲染成写实、纸纹是否被磨平）。崩了就调提示词重来，不要将就。
+生成后**必须看片**确认风格没崩（anime 水彩质感是否被渲染成写实、角色形象是否偏离定妆图）。崩了就调提示词重来，不要将就。
 
 **i2v 输出默认带 BGM/音效，必须剥离后再集成**：`ffmpeg -i input.mp4 -c:v copy -an output.mp4`。否则会污染全片旁白。
 
@@ -359,18 +359,18 @@ dreamina image2video \
 **不烧录字幕**。字幕作为独立图层渲染，源文件可随时修改，同时导出独立 SRT。
 
 1. 按 `references/hyperframes-usage.md` 搭建项目。
-2. 图层顺序（下到上）：背景图/视频 → Ken Burns → 动效层 → 金句层 → 字幕层 → 品牌角标层。
-3. 字幕层与金句层严格分离（不同字体/字号/颜色，详见 `references/subtitle-style.md`）。
+2. 图层顺序（下到上）：背景图/视频 → Ken Burns → 动效层 → 金句层 → **底部 scrim 层** → 字幕层 → 品牌角标层。
+3. 字幕层与金句层严格分离（不同字体/字号/颜色，详见 `references/subtitle-style.md`）；scrim 保证字幕在任意背景上可读（见 `references/hyperframes-usage.md`）。
 4. **帧间转场**：交叉淡入淡出（每帧 bg 层 `opacity` 动画，0.6s，`power1.inOut`）；首帧不淡入；i2v 视频帧不参与。
-5. 字幕字号 48px（早期用 58px 偏大，压缩了画面）。
+5. 字幕/金句/片头片尾的具体数值以 `templates/video-spec.md`（唯一参数源）为准。
 6. 音轨：旁白 + BGM（BGM 音量 0.15，不盖人声）。
 7. 拼接 `intro.mp4`（静音）+ 正文 + `outro.mp4`（静音）。
-6. 总时长 ≤200s（intro + 正文 + outro），单镜不超过 15 秒——超了就拆镜或换画面。
-7. 产出 `output.mp4` + `subtitle.srt`。
-8. `npx hyperframes lint` 和 `check` 必须 0 错误，再 `render`。
-9. 运行 `scripts/validate-spec.py output.mp4` 校验规格。
-10. **独立终检**：派一个干净上下文的 subagent，按 `references/final-review.md` 逐项审查（结构一致性、视觉质量、音频节奏、技术规格、去AI味与安全）。每条结论附帧号证据。**制作者有确认偏差，首检不能交给用户。** 必须修复项清零后才提交审核点⑦。
-11. **🔴 审核点⑦**：用 AskUserQuestion 确认成片。
+8. 总时长 ≤200s（intro + 正文 + outro），单镜不超过 15 秒——超了就拆镜或换画面。
+9. 产出 `output.mp4` + `subtitle.srt`。
+10. `npx hyperframes lint` 和 `check` 必须 0 错误，再 `render`。
+11. 运行 `scripts/validate-spec.py output.mp4` 校验规格。
+12. **独立终检**：派一个干净上下文的 subagent，按 `references/final-review.md` 逐项审查（结构一致性、视觉质量、音频节奏、技术规格、去AI味与安全）。每条结论附帧号证据。**制作者有确认偏差，首检不能交给用户。** 必须修复项清零后才提交审核点⑦。
+13. **🔴 审核点⑦**：用 AskUserQuestion 确认成片。
 
 ### Step 9b：BGM → `03-assets/audio/bgm.mp3`
 

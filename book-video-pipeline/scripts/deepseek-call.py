@@ -11,6 +11,7 @@
 import json
 import os
 import sys
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -49,13 +50,22 @@ def call_deepseek(system_prompt: str, user_prompt: str, key: str, model: str) ->
         },
     )
 
-    with urllib.request.urlopen(req, timeout=120) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode("utf-8", errors="replace")
+        raise SystemExit(f"DeepSeek API HTTP {e.code}: {detail[:500]}") from e
+    except urllib.error.URLError as e:
+        raise SystemExit(f"DeepSeek 网络请求失败：{e.reason}") from e
 
     if "error" in data:
         raise SystemExit(f"DeepSeek API error: {data['error']}")
 
-    content = data["choices"][0]["message"]["content"]
+    try:
+        content = data["choices"][0]["message"]["content"]
+    except (KeyError, IndexError) as e:
+        raise SystemExit(f"DeepSeek 响应结构异常：{json.dumps(data, ensure_ascii=False)[:500]}") from e
     return content
 
 

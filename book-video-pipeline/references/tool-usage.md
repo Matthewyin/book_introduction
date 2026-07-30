@@ -15,8 +15,10 @@
 **正确做法**：
 ```bash
 python3 scripts/genimage.py \
-  --promptfiles templates/style-prefix.en.md 03-assets/scenes/shot_002.scene.md \
-  --image 03-assets/scenes/shot_002.png --ar 9:16
+  --style templates/styles/people/cute-anime-girl.md \
+  --promptfiles 03-assets/scenes/shot_002.scene.md \
+  --image 03-assets/scenes/shot_002.png --ar 9:16 \
+  --charRef 03-assets/protagonist-ref.png
 ```
 
 API key 读取优先级：
@@ -64,7 +66,7 @@ API key 读取优先级：
 | 备用参考图生图 | `scripts/genimage.py` | baoyu-image-gen / MiniMax image-01 | 显式 `--ref` 时走此通道（备用，对 anime 锁定弱） |
 | i2v 提示词 | seedance-prompt-zh skill | — | 即梦 Seedance 2.0 规范化提示词（@引用 + 结构公式 + 风格锁定） |
 | i2v 视频生成 | dreamina CLI | `seedance2.0fast_vip` | 图生视频 / 首尾帧视频 |
-| 封面/信息图提示词 | baoyu-cover-image / baoyu-infographic | — | 分析→提示词文件 |
+| 封面提示词 | baoyu-cover-image | — | 分析→提示词文件 |
 | BGM 下载 | ego-browser skill | — | 用浏览器从 pixabay 下载（绕过 Cloudflare） |
 | 发布物料 | GLM-5.2（当前会话） | — | 标题、简介、标签 |
 
@@ -143,7 +145,7 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 
 ### 封面/信息图（baoyu skill）
 
-先用 `baoyu-cover-image` / `baoyu-infographic` 分析并产出提示词文件，
+先用 `baoyu-cover-image` 分析并产出提示词文件，
 再交给 `scripts/genimage.py` 生图（封面比例 `--ar 3:4`，小红书首图）。
 
 ## 四、TTS 调用规范
@@ -157,7 +159,7 @@ Authorization: Bearer <MINIMAX_API_KEY>
 
 - **音色必须从音色素材库中选择，并经用户审核确认后再生成完整配音**（审核点⑥）
 - 音色库位置：`assets/voices/voice-library.json`（元数据）+ `assets/voices/samples/`（试听样本）
-- 当前已审核通过：`danya_xuejie`（1.2x，清冷克制）、`female-yujie`（1.2x，沉稳有力量感）
+- 当前已审核通过：`danya_xuejie`（1.1x，清冷克制）、`female-yujie`（1.1x，沉稳有力量感）
 - 每次必须用**本集口播稿**的前 40-60 字生成新样本供用户试听，不得用库内旧样本冒充
 - 新音色入库流程见 `assets/voices/README.md`
 

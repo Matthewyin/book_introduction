@@ -7,7 +7,7 @@ book: "{{书名}}"
 voice: {{voice_id}}
 audio: 03-assets/audio/voiceover.wav
 audio_duration: {{真实总时长}}s
-style: {{视觉风格，例：拼贴剪贴簿插画}}
+style: {{视觉风格，例：日系软萌 anime 水彩}}
 ---
 
 > Step 6 产出。格式对齐 hyperframes `hyperframes-core/references/storyboard-format.md`。
@@ -58,7 +58,7 @@ style: {{视觉风格，例：拼贴剪贴簿插画}}
 | `camera` | `static` / `ken-burns-in` / `ken-burns-out` / `pan-left` / `pan-right` | 需注明起止缩放比和锚点 |
 | `scene` | 一行 | 联系表缩略图的说明文字 |
 | `voiceover` | 该帧旁白原文 | 与 SCRIPT.md 对应行一致 |
-| `subtitle_cues` | 数组 | 逐条字幕 + 帧内相对时间码；每条 ≤14 字/行，最少 1.2s |
+| `subtitle_cues` | 数组 | 逐条字幕 + 帧内相对时间码；每条字数/每行字数以 `templates/video-spec.md` 为准，最少 1.2s |
 | `layers` | 数组 | 从下到上的图层顺序 |
 | `src` | 路径 | 该帧的 HTML 子组合 |
 | `status` | `outline` → `built` → `animated` | 制作进度 |

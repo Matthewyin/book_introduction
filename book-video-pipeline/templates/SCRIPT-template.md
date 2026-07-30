@@ -5,7 +5,7 @@
 > **7 段结构遵循 `references/shot-structure.md`（唯一控制源）。**
 
 **Voice:** {{voice_id}}（MiniMax，从 `assets/voices/voice-library.json` 选）
-**Voice settings:** speed 1.2 · vol 1.0 · pitch 0 · model speech-02-hd
+**Voice settings:** speed 1.1 · vol 1.0 · pitch 0 · model speech-02-hd
 **Voice direction:** {{整体语气，例：清冷克制，像朋友深夜聊天，不煽情不说教}}
 
 **Total chars:** {{字数}}（≤570 字）
@@ -69,7 +69,7 @@
 
 | 约束 | 要求 |
 |------|------|
-| 总字数 | ≤570 字（1.2 倍速下正文 ≤195 秒） |
+| 总字数 | ≤570 字（1.1 倍速下正文 ≤195 秒） |
 | 结构 | 钩子 → 扎心场景 → 引入书 → 场景演绎 → 观点拆解 → 方法实操 → 结尾引导（详见 `references/shot-structure.md`） |
 | 引入书 | 必须含作者姓名/国籍/领域地位 + 书籍领域地位/销量 |
 | 单句长度 | ≤20 字，口语化，可断句 |

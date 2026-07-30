@@ -5,7 +5,7 @@ Subject: {{人物或主体的姿态与动作，不写五官。例：A young woma
 knees drawn to her chest, one hand clutching the hem of her sweater. Her head is turned away
 from the light.}}
 
-Props: {{2-4 件可辨识的纸质道具，强化拼贴质感。例：a paper-cut phone on the floor,
+Props: {{2-4 件可辨识的纸质道具，reinforce the illustration style。例：a paper-cut phone on the floor,
 a torn notebook page, a mug with a watercolor stain ring.}}
 
 Emotion: {{一到两个词。例：quiet panic, loneliness}}

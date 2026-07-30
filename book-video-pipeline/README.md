@@ -135,7 +135,7 @@ Agent 会自动：选书 → 写档案 → 弹出**审核点①**等你确认。
 | **Step 4** TTS 配音 | `03-assets/audio/voiceover.wav` | MiniMax T2A v2 | 🔴 ④ |
 | **Step 5** 真实时间轴 | `02-script/shot-timing.json` | `realign-shots.py` + ffmpeg | — |
 | **Step 6** 分镜 | `02-script/STORYBOARD.md` | DeepSeek V4 Pro | 🔴 ⑤ |
-| **Step 7** 生图 | `03-assets/scenes/shot_*.png` | `genimage.py` → gptsapi / MiniMax | 🔴 ⑥ |
+| **Step 7** 生图 | `03-assets/scenes/shot_*.png` | `genimage.py` → gptsapi / dreamina Seedream | 🔴 ⑥ |
 | **Step 8** 动效设计 | `02-script/motion-plan.md` | GSAP / 即梦 i2v | — |
 | **Step 9** 合成 | `04-video/output.mp4` + `subtitle.srt` | hyperframes | 🔴 ⑦ |
 | **Step 9b** BGM | `03-assets/audio/bgm.mp3` | ego-browser → pixabay | 🔴 ⑦b |
@@ -161,7 +161,7 @@ python3 scripts/kimi-call.py system.md user.md out.md --model kimi-k3
 python3 scripts/deepseek-call.py system.md user.md out.md --model deepseek-v4-pro
 
 # 3. MiniMax 配音（Step 4）
-python3 scripts/tts-minimax.py voiceover-text.txt voiceover.wav --voice danya_xuejie --speed 1.2
+python3 scripts/tts-minimax.py voiceover-text.txt voiceover.wav --voice danya_xuejie --speed 1.1
 
 # 4. 从音频提取真实时间轴（Step 5）
 python3 scripts/realign-shots.py voiceover.wav shots-input.json shot-timing.json
@@ -241,7 +241,7 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `tool-usage.md` | 工具与认证管理红线、LLM 分工表、生图通道分工 |
 | `deai-checklist.md` | 口播稿去 AI 味检查清单（A-D 共 20 项 + 人工判断 4 项） |
 | `hyperframes-usage.md` | hyperframes 合成规范、seek-safe 动效规则、常见坑 |
-| `video-style-guide.md` | **插画风格唯一控制源**（拼贴 / 剪贴簿，五色固定色板） |
+| `video-style-guide.md` | **插画风格管理唯一控制源**（风格卡库 + 五色固定色板） |
 | `shot-structure.md` | **结构唯一控制源**：7 段式 + 能量曲线 + 审美规则清单 |
 | `subtitle-style.md` | 字幕层 / 金句层视觉规范 |
 | `motion-recipes.md` | GSAP seek-safe 动效配方卡（5 类） |
@@ -365,8 +365,8 @@ Step 6 DeepSeek 分镜 ─► STORYBOARD.md ─► (审核点⑤)
         │   └─ duration 字段必须来自 shot-timing.json，不可估算
         ▼
 Step 7 DeepSeek Flash 写 shot_*.scene.md（仅内容）
-        │   └─ 风格常量 style-prefix.en.md 拼在前面，模型不碰风格
-        └─ genimage.py 分发 ─► scenes/shot_*.png ─► (审核点⑥)
+        │   └─ 风格卡（styles/*.md）拼在前面，模型不碰风格
+        └─ genimage.py 分发（characters+charRef→Seedream，否则→gptsapi）─► scenes/shot_*.png ─► (审核点⑥)
         │
         ▼
 Step 8 动效设计
@@ -437,7 +437,7 @@ Step 10 发布物料 ─► publish-brief.md + cover.png
 | 视频编码 | H.264 High@4.0 |
 | 音频编码 | AAC 48kHz |
 | 时长 | ≤ 200 秒（intro + 正文 + outro，单镜 ≤ 15 秒） |
-| 字幕 | 金黄 #FFD700、黑描边、底部 1/3、每行 ≤14 字 |
+| 字幕 | 金黄 #FFD700、黑描边、底部 1/3（数值见 `templates/video-spec.md`） |
 | 音量 | 旁白 1.0、BGM 0.15（不盖人声） |
 | 片头片尾 | 静音（`-an` 去除原视频背景音） |
 

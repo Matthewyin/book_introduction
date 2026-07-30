@@ -1,6 +1,10 @@
-# 视频技术规格
+# 视频技术规格（唯一参数源）
 
-> 所有产出的视频必须满足此规格。
+> **本文件是所有可变技术参数的唯一控制源。** 其它文档（subtitle-style.md /
+> shot-structure.md / hyperframes-usage.md / SKILL.md / 脚本默认值）描述参数时
+> 必须**引用本文件**，不得重述具体数值——改参数 = 改本文件一处。
+>
+> 改本文件后，逐项检查「引用登记表」里的下游文件是否需要同步。
 
 ## 强制规格
 
@@ -19,9 +23,21 @@
 | 音频码率 | 192 kbps | — |
 | 声道 | 立体声（stereo） | — |
 | 最大时长 | 200 秒 | 硬上限（intro + 正文 + outro） |
-| 目标时长 | 195-200 秒 | 推荐范围（1.2 倍速配音下完播） |
+| 目标时长 | 195-200 秒 | 推荐范围（1.1 倍速配音下完播） |
 
-## 时长结构建议
+## 时长结构
+
+| 段落 | 时长 | 占比 |
+|------|------|------|
+| 片头 `intro.mp4` | **1.0s** | — |
+| 正文 | ~195s | — |
+| 片尾 `outro.mp4` | **3.2s** | — |
+| **合计** | **~199s** | ≤200s 硬上限 |
+
+> 片头片尾时长来自 `assets/brand/intro.mp4` / `outro.mp4` 的真实时长（ffprobe 实测）。
+> 正文段内结构（钩子/扎心/引入书/场景/观点/方法/结尾）的时长分配见 `references/shot-structure.md`。
+
+### 正文内部分配建议
 
 ```
 开头钩子      5s   ( 3%)
@@ -30,10 +46,67 @@
 方法实操     45s   (25%)
 结尾引导     10s   ( 6%)
 ─────────────────────
-合计        195s   (97%)  ← 目标（1.2 倍速完播，+ intro 1.0s + outro 3.2s = ~200s）
+合计        195s   (+ intro 1.0s + outro 3.2s = ~199s)
 ```
 
+## 字幕规格（唯一源）
+
+> 字幕撰写规范见 `references/subtitle-style.md`，合成层 scrim 见
+> `references/hyperframes-usage.md`——那些文件描述用法，**具体数值以本表为准**。
+
+| 项目 | 值 | 说明 |
+|------|-----|------|
+| 格式 | ASS + hyperframes 独立图层 | 双轨：图层渲染 + 独立 SRT |
+| 字体 | Noto Sans CJK SC Bold | 思源黑体 |
+| 字号 | **48px** | 早期用 58/52 偏大，压缩画面，已收窄 |
+| 颜色 | `#FFD700`（金黄） | ASS 编码 `&H0000D7FF`（BGR 倒序） |
+| 描边 | 黑色，**3.5px** | `OutlineColour=&H00000000,Outline=3.5` |
+| 阴影 | 黑色，1px，偏移 1px | |
+| 对齐 | 底部居中（Alignment=2） | |
+| 底部边距 | **190px**（约画面下 1/3） | ASS `MarginV=190` |
+| 每行最大字数 | **≤16 字** | 超长换行 |
+| 每条最长显示 | 4 秒 | |
+
+### 字幕可读性：scrim 渐变层
+
+生图不强制底部留白（见 `references/video-style-guide.md`）。字幕可读性由合成层
+底部渐变 scrim 保证（320px 高，底部 0.55 不透明度渐变到透明）。
+scrim spec 见 `references/hyperframes-usage.md`。
+
+### 金句层（独立于字幕层）
+
+| 层 | 字体 | 字号 | 颜色 | 位置 |
+|----|------|------|------|------|
+| 金句 ink（书页/概念镜） | 宋体/楷体 | 46px | 深墨 `#2e1f10` | 画面中上部 |
+| 金句 note（实景镜） | 黑体 | 40px | 白 `#fff` + 黑描边 3px | 画面角落 |
+
+金句字号均小于口播字幕（48px），不抢主次。详见 `references/subtitle-style.md`。
+
+## 音频规格
+
+| 项目 | 值 |
+|------|-----|
+| 旁白音量 | 1.0（基准） |
+| BGM 音量 | 0.15（不盖人声） |
+| BGM 淡入/淡出 | 1s / 2s |
+| 片头片尾 | 静音（`-an` 去除原视频背景音） |
+
+## 配音（TTS）规格
+
+> 音色库：`assets/voices/voice-library.json`（仓库根 `assets/voices/`，非 skill 内）。
+> 当前 approved 音色均为 **speed 1.1x**。
+
+| 项目 | 值 |
+|------|-----|
+| provider | MiniMax T2A v2 |
+| model | `speech-02-hd` |
+| 音色语速 | **1.1x**（danya_xuejie / female-yujie 两个 approved 音色都是） |
+| 采样率 | 32000 Hz（MiniMax 返回）→ 48000 Hz（合成时重采样） |
+
 ## ffmpeg 合成参数参考
+
+> 本项目本机 ffmpeg 缺 libass/libfreetype，字幕实际由 hyperframes 渲染。
+> 下方 filter_complex 仅供离线调试参考，**不是主合成路径**。
 
 ```bash
 ffmpeg \
@@ -43,7 +116,7 @@ ffmpeg \
   -i "audio/bgm.mp3" \
   -filter_complex "
     [0:v]scale=1080:1920,setsar=1,
-    subtitles='subtitle.ass':force_style='FontName=Noto Sans CJK SC,FontSize=52,PrimaryColour=&H00D6D600,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=1,Alignment=2,MarginV=180'[v];
+    subtitles='subtitle.ass':force_style='FontName=Noto Sans CJK SC,FontSize=48,PrimaryColour=&H0000D7FF,OutlineColour=&H00000000,BorderStyle=1,Outline=3.5,Shadow=1,Alignment=2,MarginV=190'[v];
     [2:a]volume=0.15[bgm];
     [1:a][bgm]amix=inputs=2:duration=first:dropout_transition=0[a]
   " \
@@ -58,31 +131,17 @@ ffmpeg \
   "output.mp4"
 ```
 
-## 关键参数说明
+## 引用登记表
 
-| 参数 | 值 | 说明 |
-|------|-----|------|
-| `-crf 18` | 恒定质量 | 视觉无损，文件适中 |
-| `-preset medium` | 编码速度 | 质量与速度平衡 |
-| `-profile:v high` | H.264 profile | 兼容性好 |
-| `-pix_fmt yuv420p` | 像素格式 | 最大兼容性 |
-| `-movflags +faststart` | moov atom 前置 | 支持边下边播 |
-| `-t 200` | 硬截断 | 不超过 200 秒 |
+以下文件引用了本文件的参数。**改本文件后，检查这些下游文件是否仍与之一致**
+（它们应改为引用描述，不重述数值）：
 
-## 字幕规格
-
-| 项目 | 值 |
-|------|-----|
-| 格式 | ASS（高级字幕） |
-| 字体 | Noto Sans CJK SC |
-| 字号 | 52 |
-| 颜色 | #FFD700（金黄） |
-| 描边 | 黑色，2px |
-| 阴影 | 1px |
-| 对齐 | 底部居中（Alignment=2） |
-| 底部边距 | 180px（约画面 1/3 处） |
-| 每行最大字数 | 16 |
-| 每条最长显示 | 4 秒 |
+| 参数 | 下游引用文件 |
+|------|-------------|
+| 字幕字号/描边/边距/字数 | `references/subtitle-style.md`、`references/hyperframes-usage.md`、`references/shot-structure.md`、`templates/STORYBOARD-template.md` |
+| 片头片尾时长 | `references/hyperframes-usage.md`、`scripts/realign-shots.py`、`templates/SCRIPT-template.md` |
+| 配音语速/音色 | `SKILL.md` Step 4、`references/tool-usage.md`、`scripts/tts-minimax.py` |
+| 视频编码/分辨率/时长上限 | `scripts/validate-spec.py` |
 
 ## 校验清单
 
