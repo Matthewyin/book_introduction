@@ -58,7 +58,48 @@ episodes/ep00X-书名/
 </div>
 ```
 
-样式按 `references/subtitle-style.md`：金黄 #FFD700、黑色描边 4px、底部留白 210px、每行 ≤14 字。
+样式按 `references/subtitle-style.md`：金黄 #FFD700、黑色描边 4px、底部居中、每行 ≤14 字。
+
+### 底部渐变 scrim（保证字幕可读性）
+
+生图不再强制底部留白（见 `video-style-guide.md`），主体可充满整个 9:16 画面。
+字幕可读性由合成层的 scrim 保证——一个底部黑色渐变蒙层，肉眼几乎看不见，但让字幕在任何背景上都清晰。
+
+每帧的图层顺序（从下到上）：
+
+```
+背景图/视频 → Ken Burns → 动效层 → 金句层 → scrim 层 → 字幕层 → 品牌角标层
+```
+
+scrim 层写在字幕层之下，金句层之上（金句在画面中上部，不受 scrim 影响）：
+
+```html
+<!-- 底部渐变 scrim：字幕可读性兜底 -->
+<div class="subtitle-scrim"></div>
+
+<!-- 字幕层（z-index 高于 scrim） -->
+<div class="subtitle-layer" data-hf-track="subtitle">...</div>
+```
+
+```css
+.subtitle-scrim {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 320px;              /* 覆盖字幕区域，留够余量 */
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.55) 0%,      /* 底部最暗 */
+    rgba(0,0,0,0.25) 50%,
+    transparent 100%
+  );
+  pointer-events: none;        /* 不拦截点击 */
+  z-index: 5;                  /* 在背景/动效之上，字幕之下 */
+}
+.subtitle-layer { z-index: 6; }
+```
+
+**scrim 的取舍**：320px 高度 + 底部 0.55 不透明度，覆盖字幕区域但不延伸太高——
+避免画面下半部整体发暗。金句层在画面中上部（z-index 同级或更高），不受 scrim 影响。
 
 **同时导出独立 SRT**：`04-video/subtitle.srt`，时间码与 HTML 图层一致，供平台二次编辑或上传软字幕。
 
@@ -236,15 +277,18 @@ dreamina image2video \
 - ❌ 不要慢放——动作会变得不自然，一眼看出来
 - ❌ 不要循环播放——接缝处会跳
 
-### 风格保持（拼贴风必写）
+### 风格保持（必写，按实际风格卡替换画风描述）
 
-模型默认会"优化"画面，把纸质拼贴渲染成写实风。提示词里必须显式拦住：
+模型默认会"优化"画面，把插画渲染成写实风。提示词里必须显式拦住：
 
 ```
-严格保持 @图片1 的拼贴剪纸画风和纸张质感，
-不要渲染成写实风格，不要磨平纸纹，不要加 3D 光影。
+严格保持 @图片1 的画风（软萌日系 anime 水彩），保持角色五官、发型、服装一致。
+不要渲染成写实风格，不要加 3D 光影。
 只让 <具体动作> 动起来，其余保持静止。固定镜头。
 ```
+
+**首帧必须是 Seedream 通道生成的图**（带定妆图 ref），保证 i2v 输出与周围静帧角色同源。
+不要拿 gptsapi 单独生的图当 i2v 首帧——会和 Seedream 帧的角色对不上。
 
 ### 其他限制
 
@@ -280,6 +324,6 @@ dreamina image2video \
 | heavy overlay 导致渲染全黑 | 40+ 个 `radial-gradient`/`filter:blur` 元素触发捕获层缺陷，渲出纯黑帧 | 尘埃等重复元素改用纯色 `background` + `box-shadow` 代替 `radial-gradient`；每镜只保留 1 个光晕层。渲染后抽样测亮度，<12 为黑帧 |
 | `<video>` 嵌套在带 `data-start` 的 div 里 | 视频 FROZEN，渲染不动 | `<video>` 必须是 root 的直接子元素；动效层另放一个同级 clip |
 | Ken Burns 放大导致 overflow 告警 | check 报 `container_overflow` | 这是预期行为，给 scene 容器加 `data-layout-allow-overflow` |
-| 字幕压住画面主体 | 底部三分之一被占满 | 字号 48px，生图提示词里写明底部留白 |
+| 字幕压住画面主体 | 底部被生图主体占满 | 加底部 scrim 渐变层兜底可读性；生图不再要求底部留白 |
 | 金句被画面元素遮挡 | 金句落在杯子/人脸上 | 金句位置用 `top` 百分比精确避开主体；渲染后抽帧验证每条金句可读 |
 | i2v 视频自带 BGM | 集成后 BGM 污染全片旁白 | 下载后立即 `ffmpeg -i input.mp4 -c:v copy -an output.mp4` 剥离 |

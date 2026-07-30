@@ -1,63 +1,61 @@
 # 视频风格规范
 
-> **本文件是插画风格的唯一控制源。** 所有生图提示词的风格段落必须由本文件派生，
-> 落地形式是 `templates/style-prefix.en.md`（英文风格前缀常量）。
-> DeepSeek 只负责写当镜的画面内容，**不得自行改写风格描述或色值**。
-> 改风格 = 改本文件 → 重新派生 `style-prefix.en.md` → 全集重生图。
+> **本文件是风格库管理规则的唯一控制源。**
+> 具体插画风格定义在 `templates/styles/` 下的风格卡里，每张卡是某种风格的常量。
+> 生图提示词 = 选定的风格卡（常量）+ 当镜内容（模型只写这部分），拼接而成。
+> 改风格 = 改/选风格卡 → 审核通过 → 再生图。
 
-From the reference image provided by the user, the target illustration style for this book video is **collage / scrapbook illustration**: layered paper textures, torn edges, washi tape strips, soft pastel paper blocks, watercolor washes, paper-cut figures, hand-drawn accents, and mixed-media elements. The style feels handmade, warm, nostalgic, and intimate, like a personal journal page brought to life. It is not oil painting, not 3D render, not realistic photography, and not flat vector.
+## 当前主力风格
 
-When adapting for this book video, preserve the **collage / scrapbook style**: layered paper, gentle textures, torn edges, tape accents, and soft watercolor or paper-wash highlights. The bottom 1/3 of the 9:16 frame should remain visually quiet for Chinese subtitles. No readable text, no watermark, no UI elements inside the generated image.
+| 线 | 风格卡 | 通道 | 状态 |
+|----|--------|------|------|
+| **人物线（主力）** | `templates/styles/people/cute-anime-girl.md` | gptsapi 定妆 + Seedream 主角镜头 | ✅ 启用 |
+| 萌宠线 | `templates/styles/pets/watercolor-cat.md` | 同上 | 备用（需验证后启用） |
 
-## 参考视频深度分析（ep001）
+> 风格库目录 `templates/styles/` 的使用规则和审核流程见该目录下的 README。
 
-| 维度 | 观察 |
-|------|------|
-| 规格 | 1080×1920 竖屏，30fps，H.264 |
-| 画面 | 拼贴剪贴簿插画，层叠纸材、撕边、胶带、水彩晕染，无厚重油画质感 |
-| 开头 | 深色渐变背景，极简，聚焦感强 |
-| 正文 | 场景插画 + 黄字字幕，逐句叙事推进 |
-| 结尾 | 品牌色收束，logo 呈现 |
-| 字幕 | 黄色居中，叙事性短句，底部 1/3 区域 |
-| 品牌 | 左上角圆形 logo"二味图书馆" |
-| 音频 | 旁白配音 + 背景音乐 |
+## 生图后端与通道分工
 
-### 插画风格精确描述（用于 AI 生图提示词）
+`scripts/genimage.py` 按镜头类型自动路由，无需手选后端：
 
-风格来源：ep001 用同一镜头（shot_001）跑了 6 版风格试验（扁平矢量 / 黏土 / 2D 动画 /
-线稿 / 波普 / 拼贴），用户最终选定 `shot_001_collage.png`。本节即由那条提示词反向固化而来。
+| 镜头类型 | 后端 | 参考图 | 分辨率 | 用途 |
+|---------|------|--------|--------|------|
+| **主角定妆图** | gptsapi (GPT Image 2) | ❌ | 1080×1920 | 第 1 张，定义风格 + 角色锚点 |
+| **含主角的镜头** | dreamina image2image (Seedream 5.0) | ✅ 定妆图 | **原生 2k** | 量产主角镜头，角色 + 风格双锁 |
+| 无主角镜头（书封、抽象概念、纯环境） | gptsapi | ❌ | 1080×1920 | 中文渲染好、质量高 |
+| **i2v 关键帧** | dreamina image2video (Seedance) | ✅ 首帧 | 720p | 动起来的镜头 |
 
-| 维度 | 特征 |
-|------|------|
-| **绘画媒介** | 拼贴 / 剪贴簿插画（collage / scrapbook illustration），混合纸材、水彩、手绘线条 |
-| **笔触** | 纸张边缘、撕边、胶带、手绘线条、水彩晕染，有手工温度但不粗糙 |
-| **光影** | 以纸张层次和水彩色块表达明暗，光源方向明确但不写实，无厚重体积阴影 |
-| **色彩** | 见下方「基准色板」，五色固定，情绪只调冷暖配比，不换 hex |
-| **人物造型** | 剪纸风格人物，简洁轮廓，面部极简化，靠姿态和头发/衣服形状传情 |
-| **场景细节** | 可辨识的纸质道具（书本、手机、杯子、椅子、门、窗等），层次叠加 |
-| **质感纹理** | 纸张纹理、水彩纸纹、胶带质感、撕边，整体有手工日记感 |
-| **艺术参照** | 个人手账 / 剪贴簿艺术（scrapbook journal / collage art），温暖、私密、有叙事感 |
-| **整体氛围** | 从紧绷/孤独逐步过渡到轻盈/治愈，像一页被翻动的心灵日记 |
+**为什么 Seedream 是主角镜头的主力**：实测验证（2026-07-31），MiniMax image-01 的 subject_reference 对 anime 插画风格锁定弱（角色被重造、画风滑向写实）；Seedream image2image 对同一张 gptsapi 定妆图当 ref，角色身份和水彩 anime 质感都保住了。详见 `episodes/_style-exploration-v3/` 三张对比图。
 
-## 风格核心词
+**关于分辨率**：dreamina image2image 强制 ≥2k（不支持 1k），素材保留原生 2k 分辨率。最终成片的 1080×1920 由 hyperframes 渲染时统一处理，不在生图阶段缩放——保住画质余量。
 
-**拼贴剪贴簿插画（collage / scrapbook illustration）+ 纸张层次 + 水彩晕染 + 手绘线条 + 9:16 竖版**
+> ⚠️ MiniMax prompt 上限 1500 字符，主力风格卡（~1000 字符）+ 场景内容会超限。
+> 因此 MiniMax 通道（baoyu-image-gen）降级为备用，主力走 dreamina（无长度限制）。
+> 若必须用 MiniMax，用 `*.minimax.md` 精简版风格卡（≤700 字符）。
 
-用纸张、胶带、水彩和简洁线条讲故事，每个画面像一页温暖的心灵手账。
+## 构图规范：无强制留白
 
-## 画面风格细则
+**生图不再要求底部留白。** 主体可充满整个 9:16 画面——全身、中景、特写、靠下构图都可以。
 
-### 插画风格
+字幕可读性不再依赖生图留白，改由 hyperframes 合成层的**底部渐变 scrim** 保证：
 
-- **类型**：拼贴 / 剪贴簿插画（collage / scrapbook），混合纸材、撕边、胶带、水彩、手绘线条
-- **场景**：有具体环境（房间/街道/咖啡馆/书桌等），但以纸质层次和色块表达，不追求写实
-- **构图**：竖版 9:16 优化，主体居中或偏上，底部 1/3 留空给字幕
-- **角色**：剪纸/拼贴风格人物，姿态传情，面部简化，不强调五官细节
-- **禁止**：油画质感、厚涂笔触、写实照片、3D 渲染、复杂写实现实光影、纯扁平矢量
+```css
+.subtitle-scrim {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 320px;
+  background: linear-gradient(to top,
+    rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 50%, transparent 100%);
+  pointer-events: none;
+}
+```
 
-### 基准色板（唯一一套，不得新增 hex）
+scrim 叠在背景图之上、字幕层之下。这样无论生图底部亮暗或有内容，字幕都清晰可读。
+spec 详见 `references/hyperframes-usage.md` 和 `references/subtitle-style.md`。
 
-五个色值固定，**任何镜头、任何情绪都只用这五个**：
+## 色板（全风格库统一）
+
+所有风格卡共用一套五色，保持账号视觉连续性：
 
 | 角色 | hex | 英文名（写进提示词用这个） |
 |------|-----|---------------------------|
@@ -75,13 +73,12 @@ When adapting for this book video, preserve the **collage / scrapbook style**: l
 | **neutral 中** | 引入书、观点拆解 | 奶油纸底为主，冷暖均衡 |
 | **warm 暖** | 方法实操、结尾引导 | 暖金/浅粉为主，雾蓝退为背景阴影 |
 
-> ⚠️ ep001 教训：正式版提示词里出现过 `#8B6F52`、`#7A93A8`、`#D4E4EC` 三个本表之外的
-> 色值——因为当时每镜风格段落都由模型重写。改用 `style-prefix.en.md` 常量拼接后，
-> 色板物理上不可能漂移。
+> ⚠️ ep001 教训：正式版提示词里出现过 `#8B6F52`、`#7A93A8`、`#D4E4EC` 三个表外色值——
+> 因为当时每镜风格段落都由模型重写。改用风格卡常量拼接后，色板物理上不可能漂移。
 
-### 字幕规范
+## 字幕规范
 
-> 字幕/金句的完整规范以 `references/subtitle-style.md` 为准，本节只列生图相关约束。
+> 字幕/金句的完整规范以 `references/subtitle-style.md` 为准，本节只列与生图相关的约束。
 
 ```
 位置：底部 1/3 处（距底部约 190px）
@@ -89,8 +86,7 @@ When adapting for this book video, preserve the **collage / scrapbook style**: l
 每行：≤16 字
 ```
 
-**对生图的要求**：9:16 画面底部 1/3 必须视觉安静——不放主体、不放高对比细节，
-留给字幕叠加。这条要写进每一条生图提示词（已固化在 `templates/style-prefix.en.md`）。
+**对生图的要求**：无。生图不必留底部空白——字幕可读性由合成层 scrim 保证（见上）。
 
 ### 品牌 logo
 
@@ -100,6 +96,20 @@ When adapting for this book video, preserve the **collage / scrapbook style**: l
 透明度：0.85
 形式：圆形或简约标识
 ```
+
+## 角色一致性（跨镜主角锁定）
+
+**核心机制：定妆图先行，ref 全程锁定。**
+
+1. **定妆图**：每集先用 gptsapi 生成 1 张主角标准像（全身或 3/4 身，正面，中性表情），
+   存为 `03-assets/protagonist-ref.png`。这张图定义整个 episode 的角色身份。
+2. **主角镜头**：所有含主角的镜头都挂这张定妆图当 ref，走 dreamina image2image（Seedream），
+   `characters: true` 让 `genimage.py` 自动路由并挂载 charRef。
+3. **纪律**（来自 baoyu-image-gen 实践）：
+   - ref 只用那张定妆图，**不拿生成图当 ref**（漂移会累积）
+   - 提示词写「Use the person in the reference image as the same identity. Do not redesign」，
+     **不写长篇外貌描述**（否则模型照描述新造一个相似的人）
+   - dreamina image2image 可接受 1-10 张参考图，主角锁定用 1 张就够
 
 ## 转场规范
 
@@ -138,8 +148,9 @@ When adapting for this book video, preserve the **collage / scrapbook style**: l
 
 同一系列（同一本书的多条视频，或同一账号的所有视频）必须保持：
 
-1. **配色统一**：选定一个 palette 贯穿始终
-2. **插画风格统一**：相同笔触、光影、质感
-3. **字幕规范统一**：同字体、同颜色、同位置
-4. **品牌元素统一**：logo 位置和形式固定
-5. **节奏感统一**：相似的画面停留时长和转场方式
+1. **配色统一**：全风格库共用五色色板
+2. **插画风格统一**：同一集锁定一张风格卡，不中途切换
+3. **角色统一**：同一主角跨镜用定妆图 ref 锁定
+4. **字幕规范统一**：同字体、同颜色、同位置
+5. **品牌元素统一**：logo 位置和形式固定
+6. **节奏感统一**：相似的画面停留时长和转场方式
