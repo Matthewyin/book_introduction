@@ -75,8 +75,9 @@ y=1440 └───────────────────────�
 ### 每集（自动化）
 
 ```
-1. 生图主视觉（Step 7 顺手做）：cover-prompt.md → cover/cover-art.png
-2. Canva:upload-asset-from-url        # cover-art.png → asset_id
+1. 生图主视觉（统一封面，见 `cover-prompt.md`）：`cover.png` + `cover-9x16.png`
+   （gptsapi 无字 · 一体式留白 · 暧昧氛围 · 书/手机小字）
+2. Canva:upload-asset-from-url        # cover.png → asset_id
 3. Canva:start-editing-transaction    # design_id = master，拿 thumbnail + pages
 4. Canva:perform-editing-operations   # 一次批量：
      update_fill  → BG_FILL 换 cover-art

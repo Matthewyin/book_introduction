@@ -1,37 +1,53 @@
-# 封面主视觉提示词模板（无字）
+# 封面主视觉提示词模板（统一封面 · 无字 · gptsapi）
 
-> 封面职责分离：本文件只生成 **无字 AI 主视觉图**，书名/钩子/排版由
-> Canva 完成（见 `cover-design.md`）。生图模型严禁写任何文字。
-> 输出：`cover/cover-art.png`，走 dreamina ref 通道（含主角定妆 ref）。
+> 统一封面职责分离：**AI 出画（无字主视觉），Canva 出字（书名/钩子）**。
+> 本文件是主视觉的生成规范（已验收：ep003 落地 `03-assets/cover/`）。
+> 后端固定 **gptsapi（gpt-image-2）**：指令遵循强，能严格做到
+> 「无人物 / 一体式留白 / 暧昧氛围 / 小字只出现在书和手机」。
 
 ## 输出规格
 
-- 尺寸：3:4（`--ar 3:4`；dreamina Seedream 出原生 2k，Canva 侧缩到 1080×1440）
-- 文件：`03-assets/cover/cover-art.png`
-- 后端：`--charRef assets/protagonist-base/girl-ref.png` → ref_backend（dreamina），锁主角形象
+| 画幅 | 尺寸 | 用途 | 文件 |
+|------|------|------|------|
+| 3:4 | 1080×1440 | 小红书主图 | `03-assets/cover/cover.png` |
+| 9:16 | 1080×1920 | 抖音/视频号 | `03-assets/cover/cover-9x16.png` |
 
-## 生成命令
+统一封面存 `assets/cover-image/`（系列共用，可复现 prompt 同目录 `prompts/`）；
+落地到单集时复制到 `03-assets/cover/`。
+
+## 生成命令（gptsapi 无 ref）
 
 ```bash
-python3 scripts/genimage.py \
-  --style templates/styles/people/cute-anime-girl.md \
-  --promptfiles 03-assets/cover/cover-art.scene.md \
-  --image 03-assets/cover/cover-art.png --ar 3:4 \
-  --charRef assets/protagonist-base/girl-ref.png
+python3 ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py \
+  --prompt-file prompts/cover-3x4.md --aspect-ratio 3:4 --image cover.png --api-key "$GPTSAPI_KEY"
+python3 ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py \
+  --prompt-file prompts/cover-9x16.md --aspect-ratio 9:16 --image cover-9x16.png --api-key "$GPTSAPI_KEY"
+# 输出后 sips -z 对齐精确尺寸（gpt-image-2 1K 给近似尺寸）
 ```
 
-## 主视觉 prompt 硬约束（写进 scene 文件）
+## 主视觉 prompt 硬约束（按优先级，全部 MUST）
 
-1. **顶部 40% 干净留白**：上部是纯净纯色/柔和渐变背景区，不画任何物体、
-   文字、图案。这是软约束——Canva 模板的书名区自带 scrim，不依赖它。
-2. **无任何文字**：画面中禁止出现文字、字母、书名、标语（生图文字必糊）。
-3. **主角在场**：含主角（带定妆 ref），形象跟随定妆图。
-4. **书作为道具**：主角手持或桌面摆一本素面书（封面上无字），与书名呼应。
-5. **风格一致**：跟随风格卡（cute-anime-girl），色板内取色，无表外 hex。
-6. **情绪来自该集角度**：如 ep003 非暴力沟通 = 安静沟通、暖光、和解感。
+1. **最高优先级 · 严禁人物**：画面中严禁任何人形、人物、人影、剪影、手。
+2. **一体式留白（不是空出来的带子）**：顶部是场景自然延伸——暖色墙面延续、
+   半掩窗帘垂落、台灯光向上弥漫成柔光渐变；这个区域色调统一、干净、无多余
+   物体（书名排版区），与下方桌面场景同一空间、无缝衔接，**禁止生硬分界线
+   或割裂的留白带**。
+3. **氛围 · 独处微暧昧**：深夜独处，安静中带一点期待与心动。木桌上一杯热茶
+   （热气缕缕）+ 一部手机 + 一本摊开的书 + 一盏暖黄台灯（唯一主光源，桌面
+   晕开暖光）+ 半掩窗帘夜色。情绪不冷清、不悲伤。
+4. **书与手机不空白**：书内页有小号**英文圆体字**（如 "happy time" /
+   "stay warm" / "good vibes"）和简单简笔画（太阳/小花/爱心/咖啡杯）；
+   手机屏幕同样有小号英文圆体字 + 迷你图案。字体小而柔和。
+5. **文字范围锁定**：除书内页与手机屏幕的小号英文圆体字外，其余区域严禁
+   任何文字/字母/数字/书名/标语/水印/logo——**顶部书名区必须无字**。
+6. **风格**：日系可爱动漫插画，柔和圆润线条、扁平色块加轻渐变、非写实非 3D；
+   暖色系（暖米白/奶油/琥珀/浅棕）。
 
-## 构图参考
+## 验收清单（每张过）
 
-- 主角侧坐/低头看书，暖色台灯，画面重心在下半部（书名区会被 Canva 覆盖）。
-- 上半部留白区可以是纯色或从主体延伸的柔和渐变，方便文字压上后对比清晰。
-- 底部 35% 不必预留纯色——Canva 的 scrim 色带兜底。
+- [ ] 无任何人形（最优先）
+- [ ] 一体式留白：垂直剖面连续无断点，不是空出来的带子
+- [ ] 暧昧氛围在（茶/微光/半开的书/暖灯/窗帘）
+- [ ] 英文圆体字拼写正确、够小、只在书内页和手机屏幕
+- [ ] 顶部书名区干净无字
+- [ ] 真 PNG、尺寸对齐（1080×1440 / 1080×1920）
