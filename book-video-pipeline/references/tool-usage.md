@@ -18,7 +18,7 @@ python3 scripts/genimage.py \
   --style templates/styles/people/cute-anime-girl.md \
   --promptfiles 03-assets/scenes/shot_002.scene.md \
   --image 03-assets/scenes/shot_002.png --ar 9:16 \
-  --charRef 03-assets/protagonist-ref.png
+  --charRef assets/protagonist-base/girl-ref.png
 ```
 
 API key 读取优先级：
@@ -89,14 +89,14 @@ grok CLI 现为**配置可选的备选生图后端**：在 `pipeline.yaml` 的 `
 python3 scripts/genimage.py \
   --style templates/styles/people/cute-anime-girl.md \
   --promptfiles 03-assets/scenes/_protagonist.scene.md \
-  --image 03-assets/protagonist-ref.png --ar 9:16
+  --image assets/protagonist-base/girl-ref.png --ar 9:16
 
 # 含主角镜头（dreamina Seedream，带定妆图 ref）
 python3 scripts/genimage.py \
   --style templates/styles/people/cute-anime-girl.md \
   --promptfiles 03-assets/scenes/shot_002.scene.md \
   --image 03-assets/scenes/shot_002.png --ar 9:16 \
-  --charRef 03-assets/protagonist-ref.png
+  --charRef assets/protagonist-base/girl-ref.png
 
 # 无主角镜头（gptsapi，无 ref）
 python3 scripts/genimage.py \

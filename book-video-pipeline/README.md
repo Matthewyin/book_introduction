@@ -173,17 +173,13 @@ python3 scripts/make-cues.py shot-timing.json --out subtitle-cues.json
 python3 scripts/check-script.py 02-script/draft-04-final.md --before 02-script/draft-03-reviewed.md
 
 # 7. 生图（Step 7）—— 统一入口，按 characters + charRef 自动路由后端
-# 主角定妆图（gptsapi，无 ref）
-python3 scripts/genimage.py \
-  --style templates/styles/people/cute-anime-girl.md \
-  --promptfiles 03-assets/scenes/_protagonist.scene.md \
-  --image 03-assets/protagonist-ref.png --ar 9:16
-# 含主角镜头（dreamina Seedream，带定妆图 ref）
+# 全局定妆图已就位：assets/protagonist-base/girl-ref.png（无需每集重生）
+# 含主角镜头（dreamina Seedream，带全局定妆图 ref）
 python3 scripts/genimage.py \
   --style templates/styles/people/cute-anime-girl.md \
   --promptfiles 03-assets/scenes/shot_002.scene.md \
   --image 03-assets/scenes/shot_002.png --ar 9:16 \
-  --charRef 03-assets/protagonist-ref.png
+  --charRef assets/protagonist-base/girl-ref.png
 python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 
 # 8. 成片规格校验（Step 9 收尾）

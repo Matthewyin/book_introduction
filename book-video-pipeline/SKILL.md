@@ -201,21 +201,16 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 提示词 = 选定的风格卡（常量）+ 当镜内容，**拼接**而成，DeepSeek 只写内容那一半。
 详见 `templates/scene-prompt.md`。
 
-#### 7.0：风格选择 + 主角定妆（每集第一步）
+#### 7.0：风格选择 + 引用全局定妆图（每集第一步）
 
 1. **选风格卡**：从 `templates/styles/` 选定本集风格（当前主力 `people/cute-anime-girl.md`）。
    展示风格卡给用户确认。
 2. **🔴 审核点⑤b（风格确认）**：用 AskUserQuestion 确认风格卡。
-3. **生成主角定妆图**：用 **gptsapi**（风格质量最高）生 1 张主角标准像
-   （全身或 3/4 身，正面，中性表情，纯背景），存为 `03-assets/protagonist-ref.png`：
-   ```bash
-   python3 scripts/genimage.py \
-     --style templates/styles/people/cute-anime-girl.md \
-     --promptfiles 03-assets/scenes/_protagonist.scene.md \
-     --image 03-assets/protagonist-ref.png --ar 9:16
-   ```
-   定妆图的提示词只描述主角外貌和姿态，不含具体场景。
-4. **🔴 审核点⑤c（定妆确认）**：用 AskUserQuestion 确认主角形象。这是全集角色锚点。
+3. **引用全局定妆图**：主角定妆图是**全局**资产，位于 `assets/protagonist-base/girl-ref.png`
+   （941×1672，已就位），所有集共用，无需每集重生。向用户展示该全局定妆图以供确认。
+   （这是一次性全局资产；若某集需要不同角色，才单独生成本集定妆图。）
+4. **🔴 审核点⑤c（定妆确认）**：用 AskUserQuestion 确认全局定妆图适用本集
+   （通常直接通过；除非本集需要不同角色才单独生）。
 
 #### 7.1：写场景内容
 
@@ -234,7 +229,7 @@ python3 scripts/genimage.py \
   --style templates/styles/people/cute-anime-girl.md \
   --promptfiles 03-assets/scenes/shot_002.scene.md \
   --image 03-assets/scenes/shot_002.png --ar 9:16 \
-  --charRef 03-assets/protagonist-ref.png
+  --charRef assets/protagonist-base/girl-ref.png
 ```
 
 **🔴 审核点⑥**：用 AskUserQuestion 确认主角一致性 + 风格。通过后再批量。
@@ -251,7 +246,7 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 {
   "jobs": 3,
   "style": "templates/styles/people/cute-anime-girl.md",
-  "charRef": "03-assets/protagonist-ref.png",
+  "charRef": "assets/protagonist-base/girl-ref.png",
   "tasks": [
     {"id": "shot_002", "characters": true,
      "promptFiles": ["shot_002.scene.md"], "image": "shot_002.png", "ar": "9:16"},
@@ -268,7 +263,7 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 
 | 场景 | 后端 | 参考图 | 原因 |
 |------|------|--------|------|
-| 主角定妆图 | gptsapi + GPT Image 2 | ❌ | 风格质量最高，定义角色锚点 |
+| 主角定妆图 | 全局已就位 `assets/protagonist-base/girl-ref.png`（无需每集生成） | ❌ | 一次性全局资产，所有集共用；仅当某集需要不同角色时才单独生成 |
 | 含主角的镜头（`characters: true`） | dreamina image2image + Seedream 5.0 | ✅ 定妆图 | 角色 + 风格双锁（实测优于 MiniMax） |
 | 无主角镜头（书封、抽象概念、纯环境） | gptsapi + GPT Image 2 | ❌ | 中文渲染好、质量高 |
 | i2v 关键帧首帧 | dreamina image2image | ✅ 定妆图 | 保证 i2v 输出与静帧角色同源 |

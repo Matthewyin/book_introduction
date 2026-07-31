@@ -50,18 +50,16 @@ DeepSeek 的 system prompt 必须明确：**只写画面内容，不要写风格
 统一入口 `scripts/genimage.py`，按镜头类型（`characters` + `charRef`）自动路由后端：
 
 ```bash
-# 主角定妆图（gptsapi，无 ref）
-python3 scripts/genimage.py \
-  --style templates/styles/people/cute-anime-girl.md \
-  --promptfiles 03-assets/scenes/_protagonist.scene.md \
-  --image 03-assets/protagonist-ref.png --ar 9:16
+# 主角定妆图（全局已就位，无需每集生成）
+# 全局定妆图位于 assets/protagonist-base/girl-ref.png（941×1672，所有集共用）
+# 仅当某集需要不同角色时，才单独生成本集定妆图
 
 # 含主角的镜头（dreamina Seedream，带定妆图 ref）
 python3 scripts/genimage.py \
   --style templates/styles/people/cute-anime-girl.md \
   --promptfiles 03-assets/scenes/shot_002.scene.md \
   --image 03-assets/scenes/shot_002.png --ar 9:16 \
-  --charRef 03-assets/protagonist-ref.png
+  --charRef assets/protagonist-base/girl-ref.png
 
 # 无主角镜头（gptsapi，无 ref）
 python3 scripts/genimage.py \
@@ -80,7 +78,7 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 {
   "jobs": 3,
   "style": "templates/styles/people/cute-anime-girl.md",
-  "charRef": "03-assets/protagonist-ref.png",
+  "charRef": "assets/protagonist-base/girl-ref.png",
   "tasks": [
     {"id": "shot_002", "characters": true,
      "promptFiles": ["shot_002.scene.md"],
@@ -109,7 +107,8 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 
 `video-style-guide.md` 要求"同一角色出现多次时形象一致"，通过**定妆图 + Seedream ref** 实现：
 
-1. **定妆图先行**：每集先用 gptsapi 生 1 张主角标准像（`protagonist-ref.png`），定义角色锚点。
+1. **定妆图先行**：主角定妆图是**全局**资产 `assets/protagonist-base/girl-ref.png`
+   （941×1672，已就位），是所有集的角色锚点单一来源，无需每集重生；仅当某集需要不同角色时，才单独生成本集定妆图。
 2. **主角镜头全程挂 ref**：所有含主角的镜头走 dreamina image2image，挂定妆图当参考图，
    Seedream 锁定角色身份 + 风格。
 3. **纪律**（来自 baoyu-image-gen 实践）：
