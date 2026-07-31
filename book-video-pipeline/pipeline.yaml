@@ -90,6 +90,14 @@ tts:
   volume: 1.0
   pitch: 0
 
+# ──────────────────────────────────────────────────────────── 封面（本地排版合成，无 Canva）
+cover:
+  # 统一封面模板目录（已验收的无字主视觉：cover-3x4.png + cover-9x16.png）
+  template_dir: ~/Coding/video/assets/cover-image
+  series_name: 好书慢读            # 封面左上角系列标识
+  font_title: ~/Library/Fonts/NotoSansSC-Bold.otf    # 书名粗体
+  font_body: ~/Library/Fonts/LxgwWenKai-Regular.ttf  # 钩子/系列/作者（暖调手写感）
+
 # ──────────────────────────────────────────────────────────── i2v（dreamina seedance）
 # 当前为 doc-only（无脚本调用），预留配置。脚本化后 genimage.py / 新脚本会读这里。
 i2v:

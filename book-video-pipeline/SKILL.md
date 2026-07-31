@@ -276,6 +276,26 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 | 无主角镜头（书封、抽象概念、纯环境） | gptsapi + GPT Image 2 | ❌ | 中文渲染好、质量高 |
 | i2v 关键帧首帧 | dreamina image2image | ✅ 定妆图 | 保证 i2v 输出与静帧角色同源 |
 
+### Step 7b：封面合成 → `03-assets/cover/cover.png`（本地排版，无 Canva）
+
+封面职责分离：**AI 出画（无字主视觉），本地排版出字**。流程与规格见
+`templates/cover-prompt.md` + `templates/cover-design.md`。
+
+1. 确认模板就位：`assets/cover-image/cover-3x4.png`（3:4）+ `cover-9x16.png`（9:16）
+   ——已验收的统一封面（无人物 · 一体式留白 · 暧昧氛围 · 书/手机小字）。
+   缺失时按 `cover-prompt.md` 用 gptsapi 重新生成。
+2. 取文案：书名（≤10 字，不加《》）、钩子（≤12 字，优先 book-profile 选定角度）、
+   作者、集数。
+3. 本地合成（零 API，文字 100% 保真）：
+   ```bash
+   python3 scripts/cover-compose.py \
+     --book-title 非暴力沟通 --hook 你说的每句狠话，都在推开最亲的人 \
+     --author 马歇尔·卢森堡 --episode EP03 \
+     --out-dir episodes/ep00X-书名/03-assets/cover
+   ```
+4. 核对：书名/钩子无错字、无溢出、顶部留白区干净、主视觉未被文字遮挡。
+   产出 `cover.png`（3:4 小红书）+ `cover-9x16.png`（9:16 抖音/视频号）。
+
 ### Step 8：动效设计 → `02-script/motion-plan.md`
 
 画面不能是纯静帧配推拉，那 20 秒就让人想划走。每镜都要有动，但动的来源分两类，**成本差两个量级**：

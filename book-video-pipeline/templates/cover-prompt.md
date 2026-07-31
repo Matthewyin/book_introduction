@@ -51,3 +51,9 @@ python3 ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py \
 - [ ] 英文圆体字拼写正确、够小、只在书内页和手机屏幕
 - [ ] 顶部书名区干净无字
 - [ ] 真 PNG、尺寸对齐（1080×1440 / 1080×1920）
+
+## 合成（出字层，无 Canva）
+
+模板验收后**不再逐集重生成画面**：每集封面 = 模板 + 本地排版层
+（`scripts/cover-compose.py`，文字 100% 保真），规格见 `cover-design.md`。
+模板更新流程：改 prompt → 重生成到 `assets/cover-image/` → 全系列生效。
