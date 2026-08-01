@@ -9,8 +9,8 @@
 
 | 渠道 | 尺寸 | 文件 |
 |------|------|------|
-| 小红书（主） | 1080×1440 (3:4) | `03-assets/cover/cover.png` |
-| 抖音/视频号 | 1080×1920 (9:16) | `03-assets/cover/cover-9x16.png` |
+| 小红书（主） | 1080×1440 (3:4) | `03-assets/cover/cover-final.png` |
+| 抖音/视频号 | 1080×1920 (9:16) | `03-assets/cover/cover-final-9x16.png` |
 
 ## 模板（已验收 · 系列共用）
 
@@ -33,8 +33,9 @@
 
 - 文字全部落在顶部一体式留白区，不遮挡下方主视觉。
 - 配色：暖深棕文字（书名 #4A2E1B + 柔和投影）压在浅暖留白上，对比清晰。
-- 字体：书名 NotoSansSC-Bold（或 `cover.font_title`）；钩子/系列/作者
-  LxgwWenKai（霞鹜文楷，暖调，或 `cover.font_body`）。
+- 字体：书名黑体加粗（`cover.font_title`，默认 STHeiti Medium + 描边）；
+  钩子/作者仿宋（`cover.font_hook`，默认 FandolFang）；系列/右上角
+  LxgwWenKai（`cover.font_body`，暖调）。
 
 ## 文案规则（每集）
 
@@ -51,7 +52,7 @@
 3. python3 scripts/cover-compose.py --book-title ... --hook ... --author ... \
      --episode EPXX --out-dir episodes/ep00X-书名/03-assets/cover
 4. 核对：无错字、无溢出、留白区干净、主视觉未被遮挡
-5. 产出 cover.png (3:4) + cover-9x16.png (9:16)
+5. 产出 cover-final.png (3:4) + cover-final-9x16.png (9:16)
 ```
 
 ## 回退方案

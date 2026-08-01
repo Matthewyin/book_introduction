@@ -276,7 +276,7 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 | 无主角镜头（书封、抽象概念、纯环境） | gptsapi + GPT Image 2 | ❌ | 中文渲染好、质量高 |
 | i2v 关键帧首帧 | dreamina image2image | ✅ 定妆图 | 保证 i2v 输出与静帧角色同源 |
 
-### Step 7b：封面合成 → `03-assets/cover/cover.png`（本地排版，无 Canva）
+### Step 7b：封面合成 → `03-assets/cover/cover-final.png`（本地排版，无 Canva）
 
 封面职责分离：**AI 出画（无字主视觉），本地排版出字**。流程与规格见
 `templates/cover-prompt.md` + `templates/cover-design.md`。
@@ -294,7 +294,7 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
      --out-dir episodes/ep00X-书名/03-assets/cover
    ```
 4. 核对：书名/钩子无错字、无溢出、顶部留白区干净、主视觉未被文字遮挡。
-   产出 `cover.png`（3:4 小红书）+ `cover-9x16.png`（9:16 抖音/视频号）。
+   产出 `cover-final.png`（3:4 小红书）+ `cover-final-9x16.png`（9:16 抖音/视频号）。
 
 ### Step 8：动效设计 → `02-script/motion-plan.md`
 

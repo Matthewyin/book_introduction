@@ -14,15 +14,15 @@
    python3 /Users/luantai/.agents/skills/book-video-pipeline/scripts/cover-compose.py \
      --book-title <书名≤10字> --hook <钩子≤12字> --author <作者> --episode EPXX \
      --out-dir /Users/luantai/Coding/video/episodes/ep00X-书名/03-assets/cover
-   → 产出 cover.png（1080×1440）+ cover-9x16.png（1080×1920）
+   → 产出 cover-final.png（1080×1440）+ cover-final-9x16.png（1080×1920）
 3. 规格：/Users/luantai/.agents/skills/book-video-pipeline/templates/cover-design.md
 ```
 
 ## ep003 已落地
 
 - `/Users/luantai/Coding/video/episodes/ep003-非暴力沟通/03-assets/cover/`
-  - `cover.png`（3:4，书名「非暴力沟通」+ 钩子 + 作者 + EP03）
-  - `cover-9x16.png`（9:16）
+  - `cover-final.png`（3:4，左上 logo 卡 + 右上好书推荐 + 书名黑体加粗 + 钩子/作者仿宋 + EP03）
+  - `cover-final-9x16.png`（9:16）
   - `prompts/`（主视觉生成 prompt，可复现）
 
 ## 配置

@@ -94,9 +94,14 @@ tts:
 cover:
   # 统一封面模板目录（已验收的无字主视觉：cover-3x4.png + cover-9x16.png）
   template_dir: ~/Coding/video/assets/cover-image
-  series_name: 好书慢读            # 封面左上角系列标识
-  font_title: ~/Library/Fonts/NotoSansSC-Bold.otf    # 书名粗体
-  font_body: ~/Library/Fonts/LxgwWenKai-Regular.ttf  # 钩子/系列/作者（暖调手写感）
+  logo: ~/Coding/video/assets/brand/corner-lockup.png   # 左上角 logo 品牌卡（720×180）
+  corner_right: 好书推荐                                 # 右上角文字
+  series_name: 好书慢读                                  # logo 缺失时的左上回退文字
+  font_title: /System/Library/Fonts/STHeiti Medium.ttc  # 书名黑体（加粗走描边）
+  font_hook: ~/Library/Fonts/FandolFang-Regular.otf     # 钩子仿宋（CTAN Fandol 免费版）
+  font_body: ~/Library/Fonts/LxgwWenKai-Regular.ttf     # 系列/作者/右上角（暖调手写感）
+  out_3x4: cover-final.png                              # 3:4 输出文件名
+  out_9x16: cover-final-9x16.png                        # 9:16 输出文件名
 
 # ──────────────────────────────────────────────────────────── i2v（dreamina seedance）
 # 当前为 doc-only（无脚本调用），预留配置。脚本化后 genimage.py / 新脚本会读这里。
