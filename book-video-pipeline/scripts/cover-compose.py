@@ -132,25 +132,24 @@ def compose(template: Path, out: Path, spec: dict) -> None:
         draw.text((W * L["ep"]["x"] - ew, H * L["ep"]["y"]), spec["episode"],
                   font=ep_font, fill=C_META)
 
-    # ── 3) 书名：黑体加粗（描边加粗 + 柔和投影），居中 ──
+    # ── 3) 书名：黑体不加粗（常规字重，柔和投影），居中 ──
     title_font = fit_font_size(draw, spec["title"], spec["font_title"],
                                int(W * L["title"]["max_w"]),
                                int(H * L["title"]["size"]), int(H * 0.045))
-    stroke = max(2, int(H * 0.0035))
     tw = draw.textlength(spec["title"], font=title_font)
     tx = (W - tw) / 2
     ty = H * L["title"]["y"]
     shadow = (W * 0.0015, H * 0.0025)
     draw.text((tx + shadow[0], ty + shadow[1]), spec["title"],
               font=title_font, fill=C_SHADOW)
-    draw.text((tx, ty), spec["title"], font=title_font, fill=C_TITLE,
-              stroke_width=stroke, stroke_fill=C_TITLE)
+    draw.text((tx, ty), spec["title"], font=title_font, fill=C_TITLE)
 
-    # ── 4) 钩子：仿宋，严格适应屏宽（单行优先，绝不超出 max_w）──
+    # ── 4) 钩子：仿宋加粗（描边 fake-bold），严格适应屏宽（单行优先，绝不超出 max_w）──
     max_w = int(W * L["hook"]["max_w"])
     floor = int(H * 0.028)
     start = int(H * L["hook"]["size"])
     hook_font = fit_font_size(draw, spec["hook"], spec["font_hook"], max_w, start, floor)
+    hook_stroke = max(2, int(H * 0.0022))
     if draw.textlength(spec["hook"], font=hook_font) > max_w:
         # floor 仍超宽 → 折 2 行（每行仍需 ≤ max_w）
         line_h = hook_font.size * 1.4
@@ -168,17 +167,20 @@ def compose(template: Path, out: Path, spec: dict) -> None:
         hy = H * L["hook"]["y"]
         for i, ln in enumerate(lines[:2]):
             lw = draw.textlength(ln, font=hook_font)
-            draw.text(((W - lw) / 2, hy + i * line_h), ln, font=hook_font, fill=C_HOOK)
+            draw.text(((W - lw) / 2, hy + i * line_h), ln, font=hook_font, fill=C_HOOK,
+                      stroke_width=hook_stroke, stroke_fill=C_HOOK)
     else:
         hw = draw.textlength(spec["hook"], font=hook_font)
         draw.text(((W - hw) / 2, H * L["hook"]["y"]), spec["hook"],
-                  font=hook_font, fill=C_HOOK)
+                  font=hook_font, fill=C_HOOK, stroke_width=hook_stroke,
+                  stroke_fill=C_HOOK)
 
-    # ── 5) 作者：仿宋，小字居中 ──
+    # ── 5) 作者：仿宋加粗，小字居中 ──
     author_font = load_font(spec["font_hook"], int(H * L["author"]["size"]))
     aw = draw.textlength(spec["author"], font=author_font)
     draw.text(((W - aw) / 2, H * L["author"]["y"]), spec["author"],
-              font=author_font, fill=C_META)
+              font=author_font, fill=C_META, stroke_width=hook_stroke,
+              stroke_fill=C_META)
 
     out.parent.mkdir(parents=True, exist_ok=True)
     im.save(out)

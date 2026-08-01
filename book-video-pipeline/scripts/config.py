@@ -108,6 +108,17 @@ DEFAULT_CONFIG: dict = {
         "resolution": "720p",
         "poll_seconds": 180,
     },
+    "cover": {
+        "template_dir": "~/Coding/video/assets/cover-image",
+        "logo": "~/Coding/video/assets/brand/corner-lockup.png",
+        "corner_right": "好书推荐",
+        "series_name": "好书慢读",
+        "font_title": "~/Library/Fonts/NotoSansSC-Regular.otf",
+        "font_hook": "~/Library/Fonts/FandolFang-Regular.otf",
+        "font_body": "~/Library/Fonts/LxgwWenKai-Regular.ttf",
+        "out_3x4": "cover-final.png",
+        "out_9x16": "cover-final-9x16.png",
+    },
 }
 
 
@@ -169,8 +180,8 @@ def _parse_yaml(text: str) -> dict:
             raise ValueError(f"YAML 第 {lineno} 行含 tab，请用空格缩进：{raw.strip()}")
         stripped = line.lstrip()
         indent = len(line) - len(stripped)
-        # 弹栈到当前缩进的父级
-        while len(stack) > 1 and indent < stack[-1][0]:
+        # 弹栈到当前缩进的父级（同级键也是兄弟：indent <= 栈顶时弹栈）
+        while len(stack) > 1 and indent <= stack[-1][0]:
             stack.pop()
         parent_indent, parent = stack[-1]
         if indent < parent_indent:
