@@ -103,7 +103,13 @@ def fit_font_size(draw: ImageDraw.ImageDraw, text: str, font_paths: list[str],
 def compose(template: Path, out: Path, spec: dict) -> None:
     im = Image.open(template).convert("RGB")
     W, H = im.size
-    L = LAYOUT
+    L = dict(LAYOUT)  # 复制避免污染全局
+    # hook_y 覆盖：如果指定，覆盖默认 0.30，作者 y 相应下移避免重叠
+    hook_y_override = spec.get("hook_y")
+    if hook_y_override is not None:
+        L["hook"] = dict(L["hook"], y=float(hook_y_override))
+        # 作者下移到钩子下方（钩子单行约占 0.06H，间距 0.025H）
+        L["author"] = dict(L["author"], y=L["hook"]["y"] + 0.06 + 0.025)
     draw = ImageDraw.Draw(im, "RGBA")
     is_base = bool(spec.get("base"))
     skip_logo = bool(spec.get("skip_brand"))
@@ -211,6 +217,8 @@ def main() -> int:
     p.add_argument("--hook", default="", help="钩子文案（≤12 字）")
     p.add_argument("--author", default="", help="作者/副标题")
     p.add_argument("--episode", default="", help="集数，如 EP03")
+    p.add_argument("--hook-y", type=float, default=None,
+                   help="钩子 y 比例（覆盖默认 0.30，覆盖时作者 y 自动下移）")
     p.add_argument("--series", default=None, help="系列名（默认读 config）")
     p.add_argument("--corner-right", default=None, help="右上角文字（默认「好书推荐」）")
     p.add_argument("--template-dir", type=Path, default=None,
@@ -242,6 +250,7 @@ def main() -> int:
         "font_title": _fonts("font_title", FONT_FALLBACK_TITLE),
         "font_hook": _fonts("font_hook", FONT_FALLBACK_HOOK),
         "font_body": _fonts("font_body", FONT_FALLBACK_BODY),
+        "hook_y": args.hook_y,
     }
 
     t34 = tdir / "cover-3x4.png"
