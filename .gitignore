@@ -25,6 +25,14 @@ secrets/
 # ── ZCode 会话/计划（本地工作状态，不进仓库）────
 .zcode/
 
+# ── 本地工作目录 / 工具缓存 ───────────────────
+.playwright-mcp/
+.workbuddy/
+Player Screenshot/
+
+# ── 本地测试素材 ──────────────────────────────
+baidu-cute-girl.jpeg
+
 # ── 通用二进制产物（兜底）──────────────────────
 *.mp4
 *.mp3
