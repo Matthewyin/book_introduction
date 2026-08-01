@@ -213,7 +213,7 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `check-script.py` | 去 AI 味自动校验（20 项规则） | `<script.md> [--before <early.md>]` | — |
 | `validate-spec.py` | 成片规格校验 | `<video.mp4>` | ffmpeg/ffprobe |
 | `genimage.py` | 生图统一入口（分发层：gptsapi / dreamina Seedream / MiniMax） | `--style ... --promptfiles ... --image` 或 `--batchfile` | `GPTSAPI_KEY` / `MINIMAX_API_KEY` / dreamina OAuth |
-| `cover-compose.py` | 封面本地排版合成（无 Canva，零 API） | `--book-title ... --hook ... --author ... --episode ... --out-dir` | — |
+| `cover-compose.py` | 封面本地排版合成（无 Canva，零 API，支持 `--style viral`/`--palette`/`--template`） | `--book-title ... --hook ... --author ... --episode ... --out-dir [--style viral] [--palette calm]` | — |
 
 ### 模板（`templates/`，12 个 + `styles/` 风格卡库）
 

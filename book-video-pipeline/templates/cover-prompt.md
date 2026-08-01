@@ -58,3 +58,9 @@ python3 ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py \
 模板验收后**不再逐集重生成画面**：每集封面 = 模板 + 本地排版层
 （`scripts/cover-compose.py`，文字 100% 保真），规格见 `cover-design.md`。
 模板更新流程：改 prompt → 重生成到 `assets/cover-image/` → 全系列生效。
+
+## Few-shot 范文（校准出图质量）
+
+重新生成母版时，**先读 `assets/cover-image/prompts/cover-examples.md`**——收录已验收
+封面的完整 prompt + 拆解要点。学它的**具体程度**：每个物体写到材质/动态/光照，
+空间关系交代清楚谁遮挡谁，负面约束重复强调。新写 prompt 对照范文自检。

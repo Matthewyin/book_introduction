@@ -291,9 +291,13 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
    python3 scripts/cover-compose.py \
      --book-title 非暴力沟通 --hook 你说的每句狠话，都在推开最亲的人 \
      --author 马歇尔·卢森堡 --episode EP03 \
-     --out-dir episodes/ep00X-书名/03-assets/cover
+     --out-dir episodes/ep00X-书名/03-assets/cover \
+     [--style viral] [--palette calm] [--template bookshot]
    ```
-4. 核对：书名/钩子无错字、无溢出、顶部留白区干净、主视觉未被文字遮挡。
+   - `--style`：`quiet`（默认暖棕安静体）/ `viral`（病毒标题体：超粗黑体+亮黄标签）
+   - `--palette`：`sunny`（默认）/ `warm`（暖橙）/ `calm`（冷静蓝灰）
+   - `--template`：`ambient`（默认氛围静物）/ `bookshot`（书封特写，需对应母版）
+4. 核对：书名/钩子无错字、无溢出、顶部留白区干净、主视觉未被文字遮挡、安全区无越界警告。
    产出 `cover-final.png`（3:4 小红书）+ `cover-final-9x16.png`（9:16 抖音/视频号）。
 
 ### Step 8：动效设计 → `02-script/motion-plan.md`

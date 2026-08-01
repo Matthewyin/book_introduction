@@ -99,6 +99,7 @@ cover:
   corner_right: 好书推荐                                 # 右上角文字
   series_name: 好书慢读                                  # logo 缺失时的左上回退文字
   font_title: ~/Library/Fonts/NotoSansSC-Regular.otf   # 书名黑体（常规不加粗）
+  font_title_viral: ~/Library/Fonts/NotoSansSC-Bold.otf # 病毒标题体超粗黑体（--style viral）
   font_hook: ~/Library/Fonts/FandolFang-Regular.otf     # 钩子/作者仿宋（描边加粗）
   font_body: ~/Library/Fonts/LxgwWenKai-Regular.ttf     # 系列/作者/右上角（暖调手写感）
   out_3x4: cover-final.png                              # 3:4 输出文件名
