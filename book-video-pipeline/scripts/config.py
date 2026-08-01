@@ -112,6 +112,7 @@ DEFAULT_CONFIG: dict = {
         "template_dir": "~/Coding/video/assets/cover-image",
         "logo": "~/Coding/video/assets/brand/corner-lockup.png",
         "corner_right": "好书推荐",
+        "template_has_brand": False,
         "series_name": "好书慢读",
         "font_title": "~/Library/Fonts/NotoSansSC-Regular.otf",
         "font_hook": "~/Library/Fonts/FandolFang-Regular.otf",

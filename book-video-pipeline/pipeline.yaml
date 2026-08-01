@@ -94,7 +94,8 @@ tts:
 cover:
   # 统一封面模板目录（已验收的无字主视觉：cover-3x4.png + cover-9x16.png）
   template_dir: ~/Coding/video/assets/cover-image
-  logo: ~/Coding/video/assets/brand/corner-lockup.png   # 左上角 logo 品牌卡（720×180）
+  logo: ~/Coding/video/assets/brand/corner-lockup.png   # 左上角 logo 品牌卡（720×180，透明底）
+  template_has_brand: true                          # 底图已含 logo，每集不再画 logo
   corner_right: 好书推荐                                 # 右上角文字
   series_name: 好书慢读                                  # logo 缺失时的左上回退文字
   font_title: ~/Library/Fonts/NotoSansSC-Regular.otf   # 书名黑体（常规不加粗）

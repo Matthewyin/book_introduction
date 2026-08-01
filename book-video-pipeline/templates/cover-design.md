@@ -12,12 +12,15 @@
 | 小红书（主） | 1080×1440 (3:4) | `03-assets/cover/cover-final.png` |
 | 抖音/视频号 | 1080×1920 (9:16) | `03-assets/cover/cover-final-9x16.png` |
 
-## 模板（已验收 · 系列共用）
+## 模板（已验收 · 系列共用 · 两段式）
 
 - 位置：`assets/cover-image/`（模板目录可在 `pipeline.yaml` `cover.template_dir` 改）
-- `cover-3x4.png` + `cover-9x16.png`：无字主视觉，规范见 `cover-prompt.md`
-  （无人物 · 一体式留白 · 清爽阳光向上 · 书/手机小号英文圆体字）
-- 模板是**无字源图**，永远不被覆盖；每集封面 = 模板 + 排版层，输出到本书 cover 目录。
+- `cover-3x4.png` + `cover-9x16.png`：**底图 = 无字主视觉 + logo 品牌卡**，
+  规范见 `cover-prompt.md`（无人物 · 一体式留白 · 清爽阳光向上 · 书/手机小号英文圆体字）
+- 每集封面 = 底图（已含 logo，`template_has_brand: true` 跳过画 logo）+ 文字层，
+  输出到本书 cover 目录。
+- **重新生成主视觉后必须重跑底图**：`python3 scripts/cover-compose.py --base \
+  --out-dir assets/cover-image`（把 logo 贴回新艺术图）。
 
 ## 版式分区（按高度比例，3:4 / 9:16 通用）
 
