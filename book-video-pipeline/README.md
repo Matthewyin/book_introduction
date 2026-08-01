@@ -200,7 +200,7 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 
 ## 组件清单
 
-### 脚本（`scripts/`，9 个）
+### 脚本（`scripts/`，10 个）
 
 | 脚本 | 作用 | 输入 → 输出 | 依赖密钥 |
 |------|------|-------------|----------|
@@ -213,8 +213,9 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `check-script.py` | 去 AI 味自动校验（20 项规则） | `<script.md> [--before <early.md>]` | — |
 | `validate-spec.py` | 成片规格校验 | `<video.mp4>` | ffmpeg/ffprobe |
 | `genimage.py` | 生图统一入口（分发层：gptsapi / dreamina Seedream / MiniMax） | `--style ... --promptfiles ... --image` 或 `--batchfile` | `GPTSAPI_KEY` / `MINIMAX_API_KEY` / dreamina OAuth |
+| `cover-compose.py` | 封面本地排版合成（无 Canva，零 API） | `--book-title ... --hook ... --author ... --episode ... --out-dir` | — |
 
-### 模板（`templates/`，11 个）
+### 模板（`templates/`，12 个 + `styles/` 风格卡库）
 
 | 模板 | 步骤 | 产出文件 |
 |------|------|----------|
@@ -228,7 +229,8 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `style-prefix.en.md` | Step 7 | （旧版风格常量，已被 `styles/` 风格卡库取代，保留兼容） |
 | `styles/` 风格卡库 | Step 7.0 | 风格卡（当前主力 `people/cute-anime-girl.md`）+ README |
 | `scene-content.en.md` | Step 7 | 单镜内容字段骨架（DeepSeek 填这个） |
-| `cover-prompt.md` | Step 10 | 封面提示词 |
+| `cover-prompt.md` | Step 7b | 封面主视觉提示词（无字 · gptsapi） |
+| `cover-design.md` | Step 7b | 封面本地排版规格（PIL 文字层 · 唯一规格源） |
 | `publish-brief.md` | Step 10 | 发布物料简报 |
 | `baoyu-image-gen-EXTEND.md` | 安装 | 拷到仓库根 `.baoyu-skills/baoyu-image-gen/EXTEND.md`，覆盖用户级默认值 |
 
@@ -304,6 +306,9 @@ episodes/ep00X-书名/
 │   └── shot-list.md           # 旧式分镜（兼容）
 ├── 03-assets/
 │   ├── scenes/shot_*.png      # Step 7（场景插画）
+│   ├── cover/                 # Step 7b（封面）
+│   │   ├── cover-final.png        # 3:4（小红书）
+│   │   └── cover-final-9x16.png   # 9:16（抖音/视频号）
 │   ├── audio/
 │   │   ├── voiceover.wav      # Step 4（配音）
 │   │   └── bgm.mp3            # Step 9b（背景音乐）
@@ -312,8 +317,6 @@ episodes/ep00X-书名/
 │   ├── output.mp4             # Step 9（成片）
 │   └── subtitle.srt           # Step 9（独立字幕）
 ├── 05-publish/
-│   ├── cover.png              # Step 10（封面）
-│   ├── cover-prompt.txt       # Step 10（封面提示词）
 │   └── publish-brief.md       # Step 10（发布简报）
 └── video/                     # hyperframes 工作目录
     ├── build.mjs              # GSAP 动效构建脚本
@@ -367,6 +370,9 @@ Step 7 DeepSeek Flash 写 shot_*.scene.md（仅内容）
         └─ genimage.py 分发（characters+charRef→Seedream，否则→gptsapi）─► scenes/shot_*.png ─► (审核点⑥)
         │
         ▼
+Step 7b 封面本地合成 ─► cover-final.png + cover-final-9x16.png
+        │   └─ cover-compose.py（底图模板 + 文字层，零 API，文字 100% 保真）
+        ▼
 Step 8 动效设计
    ├─ 8a 即梦 i2v（≤2 镜，seedance-prompt-zh 写词 → dreamina CLI → 剥离 BGM）
    └─ 8b GSAP 动效层（其余所有镜头，seek-safe）
@@ -378,7 +384,7 @@ Step 9 hyperframes 合成 ─► output.mp4 + subtitle.srt ─► (审核点⑦)
 Step 9b ego-browser 下 BGM ─► bgm.mp3 ──► (审核点⑦b)
         │
         ▼
-Step 10 发布物料 ─► publish-brief.md + cover.png
+Step 10 发布物料 ─► publish-brief.md
 ```
 
 ### LLM 分工表
@@ -409,7 +415,6 @@ Step 10 发布物料 ─► publish-brief.md + cover.png
 | `baoyu-image-gen` | Step 7 | 参考图生图（有 `ref` 时由 `genimage.py` 自动路由） |
 | `seedance-prompt-zh` | Step 8a | 生成符合 Seedance 2.0 规范的 i2v 提示词 |
 | `ego-browser` | Step 9b | 浏览器下载 pixabay BGM（绕过 Cloudflare） |
-| `baoyu-cover-image` | Step 10 | 封面图提示词分析 |
 
 ### 认证读取链
 

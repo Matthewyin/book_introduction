@@ -21,14 +21,18 @@
 ## ep003 已落地
 
 - `/Users/luantai/Coding/video/episodes/ep003-非暴力沟通/03-assets/cover/`
-  - `cover-final.png`（3:4，左上 logo 卡 + 右上好书推荐 + 书名黑体加粗 + 钩子/作者仿宋 + EP03）
+  - `cover-final.png`（3:4，左上 logo 透明直贴 + 右上好书推荐 + 书名黑体常规不加粗 + 钩子/作者仿宋描边加粗 + EP03）
   - `cover-final-9x16.png`（9:16）
   - `prompts/`（主视觉生成 prompt，可复现）
 
 ## 配置
 
-- `pipeline.yaml` → `cover:` 节：`template_dir` / `series_name` / `font_title` / `font_body`
-- 字体：书名 NotoSansSC-Bold；正文 LxgwWenKai（均在 `~/Library/Fonts/`）
+- `pipeline.yaml` → `cover:` 节：`template_dir` / `logo` / `template_has_brand` / `series_name` / `corner_right` / `font_title` / `font_hook` / `font_body` / `out_3x4` / `out_9x16`
+- 字体（均在 `~/Library/Fonts/`）：
+  - 书名：NotoSansSC-Regular（思源黑体常规，**不加粗、不描边**）
+  - 钩子/作者：FandolFang-Regular（仿宋，**描边加粗** `0.0014H`）
+  - 系列/右上角：LxgwWenKai-Regular（霞鹜文楷，暖调手写感）
+- logo：透明背景直贴原图 alpha（无底卡），左上角 30% 画布宽
 
 ## 不再使用（历史）
 

@@ -36,9 +36,10 @@
 
 - 文字全部落在顶部一体式留白区，不遮挡下方主视觉。
 - 配色：暖深棕文字（书名 #4A2E1B + 柔和投影）压在浅暖留白上，对比清晰。
-- 字体：书名黑体加粗（`cover.font_title`，默认 STHeiti Medium + 描边）；
-  钩子/作者仿宋（`cover.font_hook`，默认 FandolFang）；系列/右上角
-  LxgwWenKai（`cover.font_body`，暖调）。
+- 字体：书名黑体常规不加粗不描边（`cover.font_title`，默认 NotoSansSC-Regular）；
+  钩子/作者仿宋描边加粗（`cover.font_hook`，默认 FandolFang，stroke_width ≈ `0.0014H`）；
+  系列/右上角 LxgwWenKai（`cover.font_body`，暖调手写感）。
+- logo：透明背景直贴原图 alpha（无浅暖底卡），左上角，宽 = 30% 画布宽。
 
 ## 文案规则（每集）
 

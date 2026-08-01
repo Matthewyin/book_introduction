@@ -282,7 +282,7 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 `templates/cover-prompt.md` + `templates/cover-design.md`。
 
 1. 确认模板就位：`assets/cover-image/cover-3x4.png`（3:4）+ `cover-9x16.png`（9:16）
-   ——已验收的统一封面（无人物 · 一体式留白 · 暧昧氛围 · 书/手机小字）。
+   ——已验收的统一封面（无人物 · 一体式留白 · 清爽阳光向上 · 书/手机小字）。
    缺失时按 `cover-prompt.md` 用 gptsapi 重新生成。
 2. 取文案：书名（≤10 字，不加《》）、钩子（≤12 字，优先 book-profile 选定角度）、
    作者、集数。
@@ -423,24 +423,35 @@ dreamina image2video \
 
 ```
 episodes/ep00X-书名/
-├── run-manifest.json        # 运行状态追踪
+├── run-manifest.json          # 运行状态追踪
 ├── 01-profile/
-│   └── book-profile.md      # Step 1 产出
+│   └── book-profile.md        # Step 1
 ├── 02-script/
-│   ├── script.md            # Step 3 产出
-│   ├── shot-list.md         # Step 4 产出
-│   └── subtitle.ass         # Step 4 产出
+│   ├── script-brief.md        # Step 2
+│   ├── draft-01-kimi.md       # Step 3a
+│   ├── review-01-grok.md      # Step 3b
+│   ├── draft-03-reviewed.md   # Step 3c
+│   ├── draft-04-final.md      # Step 3d
+│   ├── SCRIPT.md              # Step 3e（锁定旁白）
+│   ├── voiceover-text.txt     # Step 3e（TTS 输入）
+│   ├── deai-checklist.md      # Step 3d（证据）
+│   ├── shot-timing.json       # Step 5（真实时间轴）
+│   ├── subtitle-cues.json     # Step 6（字幕逐句）
+│   ├── STORYBOARD.md          # Step 6（分镜含动效）
+│   └── motion-plan.md         # Step 8（动效方案）
 ├── 03-assets/
-│   ├── cover/cover.png      # Step 5 产出
-│   ├── scenes/shot_*.png    # Step 5 产出
-│   ├── book-shots/          # 书封实拍（如有）
+│   ├── cover/                 # Step 7b（封面）
+│   │   ├── cover-final.png        # 3:4（小红书）
+│   │   └── cover-final-9x16.png   # 9:16（抖音/视频号）
+│   ├── scenes/shot_*.png      # Step 7（场景插画）
 │   └── audio/
-│       ├── voiceover.wav    # Step 5 产出
-│       └── bgm.mp3          # Step 5 产出
+│       ├── voiceover.wav      # Step 4（配音）
+│       └── bgm.mp3            # Step 9b（背景音乐）
 ├── 04-video/
-│   └── output.mp4           # Step 6 产出
+│   ├── output.mp4             # Step 9（成片）
+│   └── subtitle.srt           # Step 9（独立字幕）
 └── 05-publish/
-    └── publish-brief.md     # Step 7 产出
+    └── publish-brief.md       # Step 10（发布简报）
 ```
 
 ## 视频规格红线
