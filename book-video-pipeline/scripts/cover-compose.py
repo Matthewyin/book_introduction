@@ -65,8 +65,11 @@ FONT_FALLBACK_TITLE = [
     "/System/Library/Fonts/Hiragino Sans GB.ttc",
 ]
 FONT_FALLBACK_TITLE_VIRAL = [
-    "~/Library/Fonts/NotoSansSC-Bold.otf",             # 思源黑体粗体（病毒标题体）
-    "/System/Library/Fonts/Hiragino Sans GB.ttc",       # W6 = 粗
+    "~/Library/Fonts/ZCOOLKuHei.ttf",                  # 站酷酷黑（病毒标题体首选，笔画最疏大字号最清晰）
+    "~/Library/Fonts/YouSheBiaoTiHei.ttf",              # 优设标题黑（备选）
+    "~/Library/Fonts/NotoSansSC-Bold.otf",              # 思源黑体粗体（备选）
+    "~/Library/Fonts/SourceHanSansSC-Heavy.otf",        # 思源黑体 Heavy（兜底）
+    "/System/Library/Fonts/Hiragino Sans GB.ttc",
     "/System/Library/Fonts/STHeiti Medium.ttc",
 ]
 FONT_FALLBACK_HOOK = [
@@ -118,6 +121,7 @@ STYLES = {
         "title_font_key": "font_title",
         "title_stroke_mult": 0,           # 书名不描边
         "title_shadow": True,
+        "title_tracking": 0,              # 无字间距
         "hook_font_key": "font_hook",
         "hook_stroke_mult": 0.0014,       # 钩子仿宋描边加粗
         "hook_bg": None,                  # 无色块
@@ -126,8 +130,9 @@ STYLES = {
     },
     "viral": {
         "title_font_key": "font_title_viral",
-        "title_stroke_mult": 0.003,       # 书名加重描边模拟超粗
+        "title_stroke_mult": 0,              # 不加描边（超粗字体+大字号+描边=笔画粘连）
         "title_shadow": True,
+        "title_tracking": 0.05,              # 字间距 5% 字高，大字号防笔画粘连
         "hook_font_key": "font_title_viral",  # 钩子也用粗黑体
         "hook_stroke_mult": 0,
         "hook_bg": "label",               # 亮黄圆角矩形标签
@@ -143,19 +148,19 @@ LAYOUT_AMBIENT = {
     "logo": {"x": 0.045, "y": 0.030, "w": 0.300},        # 左上：logo 品牌卡
     "corner": {"x": 0.950, "y": 0.038, "size": 0.030},   # 右上：「好书推荐」右对齐
     "ep": {"x": 0.950, "y": 0.076, "size": 0.022},       # 右上角下方：EP 集数
-    "title": {"y": 0.160, "size": 0.105, "max_w": 0.86}, # 居中：书名（自动缩字号）
+    "title": {"y": 0.160, "size": 0.105, "max_w": 0.86, "max_chars": 6}, # 居中：书名（每行≤6字，自动缩字号）
     "hook": {"y": 0.300, "size": 0.042, "max_w": 0.82},  # 居中：钩子（严格不超宽）
     "author": {"y": 0.425, "size": 0.027},               # 居中：作者
 }
 
-# 书封特写版：书封占主体，文字在顶部窄带
+# 书封特写版：人物+书在下方，文字在顶部一体留白区
 LAYOUT_BOOKSHOT = {
     "logo": {"x": 0.045, "y": 0.030, "w": 0.300},
     "corner": {"x": 0.950, "y": 0.038, "size": 0.030},
     "ep": {"x": 0.950, "y": 0.076, "size": 0.022},
-    "title": {"y": 0.080, "size": 0.075, "max_w": 0.86}, # 书名上移缩小
-    "hook": {"y": 0.150, "size": 0.030, "max_w": 0.82},  # 钩子紧跟书名
-    "author": {"y": 0.195, "size": 0.022},               # 作者紧跟钩子
+    "title": {"y": 0.180, "size": 0.125, "max_w": 0.92, "max_chars": 6}, # 书名（下移，每行≤6字自动折行）
+    "hook": {"y": 0.380, "size": 0.030, "max_w": 0.82, "x": 0.06, "align": "left"},  # 钩子（左对齐，y 随标题行数动态调整）
+    "author": {"y": 0.430, "size": 0.022, "x": 0.06, "align": "left"},  # 作者（左对齐）
 }
 
 LAYOUTS = {"ambient": LAYOUT_AMBIENT, "bookshot": LAYOUT_BOOKSHOT}
@@ -262,31 +267,89 @@ def compose(template: Path, out: Path, spec: dict) -> None:
         draw.text((ex, ey), spec["episode"], font=ep_font, fill=pal["meta"])
         _check_safe_zone(draw, "ep", (ex, ey, ex + ew, ey + ep_font.size), W, H, margin)
 
-    # ── 3) 书名：居中 ──
+    # ── 3) 书名：居中（支持字间距 tracking + 每行 max_chars 自动折行）──
     title_font_paths = spec[sty["title_font_key"]]
     if spec["title"]:
-        title_font = fit_font_size(draw, spec["title"], title_font_paths,
-                                   int(W * L["title"]["max_w"]),
-                                   int(H * L["title"]["size"]), int(H * 0.045))
-        tw = draw.textlength(spec["title"], font=title_font)
-        tx = (W - tw) / 2
-        ty = H * L["title"]["y"]
+        tracking = sty.get("title_tracking", 0)
+        max_chars = L["title"].get("max_chars", 0)
+
+        # 按 max_chars 折行
+        raw_title = spec["title"]
+        if max_chars and len(raw_title) > max_chars:
+            title_lines = [raw_title[i:i+max_chars] for i in range(0, len(raw_title), max_chars)]
+        else:
+            title_lines = [raw_title]
+
+        # 测量单行宽度（含 tracking）
+        def _line_w(font: ImageFont.FreeTypeFont, text: str, tpx: int) -> float:
+            if tpx:
+                return sum(font.getlength(ch) for ch in text) + tpx * (len(text) - 1)
+            return draw.textlength(text, font=font)
+
+        # 缩字号：以最长一行为准，确保 ≤ max_w
+        title_font = load_font(title_font_paths, int(H * L["title"]["size"]))
+        tracking_px = int(title_font.size * tracking) if tracking else 0
+        max_w_px = int(W * L["title"]["max_w"])
+        widest = max(title_lines, key=len)
+        while _line_w(title_font, widest, tracking_px) > max_w_px and title_font.size > int(H * 0.045):
+            title_font = load_font(title_font_paths, title_font.size - 2)
+            tracking_px = int(title_font.size * tracking) if tracking else 0
+
         title_color = pal["title"]
         title_stroke = max(0, int(H * sty["title_stroke_mult"])) if sty["title_stroke_mult"] else 0
-
-        if sty["title_shadow"]:
-            shadow = (W * 0.0015, H * 0.0025)
-            draw.text((tx + shadow[0], ty + shadow[1]), spec["title"],
-                      font=title_font, fill=pal["shadow"])
-
         kwargs = {"font": title_font, "fill": title_color}
         if title_stroke:
             kwargs["stroke_width"] = title_stroke
             kwargs["stroke_fill"] = title_color
-        draw.text((tx, ty), spec["title"], **kwargs)
-        _check_safe_zone(draw, "title", (tx, ty, tx + tw, ty + title_font.size), W, H, margin)
 
-    # ── 4) 钩子：居中（quiet=仿宋描边 / viral=亮黄标签黑字）──
+        line_h = title_font.size * 1.1
+        total_h = line_h * len(title_lines)
+        ty0 = H * L["title"]["y"]
+        shadow = (W * 0.0015, H * 0.0025)
+
+        for li, line in enumerate(title_lines):
+            lw = _line_w(title_font, line, tracking_px)
+            lx = (W - lw) / 2
+            ly = ty0 + li * line_h
+
+            # 投影
+            if sty["title_shadow"]:
+                if tracking_px:
+                    cx = lx + shadow[0]
+                    for ch in line:
+                        draw.text((cx, ly + shadow[1]), ch, font=title_font, fill=pal["shadow"])
+                        cx += title_font.getlength(ch) + tracking_px
+                else:
+                    draw.text((lx + shadow[0], ly + shadow[1]), line,
+                              font=title_font, fill=pal["shadow"])
+
+            # 正文
+            if tracking_px:
+                cx = lx
+                for ch in line:
+                    draw.text((cx, ly), ch, **kwargs)
+                    cx += title_font.getlength(ch) + tracking_px
+            else:
+                draw.text((lx, ly), line, **kwargs)
+
+        _check_safe_zone(draw, "title",
+                         ((W - max_w_px)/2, ty0, (W + max_w_px)/2, ty0 + total_h),
+                         W, H, margin)
+
+    # 标题折行时，hook/author 的 y 需动态下移（避免与多行标题重叠）
+    n_title_lines = len(title_lines) if spec["title"] else 1
+    title_extra_h = (n_title_lines - 1) * (title_font.size * 1.1) if spec["title"] else 0
+    hook_y_offset = title_extra_h  # 多行标题下移钩子
+    author_y_offset = title_extra_h
+
+    # hook/author 的水平对齐：LAYOUT 有 align=left 时左对齐，否则居中
+    def _element_x(text_w: float, layout_elem: dict) -> float:
+        align = layout_elem.get("align", "center")
+        if align == "left":
+            return W * layout_elem.get("x", 0.06)
+        return (W - text_w) / 2
+
+    # ── 4) 钩子（quiet=仿宋描边居中 / viral=亮黄标签黑字左对齐）──
     hook_font_paths = spec[sty["hook_font_key"]]
     if spec["hook"]:
         max_w = int(W * L["hook"]["max_w"])
@@ -312,26 +375,26 @@ def compose(template: Path, out: Path, spec: dict) -> None:
                     cur = ch
             if cur:
                 lines.append(cur)
-            hy = H * L["hook"]["y"]
+            hy = H * L["hook"]["y"] + hook_y_offset
             for i, ln in enumerate(lines[:2]):
                 lw = draw.textlength(ln, font=hook_font)
-                lx = (W - lw) / 2
+                lx = _element_x(lw, L["hook"])
                 ly = hy + i * line_h
                 _draw_hook_line(draw, ln, hook_font, lx, ly, W, H, sty, hook_color,
                                 hook_stroke, max_w)
         else:
             hw = draw.textlength(spec["hook"], font=hook_font)
-            hx = (W - hw) / 2
-            hy = H * L["hook"]["y"]
+            hx = _element_x(hw, L["hook"])
+            hy = H * L["hook"]["y"] + hook_y_offset
             _draw_hook_line(draw, spec["hook"], hook_font, hx, hy, W, H, sty, hook_color,
                             hook_stroke, max_w)
 
-    # ── 5) 作者：居中 ──
+    # ── 5) 作者（跟随 hook 对齐）──
     if spec["author"]:
         author_font = load_font(spec["font_hook"], int(H * L["author"]["size"]))
         aw = draw.textlength(spec["author"], font=author_font)
-        ax = (W - aw) / 2
-        ay = H * L["author"]["y"]
+        ax = _element_x(aw, L["author"])
+        ay = H * L["author"]["y"] + author_y_offset
         hook_stroke = max(1, int(H * 0.0014))
         draw.text((ax, ay), spec["author"], font=author_font,
                   fill=pal["meta"], stroke_width=hook_stroke, stroke_fill=pal["meta"])

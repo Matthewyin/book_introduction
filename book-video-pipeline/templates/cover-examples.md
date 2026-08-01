@@ -46,26 +46,39 @@
 
 ---
 
-## 范文 3：书封特写版（待生成 · bookshot 模板）
+## 范文 3：人物+书封特写版（已验收 · bookshot 模板）
 
-> 用 `--template bookshot` 时需要此母版。书封占画面 60-70%，文字只在顶部窄带。
+> 用 `--template bookshot` 时需要此母版。**Q 版小美女 + 书封**，人物在右下做推荐手势，
+> 书在左侧，顶部一体式留白区给文字层。完整 prompt 见 `prompts/cover-3x4-bookshot.md`。
 
 ```
-书评视频统一封面——书封特写版（小红书 3:4 竖版）。
-【最高优先级】画面中严禁出现任何人形、人物、人影、剪影、手。
-主体：一本心理学励志书的封面，俯拍 45° 角放置在浅色木桌上，书封占据画面 60-70%。书封设计简约——大面积浅色底 + 细线条装饰图案（无具体文字，避免 AI 写错中文）。书旁放一杯柠檬水和小绿植做点缀。
-【构图关键】书封斜放，左下角向右上延伸，形成视觉引导线；顶部约 25% 是干净的浅色桌面区（书名排版将落在这里），与书的浅色调延续一体，无生硬分界。
-【文字范围限制】书封上不写具体书名文字（保持抽象装饰图案）；顶部排版区必须无字干净。
-情绪：清爽、阳光、积极向上。
-画风：日系可爱动漫插画，扁平色块，非写实非 3D。配色：奶油白、浅木色、薄荷绿点缀。
+3:4 vertical cover. Japanese anime illustration, soft watercolor style.
+
+A cute anime girl (18-22) in the lower right, half-body, leaning forward with a warm
+confident smile, right hand raised in a "presenting/recommending" gesture pointing toward
+a book on the left. She has: soft oval face, big bright almond eyes, dark brown medium-long
+wavy hair with a small pink hair clip, wearing a cream-white loose T-shirt, soft warm blush.
+
+On the left-center: a psychology book standing upright, book cover has cream-white background
+with abstract line decorations (NO text). Next to it: lemon water + small potted plant.
+
+CRITICAL COMPOSITION — integrated top space (not a blank band):
+The entire image is ONE continuous, seamless space. The top is NOT an empty whitespace belt
+— it is the scene itself naturally extending upward: bright window wall and soft sky-gradient
+continue upward, warm sunlight diffuses into cream-to-white gradient. NO dividing line.
+
+Style: soft Japanese anime, non-realistic, non-3D. Palette: cream white, light wood, mint
+green, soft pink blush, sunshine yellow. Low saturation.
+No text anywhere. Book cover has only abstract patterns. Upper area must be text-free.
 ```
 
-### 书封特写版要点
+### 人物+书封特写版要点
 
-- 书封**占 60-70%**，但不写具体书名（AI 写中文易错）→ PIL 排版层负责出字
-- 俯拍 45° 比_flatlay 更有层次感
-- 顶部留 25% 干净区给文字层
-- 书封装饰用「抽象图案」而非文字占位
+- **允许 Q 版人物**（bookshot 专属例外，ambient 仍严禁人物）
+- 人物在**右下角**做推荐手势，引导视线到左侧的书 → 带货感
+- 书封**不写具体文字**（AI 写中文易错）→ PIL 排版层负责出字
+- **一体式留白**：顶部是同一房间的墙面/窗光自然延伸，不是空出来的带子
+- 人物和书在**下方 60%**，上方 35-40% 留给文字排版
 
 ---
 
