@@ -76,9 +76,7 @@ LAYOUT = {
     "author": {"y": 0.425, "size": 0.027},               # 居中：作者
 }
 
-# logo 品牌卡底卡（浅暖色，提亮暗色 lockup 的对比）
-LOGO_CARD_FILL = (250, 243, 226, 215)
-LOGO_CARD_PAD = 0.36  # 底卡内边距（相对 logo 高度）
+# logo 品牌卡：透明背景，直接贴原图（自带 alpha），尺寸见 LAYOUT["logo"]
 
 
 def load_font(paths: list[str], size: int) -> ImageFont.FreeTypeFont:
@@ -110,20 +108,14 @@ def compose(template: Path, out: Path, spec: dict) -> None:
     L = LAYOUT
     draw = ImageDraw.Draw(im, "RGBA")
 
-    # ── 1) 左上：logo 品牌卡（浅暖底卡 + 放大提亮；无则回退「系列名 · EP」文字）──
+    # ── 1) 左上：logo 品牌卡（透明背景直贴；无则回退「系列名 · EP」文字）──
     logo = spec.get("logo")
     if logo and logo.is_file():
         lg = Image.open(logo).convert("RGBA")
         lw = int(W * L["logo"]["w"])
         lh = int(lg.height * lw / lg.width)
         lg = lg.resize((lw, lh), Image.LANCZOS)
-        pad = int(lh * LOGO_CARD_PAD)
-        cx = int(W * L["logo"]["x"])
-        cy = int(H * L["logo"]["y"])
-        draw.rounded_rectangle(
-            [cx - pad, cy - pad, cx + lw + pad, cy + lh + pad],
-            radius=int(lh * 0.35), fill=LOGO_CARD_FILL)
-        im.paste(lg, (cx, cy), lg)
+        im.paste(lg, (int(W * L["logo"]["x"]), int(H * L["logo"]["y"])), lg)
     else:
         series_font = load_font(spec["font_body"], int(H * L["corner"]["size"]))
         series_text = f"{spec['series']} · {spec['episode']}" if spec["episode"] else spec["series"]
