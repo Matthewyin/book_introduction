@@ -4,7 +4,11 @@
 
 本流水线是一个 **ZCode Skill**（也可作为独立的文档+脚本框架使用）。它不承诺播放量或成交额，只提供一套**带 7 个人工审核点**的确定性生产流程：从选书、文案、口播、分镜、素材生成、动效设计到最终合成，每一步都停下等你确认。
 
-视觉风格采用**日系软萌 anime 水彩插画**（soft cel-shaded anime, watercolor edges, pastel palette），当前主力风格卡 `templates/styles/people/cute-anime-girl.md`。风格卡库支持人物线 / 萌宠线多套风格切换，每集先选风格并审核。
+视觉风格支持两套主力风格卡，每集 Step 7.0 由用户选定并审核：
+- **`people/cute-anime-girl.md`**（日系软萌 anime 水彩插画）：soft cel-shaded anime + 水彩边，五色低饱和色板。定妆图 `assets/protagonist-base/girl-ref.png`。
+- **`people/cinematic-girl.md`**（写实电影质感）：写实摄影，浅景深 + 胶片颗粒，暖调奶油色板。内含双人设可选：
+  - variant **literary**（温柔文艺女青年）→ 定妆图 `assets/protagonist-base/realistic-girl-ref.png`
+  - variant **intellectual**（知性职场美女，暖栗色卷发 + 白衬衫 + 深色包臀短裙）→ 定妆图 `assets/protagonist-base/realistic-intellectual-ref.png`
 
 ---
 
@@ -227,7 +231,7 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `video-spec.md` | 全流程 | 视频技术规格红线 |
 | `scene-prompt.md` | Step 7 | 提示词组织方式（拼接规则、通道分工、一致性清单） |
 | `style-prefix.en.md` | Step 7 | （旧版风格常量，已被 `styles/` 风格卡库取代，保留兼容） |
-| `styles/` 风格卡库 | Step 7.0 | 风格卡（主力：`people/cute-anime-girl.md` 动漫水彩 + `people/cinematic-girl.md` 写实电影）+ README |
+| `styles/` 风格卡库 | Step 7.0 | 风格卡（主力：`people/cute-anime-girl.md` 动漫水彩 + `people/cinematic-girl.md` 写实电影，写实卡含 literary / intellectual 双人设）+ README |
 | `scene-content.en.md` | Step 7 | 单镜内容字段骨架（DeepSeek 填这个） |
 | `cover-prompt.md` | Step 7b | 封面主视觉提示词（无字 · gptsapi） |
 | `cover-design.md` | Step 7b | 封面本地排版规格（PIL 文字层 · 唯一规格源） |
