@@ -227,7 +227,7 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `video-spec.md` | 全流程 | 视频技术规格红线 |
 | `scene-prompt.md` | Step 7 | 提示词组织方式（拼接规则、通道分工、一致性清单） |
 | `style-prefix.en.md` | Step 7 | （旧版风格常量，已被 `styles/` 风格卡库取代，保留兼容） |
-| `styles/` 风格卡库 | Step 7.0 | 风格卡（当前主力 `people/cute-anime-girl.md`）+ README |
+| `styles/` 风格卡库 | Step 7.0 | 风格卡（主力：`people/cute-anime-girl.md` 动漫水彩 + `people/cinematic-girl.md` 写实电影）+ README |
 | `scene-content.en.md` | Step 7 | 单镜内容字段骨架（DeepSeek 填这个） |
 | `cover-prompt.md` | Step 7b | 封面主视觉提示词（无字 · gptsapi） |
 | `cover-design.md` | Step 7b | 封面本地排版规格（PIL 文字层 · 唯一规格源） |

@@ -203,14 +203,17 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 
 #### 7.0：风格选择 + 引用全局定妆图（每集第一步）
 
-1. **选风格卡**：从 `templates/styles/` 选定本集风格（当前主力 `people/cute-anime-girl.md`）。
-   展示风格卡给用户确认。
-2. **🔴 审核点⑤b（风格确认）**：用 AskUserQuestion 确认风格卡。
-3. **引用全局定妆图**：主角定妆图是**全局**资产，位于 `assets/protagonist-base/girl-ref.png`
-   （941×1672，已就位），所有集共用，无需每集重生。向用户展示该全局定妆图以供确认。
-   （这是一次性全局资产；若某集需要不同角色，才单独生成本集定妆图。）
-4. **🔴 审核点⑤c（定妆确认）**：用 AskUserQuestion 确认全局定妆图适用本集
-   （通常直接通过；除非本集需要不同角色才单独生）。
+1. **选风格卡**：从 `templates/styles/` 选定本集风格。当前有两套主力风格卡：
+   - **`people/cute-anime-girl.md`**（日系动漫水彩）：软萌治愈，cel-shaded anime + 水彩边，五色低饱和色板。定妆图 `assets/protagonist-base/girl-ref.png`（941×1672）。
+   - **`people/cinematic-girl.md`**（写实电影质感）：写实摄影，浅景深 + 胶片颗粒，暖调奶油色板。定妆图 `assets/protagonist-base/realistic-girl-ref.png`（1440×2560，2K）。
+   
+   按书目气质选择：治愈/散文/诗集适合动漫风，干货/方法论/职场适合写实风。
+   展示选定风格卡 + 对应定妆图给用户确认。
+2. **🔴 审核点⑤b（风格确认）**：用 AskUserQuestion 确认风格卡 + 定妆图。
+3. **引用全局定妆图**：定妆图是**全局**资产，所有集共用，无需每集重生。
+   - 动漫风 → `assets/protagonist-base/girl-ref.png`
+   - 写实风 → `assets/protagonist-base/realistic-girl-ref.png`
+   （一次性全局资产；若某集需要不同角色，才单独生成本集定妆图。）
 
 #### 7.1：写场景内容
 
@@ -271,8 +274,9 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 
 | 场景 | 后端 | 参考图 | 原因 |
 |------|------|--------|------|
-| 主角定妆图 | 全局已就位 `assets/protagonist-base/girl-ref.png`（无需每集生成） | ❌ | 一次性全局资产，所有集共用；仅当某集需要不同角色时才单独生成 |
-| 含主角的镜头（`characters: true`） | dreamina image2image + Seedream 5.0 | ✅ 定妆图 | 角色 + 风格双锁（实测优于 MiniMax） |
+| 主角定妆图（动漫/写实） | 全局已就位 `assets/protagonist-base/{girl-ref,realistic-girl-ref}.png` | ❌ | 一次性全局资产，所有集共用 |
+| 含主角的镜头·动漫风 | dreamina image2image + Seedream 5.0 | ✅ `girl-ref.png` | 角色 + anime 风格双锁 |
+| 含主角的镜头·写实风 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-girl-ref.png` | 写实人像质感最强 |
 | 无主角镜头（书封、抽象概念、纯环境） | gptsapi + GPT Image 2 | ❌ | 中文渲染好、质量高 |
 | i2v 关键帧首帧 | dreamina image2image | ✅ 定妆图 | 保证 i2v 输出与静帧角色同源 |
 
