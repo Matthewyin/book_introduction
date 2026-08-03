@@ -55,6 +55,20 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 
 ## 工作流程（10 步，带 7 个审核点）
 
+### 状态机铁律（每步都要记录）
+
+每集目录的 `run-manifest.json`（schema v3）是**机器可读的进度真相源**，每步状态用固定枚举：
+`pending / in_progress / needs_review / approved / completed / blocked / failed`。
+
+- **每步开工**：`python3 scripts/manifest.py update <集目录> --step stepX --status in_progress`
+- **每步完成**：追加 `--status completed --note <关键决策> --artifacts <产物相对路径>`
+- **版本递增**：改稿/改配音后加 `--versions script=3 audio=2`（不覆盖已确认产物）
+- **审核点处**：提交审核前标 `needs_review`，用户通过后标 `approved`
+- **恢复铁律**：任何会话接手某集时，**先跑**
+  `python3 scripts/manifest.py resume <集目录>`，按输出的 current_step 从断点继续，
+  不重做已 completed 步骤。全流程完成后 current_step = `ALL_DONE`。
+- 旧 v2 manifest 用 `manifest.py migrate` 一键升级（保留 key_decisions / video_spec）。
+
 ### 顺序铁律（不可颠倒）
 
 **配音必须在分镜和生图之前完成。** 音频的真实时长和逐句时间戳是分镜的输入，不是产物。颠倒顺序的后果：换音色 → 时长变化 → 时间轴全废 → 字幕重烧 → 视频重合成。
@@ -94,6 +108,7 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 4. 用 `templates/book-profile.md` 模板填写选书档案，"三大带货角度"必须标注数据来源。
 5. 评估带货潜力（话题热度、搜索需求、视觉可演绎性）。
 6. **🔴 审核点①**：用 AskUserQuestion 确认书和带货角度。
+7. **状态机**：`manifest.py update <集目录> --step step1_profile --status completed --artifacts 01-profile/book-profile.md`
 
 ### Step 2：Kimi K3 文案策划 → `02-script/script-brief.md`
 
@@ -101,6 +116,7 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 2. 调用 **Kimi K3**（`KIMI_API_KEY`，base URL `https://api.kimi.com/coding/`）生成：视频主题、开头钩子（≤20字）、3-5 个核心观点和金句、行动引导话术。
 3. 用 `templates/script-brief.md` 记录。
 4. **🔴 审核点②**：用 AskUserQuestion 确认钩子和观点方向。
+5. **状态机**：`manifest.py update <集目录> --step step2_script_brief --status completed --artifacts 02-script/script-brief.md`
 
 ### Step 3：口播稿四道工序 → `02-script/SCRIPT.md`
 
@@ -159,6 +175,8 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 1. 按 `templates/SCRIPT-template.md` 写成**锁定旁白文件**（对齐 hyperframes `script-format.md`）：逐句分节、标注所属帧、预估时间窗、delivery 提示。
 2. 同时产出单行纯文本 `voiceover-text.txt` 供 TTS 读取。
 3. **🔴 审核点③**：用 AskUserQuestion 提交人工审核（最重要审核点）。附上四道工序各改了什么。
+4. **状态机**：审核点③通过后
+   `manifest.py update <集目录> --step step3_script --status completed --artifacts 02-script/SCRIPT.md 02-script/voiceover-text.txt --versions script=<定稿版本>`
 
 ### Step 4：MiniMax TTS 配音（音色审核）→ `03-assets/audio/voiceover.wav`
 
@@ -169,6 +187,7 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 3. **🔴 审核点④**：用 AskUserQuestion 确认音色。
 4. 通过后生成完整配音，记录实际总时长。
 5. 新音色入库流程见 `assets/voices/README.md`。
+6. **状态机**：`manifest.py update <集目录> --step step4_tts --status completed --artifacts 03-assets/audio/voiceover.wav --versions audio=<版本>`
 
 ### Step 5：从音频提取真实时间轴 → `02-script/shot-timing.json`
 
@@ -176,6 +195,7 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 2. 按各镜字符数比例分配时长，再把每个切点**吸附到最近的停顿中点**（容差 2.5s），确保切点落在句子之间。
 3. 产出每镜的 `start` / `end` / `duration` / `chars` / 语速（字/秒），语速应落在 3.2–5.2 字/秒。
 4. 脚本：`scripts/realign-shots.py`。
+5. **状态机**：`manifest.py update <集目录> --step step5_shot_timing --status completed --artifacts 02-script/shot-timing.json`
 
 ### Step 6：DeepSeek V4 Pro 分镜（含动效字段）→ `02-script/STORYBOARD.md`
 
@@ -194,6 +214,8 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
    | `src` | 该帧 HTML 子组合路径 |
 
 3. **🔴 审核点⑤**：用 AskUserQuestion 确认画面描述和动效设计。
+4. **状态机**：审核点⑤通过后
+   `manifest.py update <集目录> --step step6_storyboard --status completed --artifacts 02-script/STORYBOARD.md`
 
 ### Step 7：生图 → `03-assets/scenes/shot_*.png`
 
@@ -271,6 +293,8 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 
 生成后逐张核对 `templates/scene-prompt.md` 末尾的一致性清单
 （五色色板 / 风格质感 / 主角形象一致 / 真 PNG）。
+核对通过后更新状态机：
+`manifest.py update <集目录> --step step7_image_generation --status completed --note <后端分配摘要> --artifacts <全部 shot_*.png 路径>`
 
 **通道分工**（`genimage.py` 按 `characters` + `charRef` 自动路由）：
 
@@ -306,6 +330,7 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
    - `--template`：`ambient`（默认氛围静物）/ `bookshot`（书封特写，需对应母版）
 4. 核对：书名/钩子无错字、无溢出、顶部留白区干净、主视觉未被文字遮挡、安全区无越界警告。
    产出 `cover-final.png`（3:4 小红书）+ `cover-final-9x16.png`（9:16 抖音/视频号）。
+5. **状态机**：`manifest.py update <集目录> --step step7b_cover --status completed --artifacts 03-assets/cover/cover-final.png 03-assets/cover/cover-final-9x16.png`
 
 ### Step 8：动效设计 → `02-script/motion-plan.md`
 
@@ -388,6 +413,8 @@ dreamina image2video \
 - 字号均小于口播字幕（48px），不抢主次
 - 位置在画面中上部，与底部字幕分离，不打架
 - **⚠️ 背景必须透明**：金句文字不得带任何背景色块或底纹
+- **状态机**：动效方案定稿后
+  `manifest.py update <集目录> --step step8_motion_plan --status completed --artifacts 02-script/motion-plan.md`
 
 ### Step 9：hyperframes 合成 → `04-video/output.mp4`
 
@@ -406,6 +433,8 @@ dreamina image2video \
 11. 运行 `scripts/validate-spec.py output.mp4` 校验规格。
 12. **独立终检**：派一个干净上下文的 subagent，按 `references/final-review.md` 逐项审查（结构一致性、视觉质量、音频节奏、技术规格、去AI味与安全）。每条结论附帧号证据。**制作者有确认偏差，首检不能交给用户。** 必须修复项清零后才提交审核点⑦。
 13. **🔴 审核点⑦**：用 AskUserQuestion 确认成片。
+14. **状态机**：审核点⑦通过后
+    `manifest.py update <集目录> --step step9_composition --status completed --artifacts 04-video/output.mp4 04-video/subtitle.srt --versions output=<版本>`
 
 ### Step 9b：BGM → `03-assets/audio/bgm.mp3`
 
@@ -429,12 +458,15 @@ dreamina image2video \
 2. 包含：标题（≤20 字）、简介、标签、互动设计。
 3. 按 `references/xhs-publish-rules.md` 做合规检查。
 4. 产出封面图 + 视频文件 + 文案，待人工发布。
+5. **状态机**：`manifest.py update <集目录> --step step10_publish --status completed --artifacts 05-publish/publish-brief.md`
+   （发布后补标 `--status approved` 并记录发布日期到 production.csv）
 
 ## 每集目录结构
 
 ```
 episodes/ep00X-书名/
-├── run-manifest.json          # 运行状态追踪
+├── run-manifest.json          # 状态机 v3（manifest.py 读写，进度真相源）
+├── book-overrides.yaml        # 单书配置覆盖（可缺省，只写覆盖键，见 pipeline.yaml）
 ├── 01-profile/
 │   └── book-profile.md        # Step 1
 ├── 02-script/
