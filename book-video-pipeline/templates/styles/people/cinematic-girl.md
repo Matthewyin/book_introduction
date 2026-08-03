@@ -1,7 +1,9 @@
 # Style card: cinematic-girl (写实电影质感)
-# 双人设写实风格卡——每集 Step 7.0 由用户在两个人设间二选一：
-#   • variant: literary  → 温柔文艺女青年（定妆图 assets/protagonist-base/realistic-girl-ref.png）
-#   • variant: intellectual → 知性职场美女（定妆图 assets/protagonist-base/realistic-intellectual-ref.png）
+# 四人设写实风格卡——每集 Step 7.0 由用户在四个人设间选一：
+#   • variant: literary           → 温柔文艺女青年（定妆图 realistic-girl-ref.png）
+#   • variant: intellectual       → 知性职场美女（定妆图 realistic-intellectual-ref.png）
+#   • variant: literary-male      → 温柔文艺男青年（定妆图 realistic-literary-male-ref.png）
+#   • variant: intellectual-male  → 知性职场男（定妆图 realistic-intellectual-male-ref.png）
 # 主力通道：dreamina text2image Seedream 5.0（写实人像强） / openrouter 备用（无主角镜头）
 # 与 cute-anime-girl.md 并列第二主力风格，每集 Step 7.0 由用户选择
 #
@@ -32,6 +34,26 @@ Hair: warm chestnut brown (warm chestnut with subtle caramel sheen, one shade li
 Figure: full and upright with womanly curves, full bust, slim waist, long legs, graceful S-curve — dignified yet alluring. Relaxed confident posture, slender neck.
 Outfit: a crisp white short-sleeve shirt (tailored, waist-shaping, tucked in, top button slightly undone for softness) in cotton with visible weave texture and natural folds near the waist when moving; paired with a dark navy or deep grey high-waisted pencil skirt at knee length with smooth drape. A thin metal necklace with small pendant; small ear studs; a minimalist watch. (3-4 visible accessories.)
 Expressions: confident and serene, composed, warm poised smile — never stiff, never over-smiling.
+
+## Variant C — literary-male (温柔文艺男青年)
+Identity locked to assets/protagonist-base/realistic-literary-male-ref.png.
+
+Face: natural soft oval face, East Asian man ~25yo, gentle literary temperament, quiet and warm. Eyes symmetrical with long thin window-light reflections in dark brown pupils; soft natural dark brown eyebrows; clean-shaven with subtle skin texture; faint natural skin redness on cheeks; natural soft lips. Skin fair and warm, retaining fine pores and natural skin-tone variation — NOT porcelain, NOT plastic.
+Hair: soft natural black, medium length, slightly tousled and relaxed. Loose natural waves over the forehead in a casual side-sweep, a few fine strands catching the light. Effortless, slightly messy but soft — no clumping.
+Figure: lean and relaxed, narrow gentle shoulders, slim, calm unhurried posture.
+Outfit: a soft cream-beige linen shirt (loose fit, breathable texture visible, top button undone, sleeves naturally pushed up), over a white crew-neck tee peeking at the collar; light khaki cotton chinos. A simple woven cord bracelet on left wrist.
+Expressions: serene, warm, contemplative, gentle soft smile — calm and quietly attentive, never stiff.
+
+## Variant D — intellectual-male (知性职场男)
+Identity locked to assets/protagonist-base/realistic-intellectual-male-ref.png.
+
+Face: natural soft angular face, East Asian man ~27yo, confident yet approachable, intellectual professional. Eyes symmetrical with bright reflections in dark brown pupils; defined neat dark brown eyebrows; clean-shaven with subtle skin texture; faint natural skin redness on cheeks; natural healthy lips. Skin fair and bright, retaining fine pores and natural skin-tone variation — NOT porcelain, NOT plastic.
+Hair: warm dark brown (natural warm brown, slightly lighter than black), short to medium length. Neatly styled with a natural side part, slight volume at the front, a few fine strands catching the light. Well-groomed but not stiff — no clumping.
+Figure: lean and upright, broad shoulders, slim waist, relaxed confident posture, tall.
+Outfit: a crisp light blue Oxford cotton shirt (tailored fit, top two buttons undone for smart-casual, sleeves rolled up to forearms), tucked into dark charcoal slim-fit trousers. A minimalist silver wristwatch; a thin brown leather belt.
+Expressions: confident and serene, composed warm approachable smile — never stiff, never over-smiling.
+
+(Male variants) Negative: no feminine features, no makeup, no lipstick, no delicate jawline.
 
 ## (Shared) Composition & Camera
 - Framing: half-body to three-quarter (waist up or waist-to-knee). Subject centered slightly off-center (face at ~50% of frame width).

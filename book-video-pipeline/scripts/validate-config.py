@@ -81,8 +81,10 @@ REQUIRED_FILES = {
 # 工作区资产（相对 ${WORKSPACE}，与 REQUIRED_FILES 分开以便提示路径）
 WORKSPACE_ASSETS = {
     "assets/protagonist-base/girl-ref.png": "动漫定妆图",
-    "assets/protagonist-base/realistic-girl-ref.png": "写实·文艺定妆图",
-    "assets/protagonist-base/realistic-intellectual-ref.png": "写实·知性定妆图",
+    "assets/protagonist-base/realistic-girl-ref.png": "写实·文艺女定妆图",
+    "assets/protagonist-base/realistic-intellectual-ref.png": "写实·知性女定妆图",
+    "assets/protagonist-base/realistic-literary-male-ref.png": "写实·文艺男定妆图",
+    "assets/protagonist-base/realistic-intellectual-male-ref.png": "写实·知性男定妆图",
 }
 
 
