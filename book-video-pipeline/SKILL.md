@@ -68,6 +68,8 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
   `python3 scripts/manifest.py resume <集目录>`，按输出的 current_step 从断点继续，
   不重做已 completed 步骤。全流程完成后 current_step = `ALL_DONE`。
 - 旧 v2 manifest 用 `manifest.py migrate` 一键升级（保留 key_decisions / video_spec）。
+- **开工校验**：每集开工前跑 `python3 scripts/validate-config.py [--book <集目录>]`，
+  确认字体/封面母版/定妆图/后端工具齐备，缺项先补齐再开工。
 
 ### 顺序铁律（不可颠倒）
 
