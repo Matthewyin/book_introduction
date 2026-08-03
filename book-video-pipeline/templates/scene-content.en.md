@@ -21,6 +21,38 @@ Tone: {{cool / neutral / warm 三选一，对应 video-style-guide.md 的配比�
 characters: {{true / false。true = 该镜含主角，生图时挂全局定妆图 ref}}
 ```
 
+### 细节密度字段（`characters: false` 的镜头必须填，含主角镜头可选）
+
+> 只对 **gptsapi 通道（无主角镜）** 强制。该通道是 GPT Image 2，吃细节密度——
+> 写得越具体，出图完成度越高。含主角镜头走 dreamina Seedream，写简洁反而更稳。
+
+```
+Lighting: {{光源 + 方向 + 质感。例：warm morning sunlight from the left window,
+  long soft shadows across the desk, dust motes floating in the light beam}}
+
+Detail: {{环境/物件分项铺陈，3-5 条，每条一个可辨识特征。例：
+  - a worn leather armchair with a folded knit blanket draped over one arm
+  - a stack of books with coffee ring stains on the top cover
+  - thin curtains billowing softly in the breeze
+  - dust particles glowing in the sunbeam}}
+```
+
+**Detail 写法三原则**（借鉴 GPT Image 2 提示词库的"可见 N 个部件"式列举）：
+1. **每件物品写到材质/状态/动态**，不写笼统的"a chair"——写"a worn leather armchair
+   with a folded knit blanket draped over one arm"
+2. **3-5 条即可**，不追求堆砌；每条服务画面氛围或口播内容，不写无关杂物
+3. **空间关系交代**：谁在谁旁边/谁被谁遮住，写清遮挡关系
+
+**反面 vs 正面**：
+
+```
+❌ Props: a book, a lamp, a cup
+✅ Props: a closed book with a torn paper bookmark, a brass desk lamp tilted
+   toward the page, a cup of tea with steam rising
+✅ Lighting: warm evening light from a single desk lamp, deep shadows in the corners,
+   a soft pool of light on the book only
+```
+
 ---
 
 ## 口播→画面翻译三规则（必读，违反即废稿）
@@ -81,4 +113,5 @@ characters: {{true / false。true = 该镜含主角，生图时挂全局定妆�
 - [ ] 该镜含人物吗？含 → 主角是否在场（见证者或主讲人）？→ `characters: true`
 - [ ] 口播这一句的核心是抽象概念吗？是 → 画主角的反应/讲解姿态，不画概念本身
 - [ ] 有重复出现的非主角角色吗？有 → 外貌描述是否和前文一致？
+- [ ] `characters: false` 的镜头：Lighting / Detail 是否填了（3-5 条具体铺陈）？
 - [ ] 没写风格/色值/画幅/禁止项（那些在风格卡里）

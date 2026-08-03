@@ -41,6 +41,7 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 | 工具与认证规范 | `references/tool-usage.md` |
 | **口播稿去 AI 味（Step 3d 必读）** | `references/deai-checklist.md` |
 | **插画风格唯一控制源** | `references/video-style-guide.md` |
+| **风格增强词库（质感微调）** | `references/style-vocabulary.md` |
 | **生图提示词组织（Step 7 必读）** | `templates/scene-prompt.md` |
 | 音色选择 | `assets/voices/README.md` + `assets/voices/voice-library.json` |
 | 选书与选题 | `references/book-category-playbook.md` |
@@ -273,6 +274,9 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 2. 同时为每镜标注 `characters: true/false`（是否含主角），用于 batch 路由。
    **注意**：按规则 1，绝大多数含人物的镜头都应是 `characters: true`（主角在场）；
    `characters: false` 仅用于纯环境/无人物镜头（书封特写、空镜、抽象背景）。
+   `characters: false` 的镜头**必须**额外填 `Lighting` / `Detail` 细节密度字段
+   （见 `templates/scene-content.en.md`）——该通道是 gptsapi（GPT Image 2），
+   吃细节铺陈，写具体出图完成度才高；含主角镜头走 dreamina，保持简洁。
 
 #### 7.2：生成测试图
 

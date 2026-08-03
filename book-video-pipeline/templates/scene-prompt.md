@@ -90,6 +90,13 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 }
 ```
 
+## 细节密度校准
+
+写 scene.md（尤其 `characters: false` 的 gptsapi 镜头）前，读
+`templates/scene-examples.md`——收录了社区 GPT Image 2 提示词的三种结构拆解
+（角色一致性 / 细节铺陈 / 分区布局）与校准标准。配合 `scene-content.en.md` 的
+`Lighting` / `Detail` 字段使用。
+
 ## 后端路由规则
 
 `genimage.py` 三档路由：
