@@ -6,12 +6,22 @@
 
 配置文件格式：pipeline.yaml（极简 YAML 子集，见下方解析器说明）。
 加载优先级（先命中先返回）：
-    1. 项目级：<pipeline 根>/pipeline.yaml
-    2. 用户级：~/.config/book-video-pipeline/pipeline.yaml
-    3. 内置默认（DEFAULT_CONFIG，等于历史硬编码值）
+    1. 单书覆盖：<episodes/ep00X>/book-overrides.yaml（若有）
+    2. 项目级：<pipeline 根>/pipeline.yaml
+    3. 用户级：~/.config/book-video-pipeline/pipeline.yaml
+    4. 内置默认（DEFAULT_CONFIG，等于历史硬编码值）
 
 API key 不在此管理——继续走环境变量 / ~/.zshrc / .baoyu-skills/.env。
 本模块只管「非密钥偏好」：模型名、端点、超时、后端选择、画幅等。
+
+路径支持 `${VAR}` 占位符（expandpath / cfg.path 自动展开）：
+    ${PIPELINE_ROOT}  本 skill 根目录（自动推导，无需配置）
+    ${WORKSPACE}      工作区根（pipeline.yaml `workspace.root` 指定；
+                      未配置时从 cwd 向上探测含 episodes/ 或 assets/ 的目录）
+
+单书覆盖：在集目录放 book-overrides.yaml 只写想覆盖的键（如 tts.default_voice），
+与 pipeline.yaml 同构。脚本在集目录（或其子目录）下运行时自动加载；
+也可显式 cfg.set_book(<集目录>) 指定。
 
 用法：
     from config import cfg
@@ -24,12 +34,16 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 from pathlib import Path
+
+# 本 skill 根目录（自动推导，供 ${PIPELINE_ROOT} 展开）
+PIPELINE_ROOT = Path(__file__).resolve().parent.parent
 
 # 配置文件搜索路径（先命中先返回）
 _SEARCH_PATHS = [
-    Path(__file__).resolve().parent.parent / "pipeline.yaml",              # 项目级
-    Path.home() / ".config" / "book-video-pipeline" / "pipeline.yaml",     # 用户级
+    PIPELINE_ROOT / "pipeline.yaml",                                        # 项目级
+    Path.home() / ".config" / "book-video-pipeline" / "pipeline.yaml",      # 用户级
 ]
 
 
@@ -109,8 +123,8 @@ DEFAULT_CONFIG: dict = {
         "poll_seconds": 180,
     },
     "cover": {
-        "template_dir": "~/Coding/video/assets/cover-image",
-        "logo": "~/Coding/video/assets/brand/corner-lockup.png",
+        "template_dir": "${WORKSPACE}/assets/cover-image",
+        "logo": "${WORKSPACE}/assets/brand/corner-lockup.png",
         "corner_right": "好书推荐",
         "template_has_brand": False,
         "series_name": "好书慢读",
@@ -217,9 +231,47 @@ def _deep_merge(base: dict, override: dict) -> dict:
 
 # --------------------------------------------------------------------------- 路径展开
 
+def _find_workspace_root() -> Path | None:
+    """从 cwd 向上探测工作区根：含 episodes/ 或 assets/ 目录的最近父目录。"""
+    cwd = Path.cwd()
+    for parent in (cwd, *cwd.parents):
+        if (parent / "episodes").is_dir() or (parent / "assets").is_dir():
+            return parent
+    return None
+
+
+def workspace_root() -> Path:
+    """确定 ${WORKSPACE} 指向：pipeline.yaml `workspace.root` > 自动探测 > skill 根。
+
+    workspace.root 只做 ~ 展开（不做 ${VAR}，避免循环引用）。
+    """
+    for path in _SEARCH_PATHS:
+        if path.is_file():
+            try:
+                data = _parse_yaml(path.read_text(encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                continue
+            root = (data.get("workspace") or {}).get("root")
+            if root:
+                # 只做 ~ 展开，不展开 ${VAR}（否则与 expandpath 的 ${WORKSPACE} 递归）
+                s = str(root)
+                if s.startswith("~"):
+                    s = os.path.expanduser(s)
+                return Path(s)
+    detected = _find_workspace_root()
+    if detected:
+        return detected
+    return PIPELINE_ROOT
+
+
 def expandpath(p: str | Path) -> Path:
-    """展开 ~ 和 $HOME。"""
+    """展开 ${VAR} 占位符、~ 和 $HOME。
+
+    支持 ${PIPELINE_ROOT}（skill 根）与 ${WORKSPACE}（工作区根，见 workspace_root）。
+    """
     s = str(p)
+    s = s.replace("${PIPELINE_ROOT}", str(PIPELINE_ROOT))
+    s = s.replace("${WORKSPACE}", str(workspace_root()))
     if s.startswith("~"):
         s = os.path.expanduser(s)
     return Path(s)
@@ -227,23 +279,51 @@ def expandpath(p: str | Path) -> Path:
 
 # --------------------------------------------------------------------------- 加载
 
-def _load_file() -> dict | None:
-    for path in _SEARCH_PATHS:
+def _load_file(paths: list[Path]) -> dict | None:
+    for path in paths:
         if path.is_file():
             try:
                 return _parse_yaml(path.read_text(encoding="utf-8"))
             except Exception as e:  # noqa: BLE001
-                import sys
                 print(f"[config] 警告：{path} 解析失败，回退默认值：{e}", file=sys.stderr)
                 return None
     return None
 
 
-def _resolve_config() -> dict:
-    file_cfg = _load_file()
+def _find_book_dir() -> Path | None:
+    """从 cwd 向上探测集目录：含 run-manifest.json 的最近父目录。
+
+    脚本在 episodes/ep00X/ 下（或其子目录）运行时，自动加载该集 book-overrides.yaml。
+    """
+    cwd = Path.cwd()
+    for parent in (cwd, *cwd.parents):
+        if (parent / "run-manifest.json").is_file():
+            return parent
+    return None
+
+
+def _load_book_overrides(book_dir: Path | None) -> dict | None:
+    if book_dir is None:
+        return None
+    path = book_dir / "book-overrides.yaml"
+    if not path.is_file():
+        return None
+    try:
+        return _parse_yaml(path.read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        print(f"[config] 警告：{path} 解析失败，忽略单书覆盖：{e}", file=sys.stderr)
+        return None
+
+
+def _resolve_config(book_dir: Path | None = None) -> dict:
+    data = DEFAULT_CONFIG
+    file_cfg = _load_file(_SEARCH_PATHS)
     if file_cfg:
-        return _deep_merge(DEFAULT_CONFIG, file_cfg)
-    return DEFAULT_CONFIG
+        data = _deep_merge(data, file_cfg)
+    book_cfg = _load_book_overrides(book_dir)
+    if book_cfg:
+        data = _deep_merge(data, book_cfg)
+    return data
 
 
 # --------------------------------------------------------------------------- 公开接口
@@ -252,7 +332,18 @@ class _Config:
     """单例配置访问。get("a.b.c") 走点号路径；缺失返回 default。"""
 
     def __init__(self):
-        self._data = _resolve_config()
+        self._book_dir = _find_book_dir()
+        self._data = _resolve_config(self._book_dir)
+
+    @property
+    def book_dir(self) -> Path | None:
+        """当前生效的单书覆盖目录（自动探测或 set_book 指定）。"""
+        return self._book_dir
+
+    def set_book(self, book_dir: str | Path | None):
+        """显式指定集目录以加载其 book-overrides.yaml；None 清除覆盖。"""
+        self._book_dir = None if book_dir is None else Path(book_dir)
+        self._data = _resolve_config(self._book_dir)
 
     def get(self, dotted_key: str, default=None):
         node = self._data
@@ -263,7 +354,7 @@ class _Config:
         return node
 
     def path(self, dotted_key: str, default=None) -> Path:
-        """get 的路径版：自动展开 ~ 并返回 Path 对象。"""
+        """get 的路径版：自动展开 ${VAR}/~ 并返回 Path 对象。"""
         val = self.get(dotted_key, default)
         if val is None:
             return None  # type: ignore[return-value]
@@ -271,7 +362,8 @@ class _Config:
 
     def reload(self):
         """重新读配置（测试/运行时改了 pipeline.yaml 后调用）。"""
-        self._data = _resolve_config()
+        self._book_dir = _find_book_dir()
+        self._data = _resolve_config(self._book_dir)
 
 
 cfg = _Config()

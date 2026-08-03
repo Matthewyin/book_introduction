@@ -90,11 +90,17 @@ tts:
   volume: 1.0
   pitch: 0
 
+# ──────────────────────────────────────────────────────────── 工作区（路径可移植）
+# ${WORKSPACE} 指向工作区根（episodes/、assets/ 所在目录）。
+# 显式配置优先；未配置时自动从 cwd 向上探测含 episodes/ 或 assets/ 的目录。
+workspace:
+  root: ~/Coding/video
+
 # ──────────────────────────────────────────────────────────── 封面（本地排版合成，无 Canva）
 cover:
   # 统一封面模板目录（已验收的无字主视觉：cover-3x4.png + cover-9x16.png）
-  template_dir: ~/Coding/video/assets/cover-image
-  logo: ~/Coding/video/assets/brand/corner-lockup.png   # 左上角 logo 品牌卡（720×180，透明底）
+  template_dir: ${WORKSPACE}/assets/cover-image
+  logo: ${WORKSPACE}/assets/brand/corner-lockup.png   # 左上角 logo 品牌卡（720×180，透明底）
   template_has_brand: true                          # 底图已含 logo，每集不再画 logo
   corner_right: 好书推荐                                 # 右上角文字
   series_name: 好书慢读                                  # logo 缺失时的左上回退文字
