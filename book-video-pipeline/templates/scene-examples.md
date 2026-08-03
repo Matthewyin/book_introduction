@@ -73,10 +73,54 @@
 
 ---
 
+## 范文 4：无主角情绪场景（characters: false，主角按需出镜）
+
+> 对应新规则 1"内容优先，主角按需出镜"。口播主体不是主角时，主角退场，画面直接呈现口播内容。
+
+口播："你有没有过这样的时刻？加班到深夜，整栋楼都黑了，只剩你一个人。"
+
+```
+✅ 正确写法（主角退场，画面就是口播描述的场景本身）
+
+Scene: Night exterior, a corporate office building seen from the street.
+  Most windows dark, only one window on the 12th floor still lit.
+Subject: An empty desk with a glowing laptop, a cold takeaway box,
+  a crumpled coffee cup. No person visible — just the aftermath of long work.
+Props: laptop (screen glow), takeaway box (open, chopsticks resting),
+  coffee cup (crumpled, ring stain on desk), a phone face-down.
+Lighting: cold blue night from the window, warm yellow from the laptop
+  screen only, deep shadows in the cubicles behind.
+Detail:
+  - rows of empty desks fading into darkness
+  - a single desk lamp left on, casting a lonely circle of light
+  - city lights blurred through rain-streaked glass
+  - a calendar on the wall with too many red marks
+Emotion: isolation, exhaustion
+Tone: cool
+characters: false
+```
+
+```
+❌ 错误写法（强行塞主角旁观）
+
+Subject: The young woman (protagonist) sits alone at the desk typing,
+  looking tired. ← 口播说的是"你"（泛指观众/现象），不是主角的具体故事，
+  强行塞主角反而限制了共鸣感，也浪费了一个本该纯粹的"氛围帧"
+```
+
+**要点**：
+1. 口播主语是泛指"你"（现象描述）→ 不是主角自述 → `characters: false`
+2. 无主角帧靠**道具和光影讲故事**：发亮笔电、冷外卖、揉皱的咖啡杯——"加班到深夜"
+   不需要一个人坐在那里才成立
+3. `Lighting` / `Detail` 字段必须填足（openrouter 通道吃细节密度）
+
+---
+
 ## 校准标准（新写 scene.md 对照自检）
 
-1. **Subject 是动作链**：姿态 + 动作 + 表情，不是静态站位
-2. **Detail 每条三要素**：材质 / 状态 / 动态（3-5 条）
-3. **Lighting 三要素**：光源 + 方向 + 质感
-4. **多镜角色标签一致**：重复角色用同一条外貌描述
-5. **负面项**：至少写「写实摄影 / 3D / 角色崩坏 / 乱码文字」四个（动漫通道）
+1. **先判口播主体**：主角自己→`true`；他人/现象/概念→`false`（内容优先，主角按需）
+2. **Subject 是动作链**：姿态 + 动作 + 表情，不是静态站位
+3. **Detail 每条三要素**：材质 / 状态 / 动态（3-5 条）
+4. **Lighting 三要素**：光源 + 方向 + 质感
+5. **多镜角色标签一致**：重复角色用同一条外貌描述
+6. **负面项**：至少写「写实摄影 / 3D / 角色崩坏 / 乱码文字」四个（动漫通道）
