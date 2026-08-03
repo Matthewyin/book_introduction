@@ -61,7 +61,7 @@ POSITIVE_INT_FIELDS = {
 
 # 枚举字段：值必须在给定集合内
 ENUM_FIELDS = {
-    "image.default_backend": {"grok", "gptsapi", "dreamina", "baoyu"},
+    "image.default_backend": {"openrouter", "grok", "gptsapi", "dreamina", "baoyu"},
     "image.ref_backend": {"dreamina", "baoyu"},
 }
 
@@ -74,7 +74,7 @@ REQUIRED_FILES = {
     "cover.font_hook": "钩子字体",
     "cover.font_body": "正文字体",
     "image.backends.grok.binary": "grok CLI",
-    "image.backends.gptsapi.script": "gptsapi 脚本",
+    "image.backends.openrouter.script": "openrouter 脚本",
     "image.backends.dreamina.binary": "dreamina CLI",
 }
 

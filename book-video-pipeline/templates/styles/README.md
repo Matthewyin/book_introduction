@@ -19,9 +19,9 @@ templates/styles/
 
 | 风格卡 | 线 | 通道 | 状态 | 适合内容 |
 |--------|----|------|------|---------|
-| `people/cute-anime-girl.md` | 人物 | gptsapi + Seedream | ✅ 主力 | 情绪共鸣、成长、治愈、职场、社科 |
+| `people/cute-anime-girl.md` | 人物 | openrouter + Seedream | ✅ 主力 | 情绪共鸣、成长、治愈、职场、社科 |
 | `people/cute-anime-girl.minimax.md` | 人物 | MiniMax 备用 | 备用 | 同上（仅 baoyu 通道时用） |
-| `pets/watercolor-cat.md` | 萌宠 | gptsapi + Seedream | 备用 | 治愈、日常、品牌 IP 强化 |
+| `pets/watercolor-cat.md` | 萌宠 | openrouter + Seedream | 备用 | 治愈、日常、品牌 IP 强化 |
 
 ## 选风格与审核流程
 
@@ -29,7 +29,7 @@ templates/styles/
 
 1. **选风格卡**：根据本集书目类型，从上表选一张。默认 `people/cute-anime-girl.md`。
 2. **🔴 审核点⑤b（风格确认）**：展示风格卡全文 + 参考图给用户，用 AskUserQuestion 确认。
-3. **生成定妆图**：用选定风格卡走 gptsapi 生主角标准像。
+3. **生成定妆图**：用选定风格卡走 openrouter 生主角标准像。
 4. **🔴 审核点⑤c（定妆确认）**：确认主角形象。
 5. **生成测试图**：走 Seedream 通道生 1 张含主角的镜头，验证角色锁定 + 风格一致。
 6. **🔴 审核点⑥**：确认后批量。

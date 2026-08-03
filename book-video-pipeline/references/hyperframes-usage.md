@@ -288,7 +288,7 @@ dreamina image2video \
 ```
 
 **首帧必须是 Seedream 通道生成的图**（带定妆图 ref），保证 i2v 输出与周围静帧角色同源。
-不要拿 gptsapi 单独生的图当 i2v 首帧——会和 Seedream 帧的角色对不上。
+不要拿 openrouter 单独生的图当 i2v 首帧——会和 Seedream 帧的角色对不上。
 
 ### 其他限制
 

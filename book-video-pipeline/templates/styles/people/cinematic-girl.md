@@ -2,7 +2,7 @@
 # 双人设写实风格卡——每集 Step 7.0 由用户在两个人设间二选一：
 #   • variant: literary  → 温柔文艺女青年（定妆图 assets/protagonist-base/realistic-girl-ref.png）
 #   • variant: intellectual → 知性职场美女（定妆图 assets/protagonist-base/realistic-intellectual-ref.png）
-# 主力通道：dreamina text2image Seedream 5.0（写实人像强） / gptsapi 备用（无主角镜头）
+# 主力通道：dreamina text2image Seedream 5.0（写实人像强） / openrouter 备用（无主角镜头）
 # 与 cute-anime-girl.md 并列第二主力风格，每集 Step 7.0 由用户选择
 #
 # 写法级别：摄影指导级（借鉴 awesome-gpt-image-2 顶级写实人像写法）。

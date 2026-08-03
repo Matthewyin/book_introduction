@@ -1,8 +1,8 @@
-# 封面主视觉提示词模板（统一封面 · 无字 · gptsapi）
+# 封面主视觉提示词模板（统一封面 · 无字 · openrouter）
 
 > 统一封面职责分离：**AI 出画（无字主视觉），本地 PIL 排版出字（书名/钩子）**。
 > 本文件是主视觉的生成规范（已验收：ep003 落地 `03-assets/cover/`）。
-> 后端固定 **gptsapi（gpt-image-2）**：指令遵循强，能严格做到
+> 后端固定 **openrouter（gpt-image-2）**：指令遵循强，能严格做到
 > 「无人物 / 一体式留白 / 清爽阳光向上 / 小字只出现在书和手机」。
 
 ## 输出规格
@@ -15,13 +15,13 @@
 统一封面存 `assets/cover-image/`（系列共用，可复现 prompt 同目录 `prompts/`）；
 落地到单集时复制到 `03-assets/cover/`。
 
-## 生成命令（gptsapi 无 ref）
+## 生成命令（openrouter 无 ref）
 
 ```bash
-python3 ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py \
-  --prompt-file prompts/cover-3x4.md --aspect-ratio 3:4 --image cover.png --api-key "$GPTSAPI_KEY"
-python3 ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py \
-  --prompt-file prompts/cover-9x16.md --aspect-ratio 9:16 --image cover-9x16.png --api-key "$GPTSAPI_KEY"
+python3 scripts/openrouter_image.py \
+  --prompt-file prompts/cover-3x4.md --aspect-ratio 3:4 --image cover.png
+python3 scripts/openrouter_image.py \
+  --prompt-file prompts/cover-9x16.md --aspect-ratio 9:16 --image cover-9x16.png
 # 输出后 sips -z 对齐精确尺寸（gpt-image-2 1K 给近似尺寸）
 ```
 

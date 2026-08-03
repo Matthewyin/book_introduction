@@ -3,7 +3,7 @@
 
 对外一个接口，对内按"有无主角 + 有无参考图 + 配置"路由：
 
-    无 characters / 无 --ref       → default_backend（配置，当前 gptsapi；grok 为备选）
+    无 characters / 无 --ref       → default_backend（配置，当前 openrouter；gptsapi/grok 为备选）
     有 characters / 有 charRef     → ref_backend（dreamina，角色+风格双锁）
     显式 --ref（无 charRef）        → baoyu-image-gen + MiniMax（备用）
 
@@ -111,6 +111,27 @@ def run_gptsapi(prompt: str, out: Path, ar: str) -> None:
         raise SystemExit(f"gptsapi 脚本缺失：{script}")
     out.parent.mkdir(parents=True, exist_ok=True)
     # gptsapi_image.py 只收单文件，这里落临时文件传入
+    with tempfile.NamedTemporaryFile("w", suffix=".md", encoding="utf-8", delete=False) as tf:
+        tf.write(prompt)
+        tmp = Path(tf.name)
+    try:
+        subprocess.run(
+            [sys.executable, str(script),
+             "--prompt-file", str(tmp),
+             "--aspect-ratio", ar,
+             "--image", str(out)],
+            check=True,
+        )
+    finally:
+        tmp.unlink(missing_ok=True)
+
+
+def run_openrouter(prompt: str, out: Path, ar: str) -> None:
+    """OpenRouter gpt-image-2 同步生图（gptsapi 的稳定替代，无卡死问题）。"""
+    script = cfg.path("image.backends.openrouter.script")
+    if not script.is_file():
+        raise SystemExit(f"openrouter 脚本缺失：{script}")
+    out.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile("w", suffix=".md", encoding="utf-8", delete=False) as tf:
         tf.write(prompt)
         tmp = Path(tf.name)
@@ -299,6 +320,7 @@ def _download(url: str, out: Path) -> None:
 
 # 后端分发表
 _BACKENDS = {
+    "openrouter": run_openrouter,
     "gptsapi": run_gptsapi,
     "baoyu": run_baoyu,
     "dreamina": run_dreamina,
@@ -342,7 +364,7 @@ class Task:
             return cfg.get("image.ref_backend", "dreamina")
         if self.refs:
             return "baoyu"
-        return cfg.get("image.default_backend", "gptsapi")
+        return cfg.get("image.default_backend", "openrouter")
 
     @property
     def effective_refs(self) -> list[Path]:

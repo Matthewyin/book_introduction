@@ -1,6 +1,6 @@
 # Style card: cute-anime-girl
 # 全局定妆图：assets/protagonist-base/girl-ref.png（本卡人物描述由此图固化）
-# 主力通道：gptsapi（定妆图已生成）/ dreamina image2image Seedream 5.0（主角镜头，带定妆图当 ref）
+# 主力通道：openrouter（定妆图已生成）/ dreamina image2image Seedream 5.0（主角镜头，带定妆图当 ref）
 
 A soft Japanese anime / moe illustration, digital watercolor style. Vertical 9:16 portrait composition.
 

@@ -53,7 +53,7 @@ _SEARCH_PATHS = [
 
 DEFAULT_CONFIG: dict = {
     "image": {
-        "default_backend": "gptsapi",
+        "default_backend": "openrouter",
         "ref_backend": "dreamina",
         "backup_backend": "gptsapi",
         "backends": {
@@ -65,9 +65,18 @@ DEFAULT_CONFIG: dict = {
                 "no_subagents": True,
                 "max_turns": 5,
             },
+            "openrouter": {
+                "script": str(Path(__file__).resolve().parent.parent / "scripts" / "openrouter_image.py"),
+                "model": "openai/gpt-image-2",
+                "resolution": "1K",
+                "quality": "high",
+                "output_format": "png",
+                "enabled": True,
+            },
             "gptsapi": {
                 "script": "~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py",
                 "aspect_ratio": "9:16",
+                "enabled": False,
             },
             "dreamina": {
                 "binary": "~/.local/bin/dreamina",

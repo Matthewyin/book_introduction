@@ -23,7 +23,7 @@ characters: {{true / false。true = 该镜含主角，生图时挂全局定妆�
 
 ### 细节密度字段（`characters: false` 的镜头必须填，含主角镜头可选）
 
-> 只对 **gptsapi 通道（无主角镜）** 强制。该通道是 GPT Image 2，吃细节密度——
+> 只对 **openrouter 通道（无主角镜）** 强制。该通道是 GPT Image 2，吃细节密度——
 > 写得越具体，出图完成度越高。含主角镜头走 dreamina Seedream，写简洁反而更稳。
 
 ```

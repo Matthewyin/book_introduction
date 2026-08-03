@@ -1,7 +1,7 @@
 # pipeline.yaml — book-video-pipeline 全管线可配置参数（唯一源）
 #
 # 本文件只存「非密钥偏好」：模型名、端点、超时、后端选择、画幅等。
-# API key（GPTSAPI_KEY / MINIMAX_API_KEY / KIMI_API_KEY / DEEPSEEK_API_KEY）
+# API key（OPENROUTER_API_KEY / MINIMAX_API_KEY / KIMI_API_KEY / DEEPSEEK_API_KEY）
 # 继续走环境变量 / ~/.zshrc / .baoyu-skills/.env，不入此文件。
 #
 # 路径里的 ~ 会自动展开为 $HOME。
@@ -9,15 +9,15 @@
 
 # ──────────────────────────────────────────────────────────── 生图后端
 image:
-  # 无 ref 镜头的默认后端。grok 余额恢复后改成 grok 即可切换。
-  # 可选：grok | gptsapi
-  default_backend: gptsapi
+  # 无 ref 镜头的默认后端（OpenRouter 同步 API，GPT Image 2，无卡死问题）。
+  # 可选：openrouter | gptsapi | grok
+  default_backend: openrouter
 
-  # 有 charRef 的镜头（角色锁定）。grok/gptsapi 都不支持 ref，只能走 dreamina。
+  # 有 charRef 的镜头（角色锁定）。openrouter/gptsapi/grok 都不支持 ref，只能走 dreamina。
   ref_backend: dreamina
 
   # 主力后端失败时的 fallback（仅对 default_backend 生效）。
-  # grok→gptsapi；若 default_backend 已是 gptsapi 则无 fallback。
+  # openrouter→gptsapi；gptsapi 是旧异步通道，保留作救场备用。
   backup_backend: gptsapi
 
   backends:
@@ -34,8 +34,16 @@ image:
       # grok 是 agent 式生图（模型自主调 image_gen 工具），输出路径靠提示词约定，
       # 非确定性。genimage.py 会解析输出找图片并下载/复制到目标位置。
 
-    gptsapi:
+    openrouter:                   # 主力：OpenRouter 同步 API（GPT Image 2）
       enabled: true
+      script: scripts/openrouter_image.py   # skill 内自有脚本
+      model: openai/gpt-image-2   # 与 gptsapi 同模型，提示词完全复用
+      resolution: 1K              # 固定 1K（与 gptsapi 一致）
+      quality: high               # 最高画质档
+      output_format: png
+
+    gptsapi:                      # 备用：旧异步通道（卡死频发，仅救场用）
+      enabled: false
       script: ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py
       aspect_ratio: "9:16"
       # GPT Image 2，固定 1K (1080×1920)，中文渲染好，带卡死检测重试。
@@ -56,7 +64,7 @@ image:
 
   aspect_ratio: "9:16"
   # 仅 baoyu/MiniMax 通道用：防 MiniMax body 把 9:16 出成 720×1280。
-  # Seedream 出原生 2k、gptsapi 出 1080×1920，都不缩放。
+  # Seedream 出原生 2k、openrouter 出 1080×1920，都不缩放。
   size_map:
     "9:16": "1080x1920"
     "16:9": "1920x1080"

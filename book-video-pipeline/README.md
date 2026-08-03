@@ -64,7 +64,7 @@ ffmpeg -version      # 任意版本，无需 libass（字幕由 hyperframes 渲�
 | **ego-browser** | Step 9b BGM 下载（绕过 pixabay Cloudflare） | ZCode Skill `ego-browser` |
 | **humanizer-zh** | Step 3d 去 AI 味 | ZCode Skill `humanizer-zh` |
 | **seedance-prompt-zh** | Step 8a i2v 提示词 | ZCode Skill `seedance-prompt-zh` |
-| **baoyu ai-content-pipeline** | Step 7 生图（gptsapi 通道：定妆图 + 无主角镜头） | ZCode Skill `ai-content-pipeline`，脚本 `~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py` |
+| **OpenRouter API** | Step 7 生图（openrouter 通道：定妆图 + 无主角镜头） | 脚本 `scripts/openrouter_image.py`（skill 自有），key 走 `OPENROUTER_API_KEY` 环境变量 |
 | **dreamina CLI** | Step 7 主角镜头（Seedream 5.0 image2image）+ Step 8a i2v | `~/.local/bin/dreamina`，需 `dreamina login`（OAuth） |
 | **baoyu-image-gen** | Step 7 备用参考图通道（MiniMax） | ZCode Skill `baoyu-image-gen`，需 `bun`（`brew install oven-sh/bun/bun`） |
 
@@ -77,7 +77,7 @@ ffmpeg -version      # 任意版本，无需 libass（字幕由 hyperframes 渲�
 export KIMI_API_KEY="..."        # Kimi K3，文案策划 + 口播起草
 export DEEPSEEK_API_KEY="..."    # DeepSeek V4 Pro/Flash，二审 + 分镜 + 提示词
 export MINIMAX_API_KEY="..."     # MiniMax T2A v2 配音 + image-01 参考图生图（共用）
-export GPTSAPI_KEY="..."         # gptsapi（GPT Image 2），定妆图 + 无主角镜头
+export OPENROUTER_API_KEY="..."         # openrouter（GPT Image 2），定妆图 + 无主角镜头
 ```
 
 dreamina CLI 用 OAuth 登录（不用 API key）：`dreamina login`，登录态存 `~/.dreamina/`。
@@ -135,7 +135,7 @@ Agent 会自动：选书 → 写档案 → 弹出**审核点①**等你确认。
 | **Step 4** TTS 配音 | `03-assets/audio/voiceover.wav` | MiniMax T2A v2 | 🔴 ④ |
 | **Step 5** 真实时间轴 | `02-script/shot-timing.json` | `realign-shots.py` + ffmpeg | — |
 | **Step 6** 分镜 | `02-script/STORYBOARD.md` | DeepSeek V4 Pro | 🔴 ⑤ |
-| **Step 7** 生图 | `03-assets/scenes/shot_*.png` | `genimage.py` → gptsapi / dreamina Seedream | 🔴 ⑥ |
+| **Step 7** 生图 | `03-assets/scenes/shot_*.png` | `genimage.py` → openrouter / dreamina Seedream | 🔴 ⑥ |
 | **Step 8** 动效设计 | `02-script/motion-plan.md` | GSAP / 即梦 i2v | — |
 | **Step 9** 合成 | `04-video/output.mp4` + `subtitle.srt` | hyperframes | 🔴 ⑦ |
 | **Step 9b** BGM | `03-assets/audio/bgm.mp3` | ego-browser → pixabay | 🔴 ⑦b |
@@ -212,7 +212,7 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `make-cues.py` | 逐句字幕切分（按标点不破词） | `<shot-timing.json> --out` | — |
 | `check-script.py` | 去 AI 味自动校验（20 项规则） | `<script.md> [--before <early.md>]` | — |
 | `validate-spec.py` | 成片规格校验 | `<video.mp4>` | ffmpeg/ffprobe |
-| `genimage.py` | 生图统一入口（分发层：gptsapi / dreamina Seedream / MiniMax） | `--style ... --promptfiles ... --image` 或 `--batchfile` | `GPTSAPI_KEY` / `MINIMAX_API_KEY` / dreamina OAuth |
+| `genimage.py` | 生图统一入口（分发层：openrouter / dreamina Seedream / MiniMax） | `--style ... --promptfiles ... --image` 或 `--batchfile` | `OPENROUTER_API_KEY` / `MINIMAX_API_KEY` / dreamina OAuth |
 | `cover-compose.py` | 封面本地排版合成（无 Canva，零 API，支持 `--style viral`/`--palette`/`--template`） | `--book-title ... --hook ... --author ... --episode ... --out-dir [--style viral] [--palette calm]` | — |
 
 ### 模板（`templates/`，12 个 + `styles/` 风格卡库）
@@ -229,7 +229,7 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `style-prefix.en.md` | Step 7 | （旧版风格常量，已被 `styles/` 风格卡库取代，保留兼容） |
 | `styles/` 风格卡库 | Step 7.0 | 风格卡（主力：`people/cute-anime-girl.md` 动漫水彩 + `people/cinematic-girl.md` 写实电影）+ README |
 | `scene-content.en.md` | Step 7 | 单镜内容字段骨架（DeepSeek 填这个） |
-| `cover-prompt.md` | Step 7b | 封面主视觉提示词（无字 · gptsapi） |
+| `cover-prompt.md` | Step 7b | 封面主视觉提示词（无字 · openrouter） |
 | `cover-design.md` | Step 7b | 封面本地排版规格（PIL 文字层 · 唯一规格源） |
 | `publish-brief.md` | Step 10 | 发布物料简报 |
 | `baoyu-image-gen-EXTEND.md` | 安装 | 拷到仓库根 `.baoyu-skills/baoyu-image-gen/EXTEND.md`，覆盖用户级默认值 |
@@ -367,7 +367,7 @@ Step 6 DeepSeek 分镜 ─► STORYBOARD.md ─► (审核点⑤)
         ▼
 Step 7 DeepSeek Flash 写 shot_*.scene.md（仅内容）
         │   └─ 风格卡（styles/*.md）拼在前面，模型不碰风格
-        └─ genimage.py 分发（characters+charRef→Seedream，否则→gptsapi）─► scenes/shot_*.png ─► (审核点⑥)
+        └─ genimage.py 分发（characters+charRef→Seedream，否则→openrouter）─► scenes/shot_*.png ─► (审核点⑥)
         │
         ▼
 Step 7b 封面本地合成 ─► cover-final.png + cover-final-9x16.png
@@ -397,7 +397,7 @@ Step 10 发布物料 ─► publish-brief.md
 | Step 3c / 6 | DeepSeek V4 Pro (`deepseek-v4-pro`) | 二审修复、分镜（思考模式） |
 | Step 7 | DeepSeek V4 Flash (`deepseek-v4-flash`) | 插画提示词（非思考模式） |
 | Step 3d | humanizer-zh skill | 去 AI 味收尾（唯一减法工序，只删不加） |
-| Step 7 | gptsapi (GPT Image 2) | 主角定妆图 + 无主角镜头（中文渲染好、风格质量最高） |
+| Step 7 | openrouter (GPT Image 2) | 主角定妆图 + 无主角镜头（中文渲染好、风格质量最高） |
 | Step 7 | dreamina Seedream 5.0 | 主角镜头（image2image，带定妆图 ref，角色+风格双锁） |
 | Step 7 | MiniMax `image-01` | 备用参考图通道（baoyu-image-gen 触发，对 anime 锁定弱） |
 | Step 7 | grok CLI (image_gen) | 备选生图后端（pipeline.yaml 可切，走订阅） |
@@ -411,7 +411,7 @@ Step 10 发布物料 ─► publish-brief.md
 | Skill | 触发点 | 作用 |
 |-------|--------|------|
 | `humanizer-zh` | Step 3d | 口播稿去 AI 味收尾 |
-| `ai-content-pipeline` | Step 7 | 通过 `gptsapi_image.py` 生图（默认通道） |
+| `openrouter_image.py`（skill 自有） | Step 7 | OpenRouter 同步生图（默认通道），替代原 gptsapi |
 | `baoyu-image-gen` | Step 7 | 参考图生图（有 `ref` 时由 `genimage.py` 自动路由） |
 | `seedance-prompt-zh` | Step 8a | 生成符合 Seedance 2.0 规范的 i2v 提示词 |
 | `ego-browser` | Step 9b | 浏览器下载 pixabay BGM（绕过 Cloudflare） |
@@ -422,7 +422,7 @@ Step 10 发布物料 ─► publish-brief.md
 脚本 get_api_key()
    ├─ 1. 环境变量（$KIMI_API_KEY / $DEEPSEEK_API_KEY / ...）
    ├─ 2. ~/.zshrc 中的 export 行
-   └─ 3. gptsapi 专属：<cwd>/.baoyu-skills/.env → ~/.baoyu-skills/.env
+   └─ 3. openrouter/MiniMax：环境变量 $OPENROUTER_API_KEY / $MINIMAX_API_KEY（~/.zshrc）
 
 ❌ 项目内任何文件都不存储 key
 ❌ 不读取 ~/.grok/auth.json（grok CLI 已退出主流程）

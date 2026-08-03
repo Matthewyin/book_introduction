@@ -11,7 +11,7 @@ version: 1
 # 注意：scripts/genimage.py 已经在命令行显式钉死 --provider 和 --size，
 #       本文件是第二道保险，用于手工直接调 baoyu-image-gen 的场合。
 
-default_provider: minimax   # 本机可用的生图 key 只有 GPTSAPI_KEY / MINIMAX_API_KEY，
+default_provider: minimax   # 本机可用的生图 key 只有 OPENROUTER_API_KEY / MINIMAX_API_KEY，
                             # 其中只有 minimax 支持 --ref（subject_reference）
 default_quality: 2k
 default_aspect_ratio: "9:16"
@@ -41,7 +41,7 @@ MiniMax 不管输出扩展名写的是什么，一律返回 **JPEG** 字节流�
 
 | 场景 | 通道 | 原因 |
 |------|------|------|
-| 常规场景插画（无参考图） | gptsapi + gpt-image-2 | 中文渲染好，固定 1K，带卡死检测重试 |
-| 跨镜人物一致性（有参考图） | baoyu-image-gen + minimax | gptsapi 接口不支持参考图 |
+| 常规场景插画（无参考图） | openrouter + gpt-image-2 | 中文渲染好，固定 1K， |
+| 跨镜人物一致性（有参考图） | baoyu-image-gen + minimax | openrouter 接口不支持参考图 |
 
 统一入口：`python3 book-video-pipeline/scripts/genimage.py`，按有无 `--ref` 自动路由。

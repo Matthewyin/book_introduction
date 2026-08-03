@@ -61,7 +61,7 @@ python3 scripts/genimage.py \
   --image 03-assets/scenes/shot_002.png --ar 9:16 \
   --charRef assets/protagonist-base/girl-ref.png
 
-# 无主角镜头（gptsapi，无 ref）
+# 无主角镜头（openrouter，无 ref）
 python3 scripts/genimage.py \
   --style templates/styles/people/cute-anime-girl.md \
   --promptfiles 03-assets/scenes/shot_005.scene.md \
@@ -92,7 +92,7 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 
 ## 细节密度校准
 
-写 scene.md（尤其 `characters: false` 的 gptsapi 镜头）前，读
+写 scene.md（尤其 `characters: false` 的 openrouter 镜头）前，读
 `templates/scene-examples.md`——收录了社区 GPT Image 2 提示词的三种结构拆解
 （角色一致性 / 细节铺陈 / 分区布局）与校准标准。配合 `scene-content.en.md` 的
 `Lighting` / `Detail` 字段使用。
@@ -105,7 +105,7 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 |------|------|------|
 | `characters: true` + 有 `charRef` | dreamina image2image (Seedream 5.0) | 角色 + 风格双锁，实测优于 MiniMax |
 | 有 `--ref`（无 charRef） | baoyu-image-gen + MiniMax | 备用通道，对 anime 锁定弱 |
-| 无 characters / 无 ref | gptsapi + GPT Image 2 | 风格质量最高，中文渲染好 |
+| 无 characters / 无 ref | openrouter + GPT Image 2 | 风格质量最高，中文渲染好 |
 
 > ⚠️ MiniMax prompt 上限 1500 字符。若用 baoyu/MiniMax 备用通道，换 `*.minimax.md` 精简版风格卡。
 > dreamina 通道无此限制。
@@ -127,7 +127,7 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 
 i2v（dreamina image2video）的首帧就是静帧。为保证 i2v 输出与周围静帧角色同源：
 
-- **首帧必须是 Seedream 通道生成的图**（带定妆图 ref），不要用 gptsapi 单独生的图
+- **首帧必须是 Seedream 通道生成的图**（带定妆图 ref），不要用 openrouter 单独生的图
 - seedance 提示词里写「参考 @图片1 的人物形象，严格保持角色五官、发型、服装一致」
 
 ## 构图：无强制留白
