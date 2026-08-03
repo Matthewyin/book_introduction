@@ -55,6 +55,20 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 
 ## 工作流程（10 步，带 7 个审核点）
 
+### 降级策略（工具失败时按表走，不伪造产物）
+
+每步主通道失败时按下面顺序降级；**到底线就停**，标 `blocked`，绝不输出伪成品：
+
+| 步骤 | 主通道 | 降级链 | 底线（不做的事） |
+|------|--------|--------|------------------|
+| Step 2/3 LLM | Kimi / DeepSeek / grok | 互切（grok_review 已有 fallback_model） | 都不可用 → blocked，不空转 |
+| Step 4 TTS | MiniMax | 用户录音 → 其它 TTS | 无音频 → 暂停字幕/合成 |
+| Step 5 时间轴 | ffmpeg silencedetect | — | 不手猜时间戳 |
+| Step 7 生图 | dreamina（有 ref）/ gptsapi（无 ref） | 互换 → baoyu；`pipeline.yaml` 里 `image.backends.<名>.enabled=false` 可整体关闭某个后端 | 全部不可用 → 该镜 blocked，不生成占位图 |
+| Step 8 i2v | dreamina seedance | 跳过 i2v，退回 GSAP 动效层 | 不拿别的图冒充 i2v 帧 |
+| Step 9 合成 | hyperframes | ffmpeg xfade（ep005 已验证） | 都不行 → 交付素材包+工程说明，不伪造成片 |
+| Step 9b BGM | ego-browser + pixabay | 用户自供音乐 | 无 BGM 可合成但需标注 |
+
 ### 状态机铁律（每步都要记录）
 
 每集目录的 `run-manifest.json`（schema v3）是**机器可读的进度真相源**，每步状态用固定枚举：

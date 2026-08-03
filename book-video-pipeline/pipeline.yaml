@@ -21,7 +21,10 @@ image:
   backup_backend: gptsapi
 
   backends:
+    # enabled: 后端开关（缺省 true）。余额耗尽/工具缺失时设 false 关闭，
+    # genimage.py 调用该后端时直接报"已禁用"，不再重试。
     grok:
+      enabled: true
       binary: ~/.grok/bin/grok
       model: grok-4.5
       always_approve: true
@@ -32,11 +35,13 @@ image:
       # 非确定性。genimage.py 会解析输出找图片并下载/复制到目标位置。
 
     gptsapi:
+      enabled: true
       script: ~/.agents/skills/ai-content-pipeline/scripts/gptsapi_image.py
       aspect_ratio: "9:16"
       # GPT Image 2，固定 1K (1080×1920)，中文渲染好，带卡死检测重试。
 
     dreamina:
+      enabled: true
       binary: ~/.local/bin/dreamina
       model: "5.0"               # Seedream；image2image 强制 ≥2k
       resolution: 2k
@@ -44,6 +49,7 @@ image:
       max_refs: 4                # 主角锁定用 1 张就够，上限 4
 
     baoyu:                       # 备用 ref 通道（对 anime 插画锁定弱）
+      enabled: true
       script: ~/.agents/skills/baoyu-image-gen/scripts/main.ts
       provider: minimax
       ref_model: image-01

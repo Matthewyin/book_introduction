@@ -306,6 +306,16 @@ _BACKENDS = {
 }
 
 
+def _backend_enabled(name: str) -> bool:
+    """后端是否启用：pipeline.yaml image.backends.<name>.enabled（缺省 true）。
+
+    enabled=false 等价于该工具不可用（余额耗尽/未安装时人工关闭）。
+    """
+    if name not in _BACKENDS:
+        return False
+    return cfg.get(f"image.backends.{name}.enabled", True) is not False
+
+
 # --------------------------------------------------------------------------- 任务
 
 class Task:
@@ -347,6 +357,10 @@ class Task:
         fn = _BACKENDS.get(backend)
         if not fn:
             raise SystemExit(f"未知后端：{backend}（可选：{', '.join(_BACKENDS)}）")
+        if not _backend_enabled(backend):
+            raise RuntimeError(
+                f"后端 {backend} 已被禁用（pipeline.yaml image.backends.{backend}.enabled=false）"
+            )
         refs = self.effective_refs
         if backend == "baoyu":
             fn(prompt, self.image, self.ar, refs, self.provider, self.model)

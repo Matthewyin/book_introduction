@@ -163,7 +163,8 @@ LAYOUT_BOOKSHOT = {
     "author": {"y": 0.430, "size": 0.022, "x": 0.06, "align": "left"},  # 作者（左对齐）
 }
 
-LAYOUTS = {"ambient": LAYOUT_AMBIENT, "bookshot": LAYOUT_BOOKSHOT}
+LAYOUTS = {"ambient": LAYOUT_AMBIENT, "bookshot": LAYOUT_BOOKSHOT,
+           "bookshot-character": LAYOUT_BOOKSHOT}
 
 
 def load_font(paths: list[str], size: int) -> ImageFont.FreeTypeFont:
@@ -447,8 +448,8 @@ def main() -> int:
                    help="文字样式：quiet=暖棕安静体（默认）viral=病毒标题体（超粗+亮黄标签）")
     p.add_argument("--palette", choices=["sunny", "warm", "calm"], default="sunny",
                    help="配色：sunny=阳光暖棕（默认）warm=秋冬暖橙 calm=冷静蓝灰")
-    p.add_argument("--template", choices=["ambient", "bookshot"], default="ambient",
-                   help="模板版式：ambient=氛围静物（默认）bookshot=书封特写")
+    p.add_argument("--template", choices=["ambient", "bookshot", "bookshot-character"], default="ambient",
+                   help="模板版式：ambient=氛围静物（默认）bookshot=书封特写 bookshot-character=书封+人物推荐")
     p.add_argument("--safe-margin", type=float, default=0.10,
                    help="安全区边距比例（默认 0.10=10%%，元素超出时打印警告）")
     p.add_argument("--series", default=None, help="系列名（默认读 config）")
