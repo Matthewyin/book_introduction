@@ -70,6 +70,9 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 - 旧 v2 manifest 用 `manifest.py migrate` 一键升级（保留 key_decisions / video_spec）。
 - **开工校验**：每集开工前跑 `python3 scripts/validate-config.py [--book <集目录>]`，
   确认字体/封面母版/定妆图/后端工具齐备，缺项先补齐再开工。
+- **生产总览**：`python3 scripts/status.py` 聚合所有集状态成总览表
+  （`--csv` 输出 CSV）；每次 `manifest.py update` 自动刷新
+  `<工作区>/episodes/production.csv`（总览视图，真相源仍是 manifest）。
 
 ### 顺序铁律（不可颠倒）
 

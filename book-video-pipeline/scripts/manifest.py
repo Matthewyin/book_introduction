@@ -27,6 +27,13 @@ import re
 import sys
 from pathlib import Path
 
+# 更新 manifest 后自动刷新工作区总览 CSV（存在才写，失败不阻断）
+try:
+    from status import write_csv_file
+except ImportError:  # status.py 同目录，import 失败时跳过自动刷新
+    def write_csv_file(_ws):  # type: ignore[misc]
+        return None
+
 SCHEMA_VERSION = 3
 
 # 固定状态枚举（工厂 7 态精简版，去掉本地用不到的 failed 保留）
@@ -132,6 +139,18 @@ def migrate(path: Path) -> bool:
     return True
 
 
+def _refresh_csv(path: Path) -> None:
+    """从集目录向上找工作区根（episodes/ 的父目录），刷新 production.csv。"""
+    ep_dir = path.parent
+    for parent in (ep_dir, *ep_dir.parents):
+        if (parent / "episodes").is_dir():
+            try:
+                write_csv_file(parent)
+            except Exception:  # noqa: BLE001 — 总览刷新失败不阻断主流程
+                pass
+            return
+
+
 def update(path: Path, step: str, status: str | None, note: str | None,
            artifacts: list[str] | None, versions: dict | None) -> dict:
     if step not in VALID_STEPS:
@@ -158,6 +177,7 @@ def update(path: Path, step: str, status: str | None, note: str | None,
     else:
         data["current_step"] = "ALL_DONE"
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _refresh_csv(path)
     return data
 
 
