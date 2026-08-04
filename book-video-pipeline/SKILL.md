@@ -17,6 +17,26 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 
 **工作流带 7 个审核点**：每个 🔴 审核点必须用 `AskUserQuestion` 弹出"通过/修改/重做"选项，等待用户确认后才继续。绝不跳过。
 
+## 双产品线入口
+
+本插件有两条产品线，用户触发时选择：
+
+| 触发词 | 产品线 | 说明 |
+|--------|--------|------|
+| "金句流"/"金句视频"/"A线" | **A 线·金句流** | ≤60 秒短视频，微信读书划线金句 + Pixabay 实拍素材，暖调治愈风。制作快、爆款概率高。详见 `references/quote-workflow.md` |
+| "方法论"/"深度解读"/"B线" | **B 线·方法论流** | 165-240 秒，8 段螺旋结构 + AI 生图，深度拆解。即现有 Step 1-12 流程 |
+| 未指定 | 默认推荐 A 线 | 制作快、爆款概率高 |
+
+**A 线流程（Step Q1-Q8）**：
+1. **Q1 选书+获取金句**：`weread-highlights.py` 获取微信读书全书热门划线 Top20 → 🔴审核
+2. **Q2 金句筛选拼接**：DeepSeek 选 3-5 句拼成 90-150 字稿 → 🔴审核
+3. **Q3 配音**：TTS 0.9 倍速 → 🔴审核
+4. **Q4 实拍素材**：`pixabay-fetch.py` 搜 Pixabay 下载暖调 mp4 → 🔴审核
+5. **Q5 暖调封面**：Seedream 5.0 text2image + PIL 排字 → 🔴审核
+6. **Q6 hyperframes 合成**：`<video>` + `<audio>` + 字幕图层 → 🔴审核
+7. **Q7 字幕校准**：静音检测驱动时间轴
+8. **Q8 发布准备**：统一标题 `今天分享《书名》——金句…` + 标签 `#读书 #好书推荐 #情感共鸣`
+
 ## 认证管理红线（不可违反）
 
 **生图认证原则**：
@@ -268,7 +288,8 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 #### 7.1：写场景内容
 
 1. 调用 **DeepSeek V4 Flash**（`deepseek-v4-flash`）按分镜为每镜写 `shot_00X.scene.md`，
-   字段骨架见 `templates/scene-content.en.md`。
+   字段骨架见 `templates/scene-content.en.md`。**scene 文件用英文、总长 ≤600 字符
+   （Detail ≤3 条）**——t2i 通道 prompt 总长红线 1500 字符。
    **system prompt 必须约束**：
    - 只写画面内容，不写风格/色值/画幅/禁止项（那些已在风格卡里，重复写会冲突、导致色板漂移）
    - **口播→画面翻译三规则（违反即废稿，详见 `templates/scene-content.en.md`）**：
@@ -337,8 +358,13 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 | 含主角的镜头·写实·知性职场女 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-intellectual-female.png` | 写实人像质感最强 |
 | 含主角的镜头·写实·文艺男 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-literary-male.png` | 写实人像质感最强 |
 | 含主角的镜头·写实·知性职场男 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-intellectual-male.png` | 写实人像质感最强 |
-| 无主角镜头（书封、抽象概念、纯环境） | dreamina_text + Seedream 5.0 | ❌ | 2k 画质、全风格覆盖；失败 fallback openrouter |
+| 无主角镜头（书封、抽象概念、纯环境） | dreamina_text + Seedream 5.0 | ❌ | 2k 画质；**必须用 `*.t2i.md` 精简卡**（t2i prompt 总长 ≤1500 字符）；失败 fallback openrouter |
 | i2v 关键帧首帧 | dreamina image2image | ✅ 定妆图 | 保证 i2v 输出与静帧角色同源 |
+
+> ⚠️ **dreamina 提示词合规红线（实测，违反必败，详见 `references/tool-usage.md`）**：
+> ① text2image prompt（风格卡+scene，含注释）总长 ≤1500 字符，超限报 `ret=1046 InvalidNode`；
+> ② image2image 必须用单变体风格卡（如 `cinematic-girl.intellectual.md`），
+> 多人设合卡+跨性别负向词+ref 同发必触发 `final generation failed`。
 
 ### Step 7b：封面合成 → `03-assets/cover/cover-final.png`（本地排版，无 Canva）
 

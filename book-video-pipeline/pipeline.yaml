@@ -137,3 +137,32 @@ i2v:
   duration: 5                    # 秒，seedance2.0 系列 4-15
   resolution: 720p               # 输出上限 720p
   poll_seconds: 180
+
+# ──────────────────────────────────────────────────────────── A线·金句流
+quote:
+  # 金句流产品线配置（≤60秒短视频，微信读书划线金句 + Pixabay实拍素材）
+  max_duration: 60              # 正文最大秒数
+  min_quotes: 3                 # 最少金句数
+  max_quotes: 5                 # 最多金句数
+  min_chars: 90                 # 最少字数
+  max_chars: 150                # 最多字数
+  voice: danya_xuejie           # 淡雅学姐
+  voice_speed: 0.9              # 慢一档（适合金句留白）
+
+  # 微信读书 API
+  weread:
+    api_url: https://i.weread.qq.com/api/agent/gateway
+    skill_version: "1.0.4"
+
+  # Pixabay 实拍素材
+  pixabay:
+    enabled: true
+    min_clips: 3
+    max_clips: 5
+
+  # 封面
+  cover_style: warm-still-life  # 暖调静物风格卡
+  cover_title_format: "今天分享《{book}》——{hook}"
+
+  # 标签（统一）
+  tags: ["#读书", "#好书推荐", "#情感共鸣"]

@@ -135,6 +135,20 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 - image2image 强制 ≥2k（不支持 1k），素材保留原生分辨率，最终 1080×1920 由 hyperframes 渲染处理
 - 余额查询：`dreamina user_credit`
 
+**dreamina 提示词合规红线（2026-08-04 ep006 实测踩坑，违反必败）**：
+
+1. **text2image prompt 总长上限 ~1500 字符**。实测：1500 通过 / 1800 触发
+   `api error: ret=1046, message=InvalidNode`（报错文案与长度无关，极具迷惑性）。
+   风格卡 + scene 文件拼接后必须 ≤1500 字符（风格卡的 `#` 注释行也计入）。
+   因此无主角写实镜必须用精简卡 `templates/styles/people/cinematic.t2i.md`（≤900 字符），
+   scene 文件 Detail 最多 3 条、总长 ≤600 字符。
+2. **image2image 禁发多人设合一风格卡**。`cinematic-girl.md` 四变体合卡
+   （含男性变体及 "no feminine features / no makeup" 等跨性别负向词）
+   与女性定妆图 ref 同发必触发 `generation failed: final generation failed`。
+   必须用单变体卡（如 `cinematic-girl.intellectual.md`，负向列表精简版）+ charRef。
+3. **排障方法**：服务端失败不报具体原因时——先用极简 prompt（一句话）隔离通道是否可用，
+   再对 prompt 做二分定位（前半/后半分开发），最后复测组合确认是"组合触发"还是"单点触发"。
+
 ### grok CLI 生图（备选后端，已集成进 genimage.py）
 
 ```bash

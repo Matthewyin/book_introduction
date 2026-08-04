@@ -25,8 +25,13 @@ templates/styles/people/cute-anime-girl.md  ← 风格卡常量。逐字节相�
 templates/styles/
 ├── README.md                          # 风格库使用规则与审核流程
 ├── people/                            # 人物线
-│   ├── cute-anime-girl.md             # 当前主力：日系软萌少女
-│   └── cute-anime-girl.minimax.md     # MiniMax 专用精简版（备用通道，≤700 字符）
+│   ├── cute-anime-girl.md             # 动漫主力：日系软萌少女
+│   ├── cute-anime-girl.minimax.md     # MiniMax 专用精简版（备用通道，≤700 字符）
+│   ├── cinematic-girl.md              # 写实主力：四变体合卡（literary/intellectual/两男版）
+│   ├── cinematic-girl.intellectual.md # 写实单变体卡：知性职场女（i2i 通道专用，
+│   │                                  #   合卡+跨性别负向词+ref 必挂，见 tool-usage.md）
+│   └── cinematic.t2i.md               # 写实精简卡（dreamina text2image 专用，≤900 字符，
+│                                      #   t2i prompt 总长上限 ~1500 字符，见 tool-usage.md）
 └── pets/                              # 萌宠线
     └── watercolor-cat.md              # 备用：水彩拟人猫
 ```
@@ -101,14 +106,18 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 
 `genimage.py` 三档路由：
 
-| 条件 | 后端 | 原因 |
-|------|------|------|
-| `characters: true` + 有 `charRef` | dreamina image2image (Seedream 5.0) | 角色 + 风格双锁，实测优于 MiniMax |
-| 有 `--ref`（无 charRef） | baoyu-image-gen + MiniMax | 备用通道，对 anime 锁定弱 |
-| 无 characters / 无 ref | openrouter + GPT Image 2 | 风格质量最高，中文渲染好 |
+| 条件 | 后端 | 风格卡 | 原因 |
+|------|------|--------|------|
+| `characters: true` + 有 `charRef` | dreamina image2image (Seedream 5.0) | 单变体卡（如 cinematic-girl.intellectual.md） | 角色 + 风格双锁；**合卡+ref 必挂** |
+| 有 `--ref`（无 charRef） | baoyu-image-gen + MiniMax | `*.minimax.md` 精简卡 | 备用通道，对 anime 锁定弱 |
+| 无 characters / 无 ref | dreamina text2image (Seedream 5.0) | `*.t2i.md` 精简卡 | 主力；**prompt 总长 ≤1500 字符** |
+| 无 characters / 无 ref（t2i 失败时） | openrouter + GPT Image 2 | 完整卡 | fallback，中文渲染好 |
 
-> ⚠️ MiniMax prompt 上限 1500 字符。若用 baoyu/MiniMax 备用通道，换 `*.minimax.md` 精简版风格卡。
-> dreamina 通道无此限制。
+> ⚠️ prompt 长度纪律（2026-08-04 实测）：
+> - **dreamina text2image：风格卡+scene 总长 ≤1500 字符**（超限报 `ret=1046 InvalidNode`），
+>   用 `*.t2i.md` 精简卡（≤900）+ scene ≤600（Detail ≤3 条）。
+> - **dreamina image2image：长度宽容但内容敏感**，必须用单变体卡，负向列表精简。
+> - **MiniMax 上限 1500 字符**，用 `*.minimax.md` 精简卡。
 
 ## 跨镜角色一致性
 

@@ -223,7 +223,9 @@ def run_dreamina(prompt: str, out: Path, ar: str, refs: list[Path]) -> None:
 
     url = _extract_dreamina_image_url(stdout)
     if not url:
-        raise SystemExit(
+        # 任务级失败必须抛 RuntimeError（SystemExit 会绕过 run_task 的
+        # except Exception，直接杀死整个批量进程）——2026-08-04 ep006 实测
+        raise RuntimeError(
             f"dreamina 未返回图片 URL。submit 输出：\n{stdout[:800]}\n"
             f"如已提交，用 `dreamina query_result --submit_id=<id>` 手动查询。"
         )
@@ -259,7 +261,8 @@ def run_dreamina_text2image(prompt: str, out: Path, ar: str) -> None:
 
     url = _extract_dreamina_image_url(stdout)
     if not url:
-        raise SystemExit(
+        # 同上：任务级失败抛 RuntimeError，让批量继续并触发 fallback
+        raise RuntimeError(
             f"dreamina text2image 未返回图片 URL。submit 输出：\n{stdout[:800]}\n"
             f"如已提交，用 `dreamina query_result --submit_id=<id>` 手动查询。"
         )
