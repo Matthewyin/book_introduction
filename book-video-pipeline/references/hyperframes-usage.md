@@ -148,7 +148,7 @@ npx hyperframes check           # 校验组合
 python3 scripts/validate-spec.py 04-video/output.mp4
 ```
 
-规格红线：1080×1920、30fps CFR、H.264 High@4.0 + AAC 48kHz、≤200s。
+规格红线：1080×1920、30fps CFR、H.264 High@4.0 + AAC 48kHz、≤244s（弹性上限，基线 199s）。
 
 ## 动效层：必须 seek-safe
 

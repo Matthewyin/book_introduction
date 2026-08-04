@@ -214,6 +214,17 @@ def main() -> int:
     else:
         print("✓ C6 连环冒号  0 处")
 
+    # ── F 总字数弹性校验（8 段螺旋结构）──
+    BASELINE = 570   # 基线字数上限
+    ELASTIC = 720    # 弹性上限（需段间钩子审核通过）
+    if chars > ELASTIC:
+        failures += 1
+        print(f"✗ F 字数超弹性上限  {chars} > {ELASTIC} 字（硬上限，禁止超出）")
+    elif chars > BASELINE:
+        print(f"⚠ F 字数进入弹性区  {chars} 字（基线≤{BASELINE}，当前超 {chars - BASELINE} 字 → 需段间钩子审核通过）")
+    else:
+        print(f"✓ F 字数达标  {chars} ≤ {BASELINE} 字（基线）")
+
     if args.before and args.before.is_file():
         before_chars = len(re.sub(r"\s+", "", load(args.before)))
         print()

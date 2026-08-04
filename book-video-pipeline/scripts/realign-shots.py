@@ -158,9 +158,11 @@ def main() -> int:
     total = round(bounds[-1] + args.intro + args.outro, 3)
     print("-" * 52)
     print(f"body {bounds[-1]}s  +intro {args.intro}s +outro {args.outro}s = {total}s")
-    if total > 200:
-        print(f"ERROR: {total}s exceeds the 200s limit", file=sys.stderr)
+    if total > 245:
+        print(f"ERROR: {total}s exceeds the 245s elastic limit", file=sys.stderr)
         return 1
+    elif total > 200:
+        print(f"WARNING: {total}s in elastic zone (baseline≤199s, needs hook review)", file=sys.stderr)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps({

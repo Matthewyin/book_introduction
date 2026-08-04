@@ -11,11 +11,11 @@
 - 最新成片 MP4 和关键帧（从成片抽帧：每段首帧/中帧/末帧）
 - 选书档案（`01-profile/book-profile.md`）：书名、作者、带货角度
 - 文案简报（`02-script/script-brief.md`）：钩子、观点清单、金句
-- 锁定旁白（`02-script/SCRIPT.md`）：7 段结构
+- 锁定旁白（`02-script/SCRIPT.md`）：8 段螺旋结构
 - 分镜（`02-script/STORYBOARD.md`）：画面描述、动效设计
 - 口播稿（`02-script/voiceover-text.txt`）
 - 音色（`assets/voices/voice-library.json`）
-- `references/shot-structure.md`（7 段结构 + 审美规则清单）
+- `references/shot-structure.md`（8 段螺旋结构 + 审美规则清单）
 - `references/sound-design.md`（声音设计）
 - `references/hyperframes-usage.md`（合成规范）
 - `references/deai-checklist.md`（去 AI 味）
@@ -25,7 +25,7 @@
 
 ### B — 结构与内容一致性
 
-- B1：成片是否遵循 7 段结构（钩子 → 扎心场景 → 引入书 → 场景演绎 → 观点拆解 → 方法实操 → 结尾引导）
+- B1：成片是否遵循 8 段螺旋结构（钩子+引入书 → 场景1+钩子 → 分析+钩子 → 方案1+新场景2 → 方案2+新场景3 → 方案3 → 总结 → 引导评论）
 - B2：引入书段是否包含作者姓名/国籍/领域地位 + 书籍领域地位/销量
 - B3：每个金句是否来自 weread 热门划线或书中原文，归属是否清楚
 - B4：作者信息是否准确（不能把作者和理论创始人混淆，如岸见一郎 ≠ 阿德勒）
@@ -54,7 +54,7 @@
 - T1：分辨率 1080×1920
 - T2：帧率 30fps CFR
 - T3：编码 H.264 + AAC 48kHz
-- T4：总时长 ≤200s（intro + 正文 + outro）
+- T4：总时长 ≤244s（基线 199s / 弹性上限 244s，intro + 正文 + outro）
 - T5：单镜 ≤15s
 
 ### D — 去AI味与安全
