@@ -3,9 +3,10 @@
 
 对外一个接口，对内按"有无主角 + 有无参考图 + 配置"路由：
 
-    无 characters / 无 --ref       → default_backend（配置，当前 openrouter；gptsapi/grok 为备选）
-    有 characters / 有 charRef     → ref_backend（dreamina，角色+风格双锁）
+    无 characters / 无 --ref       → default_backend（配置，当前 dreamina_text：Seedream 5.0 text2image）
+    有 characters / 有 charRef     → ref_backend（dreamina，image2image 角色+风格双锁）
     显式 --ref（无 charRef）        → baoyu-image-gen + MiniMax（备用）
+    default_backend 失败           → backup_backend（openrouter GPT Image 2 fallback）
 
 提示词一律走「多文件拼接」，风格段落是常量文件（风格卡），模型只写画面内容：
 
@@ -229,6 +230,42 @@ def run_dreamina(prompt: str, out: Path, ar: str, refs: list[Path]) -> None:
     _download(url, out)
 
 
+def run_dreamina_text2image(prompt: str, out: Path, ar: str) -> None:
+    """dreamina text2image（Seedream 5.0）。无参考图的主力生图通道。
+
+    替代 openrouter 做无主角镜头/封面/定妆图。纯 prompt 生图，无需 ref。
+    dreamina 提交后异步返回 submit_id + result_json。--poll 轮询等待。
+    """
+    binary = cfg.path("image.backends.dreamina_text.binary")
+    dreamina = str(binary) if binary.is_file() else shutil.which("dreamina")
+    if not dreamina:
+        raise SystemExit(f"dreamina CLI 缺失：{binary}（或加入 PATH）")
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    model = str(cfg.get("image.backends.dreamina_text.model", "5.0"))
+    resolution = cfg.get("image.backends.dreamina_text.resolution", "2k")
+    poll = str(cfg.get("image.backends.dreamina_text.poll_seconds", 240))
+    cmd = [
+        dreamina, "text2image",
+        "--prompt", prompt,
+        "--ratio", ar,
+        "--model_version", model,
+        "--resolution_type", resolution,
+        "--generate_num", "1",
+        "--poll", poll,
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    stdout = result.stdout.strip()
+
+    url = _extract_dreamina_image_url(stdout)
+    if not url:
+        raise SystemExit(
+            f"dreamina text2image 未返回图片 URL。submit 输出：\n{stdout[:800]}\n"
+            f"如已提交，用 `dreamina query_result --submit_id=<id>` 手动查询。"
+        )
+    _download(url, out)
+
+
 def _extract_dreamina_image_url(stdout: str) -> str | None:
     """从 dreamina 的 JSON 输出里提取第一张图片 URL。"""
     try:
@@ -320,6 +357,7 @@ def _download(url: str, out: Path) -> None:
 
 # 后端分发表
 _BACKENDS = {
+    "dreamina_text": run_dreamina_text2image,
     "openrouter": run_openrouter,
     "gptsapi": run_gptsapi,
     "baoyu": run_baoyu,
@@ -364,7 +402,7 @@ class Task:
             return cfg.get("image.ref_backend", "dreamina")
         if self.refs:
             return "baoyu"
-        return cfg.get("image.default_backend", "openrouter")
+        return cfg.get("image.default_backend", "dreamina_text")
 
     @property
     def effective_refs(self) -> list[Path]:

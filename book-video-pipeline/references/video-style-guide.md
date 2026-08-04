@@ -9,7 +9,7 @@
 
 | 线 | 风格卡 | 通道 | 状态 |
 |----|--------|------|------|
-| **人物线（主力）** | `templates/styles/people/cute-anime-girl.md` | openrouter 定妆 + Seedream 主角镜头 | ✅ 启用 |
+| **人物线（主力）** | `templates/styles/people/cute-anime-girl.md` | Seedream text2image 定妆 + image2image 主角镜头 | ✅ 启用 |
 | 萌宠线 | `templates/styles/pets/watercolor-cat.md` | 同上 | 备用（需验证后启用） |
 
 > 风格库目录 `templates/styles/` 的使用规则和审核流程见该目录下的 README。
@@ -20,14 +20,15 @@
 
 | 镜头类型 | 后端 | 参考图 | 分辨率 | 用途 |
 |---------|------|--------|--------|------|
-| **主角定妆图** | openrouter (GPT Image 2) | ❌ | 1080×1920 | 第 1 张，定义风格 + 角色锚点 |
+| **主角定妆图** | dreamina text2image (Seedream 5.0) | ❌ | **原生 2k** (1440×2560) | 第 1 张，定义风格 + 角色锚点 |
 | **含主角的镜头** | dreamina image2image (Seedream 5.0) | ✅ 定妆图 | **原生 2k** | 量产主角镜头，角色 + 风格双锁 |
-| 无主角镜头（书封、抽象概念、纯环境） | openrouter | ❌ | 1080×1920 | 中文渲染好、质量高 |
+| 无主角镜头（书封、抽象概念、纯环境） | dreamina text2image (Seedream 5.0) | ❌ | **原生 2k** | 2k 画质、全风格覆盖；失败 fallback openrouter |
 | **i2v 关键帧** | dreamina image2video (Seedance) | ✅ 首帧 | 720p | 动起来的镜头 |
 
-> **grok 为备选生图后端**：在 `pipeline.yaml` 的 `image.backends.grok` 启用即可切换（openrouter 仍为默认）。grok 走 xAI 订阅的 agent 式生图（`image_gen` 工具），非确定性、无主角锁定，适合临时救场而非量产主力。
+> **grok 为备选生图后端**：在 `pipeline.yaml` 的 `image.backends.grok` 启用即可切换（dreamina_text 为默认）。grok 走 xAI 订阅的 agent 式生图（`image_gen` 工具），非确定性、无主角锁定，适合临时救场而非量产主力。
+> **openrouter 为 fallback 后端**：dreamina_text 失败时自动切换 openrouter（GPT Image 2，1K/high）。
 
-**为什么 Seedream 是主角镜头的主力**：实测验证（2026-07-31），MiniMax image-01 的 subject_reference 对 anime 插画风格锁定弱（角色被重造、画风滑向写实）；Seedream image2image 对同一张 openrouter 定妆图当 ref，角色身份和水彩 anime 质感都保住了。详见 `episodes/_style-exploration-v3/` 三张对比图。
+**为什么 Seedream 是主力**：实测验证（2026-07-31），MiniMax image-01 的 subject_reference 对 anime 插画风格锁定弱（角色被重造、画风滑向写实）；Seedream image2image 对同一张定妆图当 ref，角色身份和水彩 anime 质感都保住了。2026-08-04 进一步验证 Seedream 5.0 text2image 对无主角镜头（动漫水彩 + 写实）出图质量与 GPT Image 2 持平甚至更优，且分辨率 2k > 1k，因此全链路统一 Seedream 5.0。详见 `episodes/_style-exploration-v3/` 三张对比图。
 
 **关于分辨率**：dreamina image2image 强制 ≥2k（不支持 1k），素材保留原生 2k 分辨率。最终成片的 1080×1920 由 hyperframes 渲染时统一处理，不在生图阶段缩放——保住画质余量。
 

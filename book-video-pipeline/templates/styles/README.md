@@ -19,7 +19,7 @@ templates/styles/
 
 | 风格卡 | 线 | 通道 | 状态 | 适合内容 |
 |--------|----|------|------|---------|
-| `people/cute-anime-girl.md` | 人物 | openrouter + Seedream | ✅ 主力 | 情绪共鸣、成长、治愈、职场、社科 |
+| `people/cute-anime-girl.md` | 人物 | Seedream（text2image + image2image） | ✅ 主力 | 情绪共鸣、成长、治愈、职场、社科 |
 | `people/cute-anime-girl.minimax.md` | 人物 | MiniMax 备用 | 备用 | 同上（仅 baoyu 通道时用） |
 | `pets/watercolor-cat.md` | 萌宠 | openrouter + Seedream | 备用 | 治愈、日常、品牌 IP 强化 |
 

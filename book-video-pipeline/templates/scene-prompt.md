@@ -61,7 +61,7 @@ python3 scripts/genimage.py \
   --image 03-assets/scenes/shot_002.png --ar 9:16 \
   --charRef assets/protagonist-base/anime-girl.png
 
-# 无主角镜头（openrouter，无 ref）
+# 无主角镜头（dreamina text2image，无 ref）
 python3 scripts/genimage.py \
   --style templates/styles/people/cute-anime-girl.md \
   --promptfiles 03-assets/scenes/shot_005.scene.md \

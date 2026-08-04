@@ -53,6 +53,7 @@ POSITIVE_INT_FIELDS = {
     "image.max_attempts",
     "image.backends.dreamina.poll_seconds",
     "image.backends.dreamina.max_refs",
+    "image.backends.dreamina_text.poll_seconds",
     "llm.kimi.timeout",
     "llm.deepseek.timeout",
     "tts.sample_rate",
@@ -61,7 +62,7 @@ POSITIVE_INT_FIELDS = {
 
 # 枚举字段：值必须在给定集合内
 ENUM_FIELDS = {
-    "image.default_backend": {"openrouter", "grok", "gptsapi", "dreamina", "baoyu"},
+    "image.default_backend": {"dreamina_text", "openrouter", "grok", "gptsapi", "dreamina", "baoyu"},
     "image.ref_backend": {"dreamina", "baoyu"},
 }
 
@@ -76,6 +77,7 @@ REQUIRED_FILES = {
     "image.backends.grok.binary": "grok CLI",
     "image.backends.openrouter.script": "openrouter 脚本",
     "image.backends.dreamina.binary": "dreamina CLI",
+    "image.backends.dreamina_text.binary": "dreamina CLI（text2image）",
 }
 
 # 工作区资产（相对 ${WORKSPACE}，与 REQUIRED_FILES 分开以便提示路径）

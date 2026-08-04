@@ -112,7 +112,7 @@ Subject: The young woman (protagonist) sits alone at the desk typing,
 1. 口播主语是泛指"你"（现象描述）→ 不是主角自述 → `characters: false`
 2. 无主角帧靠**道具和光影讲故事**：发亮笔电、冷外卖、揉皱的咖啡杯——"加班到深夜"
    不需要一个人坐在那里才成立
-3. `Lighting` / `Detail` 字段必须填足（openrouter 通道吃细节密度）
+3. `Lighting` / `Detail` 字段必须填足（dreamina text2image 通道吃细节密度）
 
 ---
 

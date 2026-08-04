@@ -29,7 +29,7 @@ API key 读取优先级：
 
 ### 2. grok CLI 账户继承原则（备选生图后端，配置可选）
 
-grok CLI 现为**配置可选的备选生图后端**：在 `pipeline.yaml` 的 `image.backends.grok` 启用后，由 `genimage.py` 自动路由调用（openrouter 仍为默认后端）。启用时遵循：
+grok CLI 现为**配置可选的备选生图后端**：在 `pipeline.yaml` 的 `image.backends.grok` 启用后，由 `genimage.py` 自动路由调用（dreamina_text 为默认后端，openrouter 为 fallback）。启用时遵循：
 - 不读取 `~/.grok/auth.json` 或任何 grok 认证文件
 - 不缓存 grok API key / token / refresh_token 到项目文件
 - 用 `--always-approve` 走订阅，不独立调用 xAI API
@@ -42,7 +42,8 @@ grok CLI 现为**配置可选的备选生图后端**：在 `pipeline.yaml` 的 `
 | Kimi K3 | `KIMI_API_KEY` | `~/.zshrc`（env），项目不存储 |
 | DeepSeek | `DEEPSEEK_API_KEY` | `~/.zshrc`（env），项目不存储 |
 | MiniMax TTS | `MINIMAX_API_KEY` | `~/.zshrc`（env），项目不存储 |
-| openrouter 生图 | `OPENROUTER_API_KEY` | `~/.zshrc` / `.baoyu-skills/.env`，项目不存储 |
+| openrouter 生图（fallback） | `OPENROUTER_API_KEY` | `~/.zshrc` / `.baoyu-skills/.env`，项目不存储 |
+| dreamina 生图（主力） | OAuth 登录态 | `dreamina login`（OAuth Device Flow），不读 key |
 | MiniMax 生图（参考图通道） | `MINIMAX_API_KEY` | 同上，与 TTS 共用同一个 key |
 | grok CLI | xAI 订阅（OIDC） | 已退出本流程；如需启用，仍由 `~/.grok/` 自管理 |
 
@@ -61,7 +62,7 @@ grok CLI 现为**配置可选的备选生图后端**：在 `pipeline.yaml` 的 `
 | 去AI味检查 | `check-script.py` | — | 自动检查 A-D 共 20 项，必须全绿 |
 | 分镜画面描述 | DeepSeek V4 Pro | `deepseek-v4-pro` | 每镜画面描述（含 camera/transition/cues/layers） |
 | 插画提示词（**仅内容**） | DeepSeek V4 Flash | `deepseek-v4-flash` | 每镜 `shot_00X.scene.md`；风格段落是风格卡常量，不由模型生成 |
-| 定妆图 + 无主角镜头 | `scripts/genimage.py` | openrouter / GPT Image 2 | 分发层，无 characters/ref 时走此通道 |
+| 定妆图 + 无主角镜头 | `scripts/genimage.py` | dreamina_text / Seedream 5.0 | 分发层，无 characters/ref 时走此通道；失败 fallback openrouter |
 | 含主角镜头（角色锁定） | `scripts/genimage.py` | dreamina image2image / Seedream 5.0 | `characters: true` + `charRef` 时走此通道，角色+风格双锁 |
 | 备用参考图生图 | `scripts/genimage.py` | baoyu-image-gen / MiniMax image-01 | 显式 `--ref` 时走此通道（备用，对 anime 锁定弱） |
 | i2v 提示词 | seedance-prompt-zh skill | — | 即梦 Seedance 2.0 规范化提示词（@引用 + 结构公式 + 风格锁定） |
@@ -85,7 +86,7 @@ grok CLI 现为**配置可选的备选生图后端**：在 `pipeline.yaml` 的 `
 **所有生图都走这个入口，不直接调后端。** 它按镜头类型（`characters` + `charRef`）自动路由三档后端：
 
 ```bash
-# 主角定妆图（openrouter，无 ref）
+# 主角定妆图（dreamina text2image，无 ref）
 python3 scripts/genimage.py \
   --style templates/styles/people/cute-anime-girl.md \
   --promptfiles 03-assets/scenes/_protagonist.scene.md \
@@ -98,7 +99,7 @@ python3 scripts/genimage.py \
   --image 03-assets/scenes/shot_002.png --ar 9:16 \
   --charRef assets/protagonist-base/anime-girl.png
 
-# 无主角镜头（openrouter，无 ref）
+# 无主角镜头（dreamina text2image，无 ref）
 python3 scripts/genimage.py \
   --style templates/styles/people/cute-anime-girl.md \
   --promptfiles 03-assets/scenes/shot_005.scene.md \
@@ -114,7 +115,8 @@ python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 
 | 通道 | 触发条件 | 后端 | 特性 |
 |------|---------|------|------|
-| openrouter | 无 `characters` / 无 `ref`（定妆图 + 无主角镜头） | `ai-content-pipeline/scripts/openrouter_image.py` | GPT Image 2，固定 1K，风格质量最高 |
+| dreamina_text | 无 `characters` / 无 `ref`（定妆图 + 无主角镜头） | `dreamina text2image` | Seedream 5.0，原生 2k，全风格覆盖 |
+| openrouter | dreamina_text 失败 fallback | `scripts/openrouter_image.py` | GPT Image 2，1K/high |
 | dreamina | `characters: true` + 有 `charRef` | `dreamina image2image`（Seedream 5.0） | 角色 + 风格双锁，原生 2k，实测优于 MiniMax |
 | baoyu | 有 `--ref`（无 charRef，备用） | `baoyu-image-gen/scripts/main.ts` | MiniMax image-01 subject_reference，对 anime 锁定弱 |
 | grok (备选) | `--backend grok` 或 `task.backend=grok` | grok CLI image_gen | agent 式生图，走订阅，非确定性 |

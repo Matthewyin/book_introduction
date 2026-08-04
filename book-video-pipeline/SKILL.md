@@ -22,11 +22,11 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 **生图认证原则**：
 
 - 生图统一走 `scripts/genimage.py`（薄分发层），它按镜头类型路由到三个后端：
-  `openrouter_image.py`（无主角 / 定妆图）、`dreamina image2image`（Seedream 主角镜头）、
+  `dreamina text2image`（无主角 / 定妆图 / 封面，Seedream 5.0）、`dreamina image2image`（Seedream 主角镜头）、
   `baoyu-image-gen`（备用 MiniMax）。API key 从 `OPENROUTER_API_KEY` / `MINIMAX_API_KEY` 环境变量
   或 `.baoyu-skills/.env` 读取；dreamina 用 OAuth 登录（`dreamina login`），不读 API key。
   **项目不硬编码、不缓存 key**。
-- **grok CLI 为配置可选的备选生图后端**：在 `pipeline.yaml` 的 `image.backends.grok` 启用即可切换（openrouter 仍为默认后端）。启用时遵循订阅继承原则：用 `--always-approve` 走订阅，不读取 `~/.grok/auth.json`、不缓存 token。
+- **grok CLI 为配置可选的备选生图后端**：在 `pipeline.yaml` 的 `image.backends.grok` 启用即可切换（dreamina_text 为主力默认后端，openrouter 为 fallback）。启用时遵循订阅继承原则：用 `--always-approve` 走订阅，不读取 `~/.grok/auth.json`、不缓存 token。
 - Kimi / DeepSeek / MiniMax key 均从环境变量或 shell profile 读取，项目不存储。
 - **配置化**：所有模型 / endpoint / 生图后端的选择统一读 `pipeline.yaml`（由 `scripts/config.py` 加载）；API key 仍只走环境变量，不写入 `pipeline.yaml`。
 
@@ -65,7 +65,7 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 | Step 2/3 LLM | Kimi / DeepSeek / grok | 互切（grok_review 已有 fallback_model） | 都不可用 → blocked，不空转 |
 | Step 4 TTS | MiniMax | 用户录音 → 其它 TTS | 无音频 → 暂停字幕/合成 |
 | Step 5 时间轴 | ffmpeg silencedetect | — | 不手猜时间戳 |
-| Step 7 生图 | dreamina（有 ref）/ openrouter（无 ref） | 互换 → baoyu；`pipeline.yaml` 里 `image.backends.<名>.enabled=false` 可整体关闭某个后端 | 全部不可用 → 该镜 blocked，不生成占位图 |
+| Step 7 生图 | dreamina（有 ref 走 image2image / 无 ref 走 text2image） | 失败 → openrouter fallback；`pipeline.yaml` 里 `image.backends.<名>.enabled=false` 可整体关闭某个后端 | 全部不可用 → 该镜 blocked，不生成占位图 |
 | Step 8 i2v | dreamina seedance | 跳过 i2v，退回 GSAP 动效层 | 不拿别的图冒充 i2v 帧 |
 | Step 9 合成 | hyperframes | ffmpeg xfade（ep005 已验证） | 都不行 → 交付素材包+工程说明，不伪造成片 |
 | Step 9b BGM | ego-browser + pixabay | 用户自供音乐 | 无 BGM 可合成但需标注 |
@@ -282,7 +282,7 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
    **注意**：按新规则 1，`characters` 由口播主体决定——主语是主角才 `true`，其余 `false`。
    一集典型 13 帧中主角约出镜 3-4 帧（三锚点），其余 60-75% 帧无主角。
    `characters: false` 的镜头**必须**额外填 `Lighting` / `Detail` 细节密度字段
-   （见 `templates/scene-content.en.md`）——该通道是 openrouter（GPT Image 2），
+   （见 `templates/scene-content.en.md`）——该通道是 dreamina_text（Seedream 5.0），
    吃细节铺陈，写具体出图完成度才高；含主角镜头走 dreamina，保持简洁。
 
 #### 7.2：生成测试图
@@ -337,7 +337,7 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 | 含主角的镜头·写实·知性职场女 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-intellectual-female.png` | 写实人像质感最强 |
 | 含主角的镜头·写实·文艺男 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-literary-male.png` | 写实人像质感最强 |
 | 含主角的镜头·写实·知性职场男 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-intellectual-male.png` | 写实人像质感最强 |
-| 无主角镜头（书封、抽象概念、纯环境） | openrouter + GPT Image 2 | ❌ | 中文渲染好、质量高 |
+| 无主角镜头（书封、抽象概念、纯环境） | dreamina_text + Seedream 5.0 | ❌ | 2k 画质、全风格覆盖；失败 fallback openrouter |
 | i2v 关键帧首帧 | dreamina image2image | ✅ 定妆图 | 保证 i2v 输出与静帧角色同源 |
 
 ### Step 7b：封面合成 → `03-assets/cover/cover-final.png`（本地排版，无 Canva）
@@ -347,7 +347,7 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 
 1. 确认模板就位：`assets/cover-image/cover-3x4.png`（3:4）+ `cover-9x16.png`（9:16）
    ——已验收的统一封面（无人物 · 一体式留白 · 清爽阳光向上 · 书/手机小字）。
-   缺失时按 `cover-prompt.md` 用 openrouter 重新生成。
+   缺失时按 `cover-prompt.md` 用 dreamina_text 重新生成。
 2. 取文案：书名（≤10 字，不加《》）、钩子（≤12 字，优先 book-profile 选定角度）、
    作者、集数。
 3. 本地合成（零 API，文字 100% 保真）：
@@ -404,7 +404,7 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 ```
 
 **首帧必须是 Seedream 通道生成的图**（带定妆图 ref），保证 i2v 输出与周围静帧角色同源。
-不要拿 openrouter 单独生的图当 i2v 首帧——会和 Seedream 帧的角色对不上。
+不要拿 dreamina text2image 单独生的图当 i2v 首帧——会和 image2image 帧的角色对不上。
 
 产出写入 `02-script/i2v-prompt-镜N.md`，便于复查和复用。
 

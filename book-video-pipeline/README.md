@@ -72,7 +72,7 @@ ffmpeg -version      # 任意版本，无需 libass（字幕由 hyperframes 渲�
 | **ego-browser** | Step 9b BGM 下载（绕过 pixabay Cloudflare） | ZCode Skill `ego-browser` |
 | **humanizer-zh** | Step 3d 去 AI 味 | ZCode Skill `humanizer-zh` |
 | **seedance-prompt-zh** | Step 8a i2v 提示词 | ZCode Skill `seedance-prompt-zh` |
-| **OpenRouter API** | Step 7 生图（openrouter 通道：定妆图 + 无主角镜头） | 脚本 `scripts/openrouter_image.py`（skill 自有），key 走 `OPENROUTER_API_KEY` 环境变量 |
+| **Dreamina CLI（即梦）** | Step 7 生图（dreamina_text 通道：无主角镜头 + 定妆图 + 封面；dreamina image2image：主角镜头） | `dreamina text2image` / `dreamina image2image`（Seedream 5.0，9:16/2k），失败 fallback openrouter |
 | **dreamina CLI** | Step 7 主角镜头（Seedream 5.0 image2image）+ Step 8a i2v | `~/.local/bin/dreamina`，需 `dreamina login`（OAuth） |
 | **baoyu-image-gen** | Step 7 备用参考图通道（MiniMax） | ZCode Skill `baoyu-image-gen`，需 `bun`（`brew install oven-sh/bun/bun`） |
 
@@ -419,7 +419,7 @@ Step 10 发布物料 ─► publish-brief.md
 | Skill | 触发点 | 作用 |
 |-------|--------|------|
 | `humanizer-zh` | Step 3d | 口播稿去 AI 味收尾 |
-| `openrouter_image.py`（skill 自有） | Step 7 | OpenRouter 同步生图（默认通道），替代原 gptsapi |
+| `openrouter_image.py`（skill 自有） | Step 7 | OpenRouter 同步生图（fallback 通道，dreamina_text 失败时救场） |
 | `baoyu-image-gen` | Step 7 | 参考图生图（有 `ref` 时由 `genimage.py` 自动路由） |
 | `seedance-prompt-zh` | Step 8a | 生成符合 Seedance 2.0 规范的 i2v 提示词 |
 | `ego-browser` | Step 9b | 浏览器下载 pixabay BGM（绕过 Cloudflare） |

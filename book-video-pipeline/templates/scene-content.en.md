@@ -20,8 +20,8 @@ Emotion: {{一到两个词。例：quiet panic, loneliness}}
 Tone: {{cool / neutral / warm 三选一，对应 video-style-guide.md 的配比表}}
 
 characters: {{true / false。true = 该镜含主角（按规则 1 判断口播主体是否为主角），
-    生图时挂全局定妆图 ref 走 dreamina；false = 无主角镜（他人/环境/概念/道具），
-    走 openrouter。默认 false——只有口播主体明确是主角时才标 true。}}
+    生图时挂全局定妆图 ref 走 dreamina image2image；false = 无主角镜（他人/环境/概念/道具），
+    走 dreamina text2image。默认 false——只有口播主体明确是主角时才标 true。}}
 ```
 
 ### 细节密度字段（`characters: false` 的镜头必须填，含主角镜头可选）
