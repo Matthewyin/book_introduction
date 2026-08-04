@@ -103,8 +103,8 @@ spec 详见 `references/hyperframes-usage.md` 和 `references/subtitle-style.md`
 
 **核心机制：定妆图先行，ref 全程锁定。**
 
-1. **定妆图**：全局定妆图 `assets/protagonist-base/girl-ref.png` 已就位，所有集共用；
-   仅当某集需要不同角色时才单独生成本集定妆图。这张图定义主角的角色身份。
+1. **定妆图**：全局定妆图已就位（6 张人设：`anime-girl / anime-boy / realistic-literary-female / realistic-intellectual-female / realistic-literary-male / realistic-intellectual-male`），所有集共用；
+   仅当某集需要不同角色时才单独生成本集定妆图。选定的人设定妆图定义主角的角色身份。
 2. **主角镜头**：所有含主角的镜头都挂这张定妆图当 ref，走 dreamina image2image（Seedream），
    `characters: true` 让 `genimage.py` 自动路由并挂载 charRef。
 3. **纪律**（来自 baoyu-image-gen 实践）：

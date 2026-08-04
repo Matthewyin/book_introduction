@@ -245,22 +245,24 @@ Kimi K3 起草 → grok 初审 → DeepSeek V4 Pro 二审 → humanizer-zh 去AI
 
 #### 7.0：风格选择 + 引用全局定妆图（每集第一步）
 
-1. **选风格卡**：从 `templates/styles/` 选定本集风格。当前有五套主力风格卡：
-   - **`people/cute-anime-girl.md`**（日系动漫水彩）：软萌治愈，cel-shaded anime + 水彩边，五色低饱和色板。定妆图 `assets/protagonist-base/girl-ref.png`（941×1672）。
-   - **`people/cinematic-girl.md` · variant literary**（写实·温柔文艺女青年）：写实摄影，浅景深 + 胶片颗粒，暖调奶油色板。定妆图 `assets/protagonist-base/realistic-girl-ref.png`。
-   - **`people/cinematic-girl.md` · variant intellectual**（写实·知性职场美女）：暖栗色卷发 + 白衬衫 + 深色包臀短裙，干练时尚。定妆图 `assets/protagonist-base/realistic-intellectual-ref.png`。
-   - **`people/cinematic-girl.md` · variant literary-male**（写实·温柔文艺男青年）：自然黑发微乱 + 米白亚麻衬衫 + 书店阅读角，安静治愈。定妆图 `assets/protagonist-base/realistic-literary-male-ref.png`。
-   - **`people/cinematic-girl.md` · variant intellectual-male**（写实·知性职场男）：暖深棕短发 + 浅蓝 Oxford 衬衫（袖卷起）+ 深灰西裤，干练利落。定妆图 `assets/protagonist-base/realistic-intellectual-male-ref.png`。
-   
+1. **选风格卡**：从 `templates/styles/` 选定本集风格。当前有六套主力人设定妆图，分两条风格线：
+   - **`people/cute-anime-girl.md` · variant girl**（日系动漫水彩·阳光青春时尚元气女孩）：cel-shaded anime + 水彩边，五色低饱和色板。高马尾 + 斜肩 puff-sleeve 奶白上衣 + 蓝色高腰百褶裙。定妆图 `assets/protagonist-base/anime-girl.png`。
+   - **`people/cute-anime-girl.md` · variant boy**（日系动漫水彩·阳光清爽少年感男孩）：浅蓝牛仔外套 + 白T + 卡其裤，少年感。定妆图 `assets/protagonist-base/anime-boy.png`。
+   - **`people/cinematic-girl.md` · variant literary**（写实·温柔文艺女青年）：写实摄影，浅景深 + 胶片颗粒，暖调奶油色板。定妆图 `assets/protagonist-base/realistic-literary-female.png`。
+   - **`people/cinematic-girl.md` · variant intellectual**（写实·知性职场美女·阳光青春时尚）：暖栗色卷发 + 奶杏针织 + 千鸟格半裙，复古时髦。定妆图 `assets/protagonist-base/realistic-intellectual-female.png`。
+   - **`people/cinematic-girl.md` · variant literary-male**（写实·温柔文艺男青年·阳光帅气）：驼色针织叠穿白衬衫 + 暖白棉裤，文艺 preppy。定妆图 `assets/protagonist-base/realistic-literary-male.png`。
+   - **`people/cinematic-girl.md` · variant intellectual-male**（写实·知性职场男·阳光帅气）：软绿针织 polo + 暖灰修身裤，现代 smart-casual。定妆图 `assets/protagonist-base/realistic-intellectual-male.png`。
+
    按书目气质选择：治愈/散文/诗集适合动漫风或写实·文艺（女/男），干货/方法论/职场/励志适合写实·知性职场（女/男）。
    展示选定风格卡 + 对应定妆图给用户确认。
-2. **🔴 审核点⑤b（风格确认）**：用 AskUserQuestion 确认风格卡 + 人设（写实卡需确认 literary / intellectual / literary-male / intellectual-male）+ 定妆图。
+2. **🔴 审核点⑤b（风格确认）**：用 AskUserQuestion 确认风格卡 + 人设（动漫卡确认 girl/boy；写实卡确认 literary/intellectual/literary-male/intellectual-male）+ 定妆图。
 3. **引用全局定妆图**：定妆图是**全局**资产，所有集共用，无需每集重生。
-   - 动漫风 → `assets/protagonist-base/girl-ref.png`
-   - 写实·文艺女（literary）→ `assets/protagonist-base/realistic-girl-ref.png`
-   - 写实·知性职场女（intellectual）→ `assets/protagonist-base/realistic-intellectual-ref.png`
-   - 写实·文艺男（literary-male）→ `assets/protagonist-base/realistic-literary-male-ref.png`
-   - 写实·知性职场男（intellectual-male）→ `assets/protagonist-base/realistic-intellectual-male-ref.png`
+   - 动漫·女孩（girl）→ `assets/protagonist-base/anime-girl.png`
+   - 动漫·男孩（boy）→ `assets/protagonist-base/anime-boy.png`
+   - 写实·文艺女（literary）→ `assets/protagonist-base/realistic-literary-female.png`
+   - 写实·知性职场女（intellectual）→ `assets/protagonist-base/realistic-intellectual-female.png`
+   - 写实·文艺男（literary-male）→ `assets/protagonist-base/realistic-literary-male.png`
+   - 写实·知性职场男（intellectual-male）→ `assets/protagonist-base/realistic-intellectual-male.png`
    （一次性全局资产；若某集需要不同角色，才单独生成本集定妆图。）
 
 #### 7.1：写场景内容
@@ -292,7 +294,7 @@ python3 scripts/genimage.py \
   --style templates/styles/people/cute-anime-girl.md \
   --promptfiles 03-assets/scenes/shot_002.scene.md \
   --image 03-assets/scenes/shot_002.png --ar 9:16 \
-  --charRef assets/protagonist-base/girl-ref.png
+  --charRef assets/protagonist-base/anime-girl.png
 ```
 
 **🔴 审核点⑥**：用 AskUserQuestion 确认主角一致性 + 风格。通过后再批量。
@@ -309,7 +311,7 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 {
   "jobs": 3,
   "style": "templates/styles/people/cute-anime-girl.md",
-  "charRef": "assets/protagonist-base/girl-ref.png",
+  "charRef": "assets/protagonist-base/anime-girl.png",
   "tasks": [
     {"id": "shot_002", "characters": true,
      "promptFiles": ["shot_002.scene.md"], "image": "shot_002.png", "ar": "9:16"},
@@ -328,12 +330,13 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 
 | 场景 | 后端 | 参考图 | 原因 |
 |------|------|--------|------|
-| 主角定妆图（动漫/写实·文艺女/知性女/文艺男/知性男） | 全局已就位 `assets/protagonist-base/{girl-ref,realistic-girl-ref,realistic-intellectual-ref,realistic-literary-male-ref,realistic-intellectual-male-ref}.png` | ❌ | 一次性全局资产，所有集共用 |
-| 含主角的镜头·动漫风 | dreamina image2image + Seedream 5.0 | ✅ `girl-ref.png` | 角色 + anime 风格双锁 |
-| 含主角的镜头·写实·文艺女 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-girl-ref.png` | 写实人像质感最强 |
-| 含主角的镜头·写实·知性职场女 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-intellectual-ref.png` | 写实人像质感最强 |
-| 含主角的镜头·写实·文艺男 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-literary-male-ref.png` | 写实人像质感最强 |
-| 含主角的镜头·写实·知性职场男 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-intellectual-male-ref.png` | 写实人像质感最强 |
+| 主角定妆图（动漫女/动漫男/写实·文艺女/知性女/文艺男/知性男） | 全局已就位 `assets/protagonist-base/{anime-girl,anime-boy,realistic-literary-female,realistic-intellectual-female,realistic-literary-male,realistic-intellectual-male}.png` | ❌ | 一次性全局资产，所有集共用 |
+| 含主角的镜头·动漫·女孩 | dreamina image2image + Seedream 5.0 | ✅ `anime-girl.png` | 角色 + anime 风格双锁 |
+| 含主角的镜头·动漫·男孩 | dreamina image2image + Seedream 5.0 | ✅ `anime-boy.png` | 角色 + anime 风格双锁 |
+| 含主角的镜头·写实·文艺女 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-literary-female.png` | 写实人像质感最强 |
+| 含主角的镜头·写实·知性职场女 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-intellectual-female.png` | 写实人像质感最强 |
+| 含主角的镜头·写实·文艺男 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-literary-male.png` | 写实人像质感最强 |
+| 含主角的镜头·写实·知性职场男 | dreamina text2image Seedream 5.0 或 image2image | ✅ `realistic-intellectual-male.png` | 写实人像质感最强 |
 | 无主角镜头（书封、抽象概念、纯环境） | openrouter + GPT Image 2 | ❌ | 中文渲染好、质量高 |
 | i2v 关键帧首帧 | dreamina image2image | ✅ 定妆图 | 保证 i2v 输出与静帧角色同源 |
 

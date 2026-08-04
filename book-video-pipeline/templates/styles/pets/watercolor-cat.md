@@ -1,6 +1,7 @@
 # Style card: watercolor-cat
 # 参考图：附件图4（水彩质感猫吃西瓜）
-# 备用风格：当前主力为人物线（cute-anime-girl）。本卡作为萌宠线预留，需验证后再启用。
+# ⚠️ 预留未启用：当前主力为人物线（cute-anime-girl 两人设 + cinematic-girl 四人设）。
+#   萌宠线（猫/狗）定妆图待后续生成验证后再启用。本卡作为萌宠线预留。
 
 A watercolor picture-book illustration featuring a cute anthropomorphic cat. Vertical 9:16 portrait composition.
 

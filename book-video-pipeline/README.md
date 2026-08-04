@@ -5,12 +5,14 @@
 本流水线是一个 **ZCode Skill**（也可作为独立的文档+脚本框架使用）。它不承诺播放量或成交额，只提供一套**带 7 个人工审核点**的确定性生产流程：从选书、文案、口播、分镜、素材生成、动效设计到最终合成，每一步都停下等你确认。
 
 视觉风格支持两套主力风格卡，每集 Step 7.0 由用户选定并审核：
-- **`people/cute-anime-girl.md`**（日系软萌 anime 水彩插画）：soft cel-shaded anime + 水彩边，五色低饱和色板。定妆图 `assets/protagonist-base/girl-ref.png`。
+- **`people/cute-anime-girl.md`**（日系动漫水彩）：soft cel-shaded anime + 水彩边，五色低饱和色板。内含**两人设**可选：
+  - variant **girl**（阳光青春时尚元气女孩）→ 定妆图 `anime-girl.png`
+  - variant **boy**（阳光清爽少年感男孩）→ 定妆图 `anime-boy.png`
 - **`people/cinematic-girl.md`**（写实电影质感）：写实摄影，浅景深 + 胶片颗粒，暖调奶油色板。内含**四人设**可选：
-  - variant **literary**（温柔文艺女青年）→ 定妆图 `realistic-girl-ref.png`
-  - variant **intellectual**（知性职场美女）→ 定妆图 `realistic-intellectual-ref.png`
-  - variant **literary-male**（温柔文艺男青年）→ 定妆图 `realistic-literary-male-ref.png`
-  - variant **intellectual-male**（知性职场男）→ 定妆图 `realistic-intellectual-male-ref.png`
+  - variant **literary**（温柔文艺女青年）→ 定妆图 `realistic-literary-female.png`
+  - variant **intellectual**（知性职场美女·阳光青春时尚）→ 定妆图 `realistic-intellectual-female.png`
+  - variant **literary-male**（温柔文艺男青年·阳光帅气）→ 定妆图 `realistic-literary-male.png`
+  - variant **intellectual-male**（知性职场男·阳光帅气）→ 定妆图 `realistic-intellectual-male.png`
 
 ---
 
@@ -179,13 +181,13 @@ python3 scripts/make-cues.py shot-timing.json --out subtitle-cues.json
 python3 scripts/check-script.py 02-script/draft-04-final.md --before 02-script/draft-03-reviewed.md
 
 # 7. 生图（Step 7）—— 统一入口，按 characters + charRef 自动路由后端
-# 全局定妆图已就位：assets/protagonist-base/girl-ref.png（无需每集重生）
+# 全局定妆图已就位：assets/protagonist-base/anime-girl.png（无需每集重生）
 # 含主角镜头（dreamina Seedream，带全局定妆图 ref）
 python3 scripts/genimage.py \
   --style templates/styles/people/cute-anime-girl.md \
   --promptfiles 03-assets/scenes/shot_002.scene.md \
   --image 03-assets/scenes/shot_002.png --ar 9:16 \
-  --charRef assets/protagonist-base/girl-ref.png
+  --charRef assets/protagonist-base/anime-girl.png
 python3 scripts/genimage.py --batchfile 03-assets/scenes/batch.json --jobs 3
 
 # 8. 成片规格校验（Step 9 收尾）

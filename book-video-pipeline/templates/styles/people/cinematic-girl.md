@@ -1,9 +1,9 @@
 # Style card: cinematic-girl (写实电影质感)
 # 四人设写实风格卡——每集 Step 7.0 由用户在四个人设间选一：
-#   • variant: literary           → 温柔文艺女青年（定妆图 realistic-girl-ref.png）
-#   • variant: intellectual       → 知性职场美女（定妆图 realistic-intellectual-ref.png）
-#   • variant: literary-male      → 温柔文艺男青年（定妆图 realistic-literary-male-ref.png）
-#   • variant: intellectual-male  → 知性职场男（定妆图 realistic-intellectual-male-ref.png）
+#   • variant: literary           → 温柔文艺女青年（定妆图 realistic-literary-female.png）
+#   • variant: intellectual       → 知性职场美女（定妆图 realistic-intellectual-female.png）
+#   • variant: literary-male      → 温柔文艺男青年（定妆图 realistic-literary-male.png）
+#   • variant: intellectual-male  → 知性职场男（定妆图 realistic-intellectual-male.png）
 # 主力通道：dreamina text2image Seedream 5.0（写实人像强） / openrouter 备用（无主角镜头）
 # 与 cute-anime-girl.md 并列第二主力风格，每集 Step 7.0 由用户选择
 #
@@ -18,7 +18,7 @@ Style: cinematic photography with shallow depth of field (85mm lens at f/1.4–f
 Color palette (keep natural, warm-toned, low saturation): cream white #F5F0E8, warm caramel #C89878, soft sage #A8B89C, muted rose #D4B8B0, warm amber #D4A574. Let warm amber and cream carry the emotional temperature; sage and rose as subtle accents. Avoid neon, avoid harsh clashing colors.
 
 ## Variant A — literary (温柔文艺女青年)
-Identity locked to assets/protagonist-base/realistic-girl-ref.png.
+Identity locked to assets/protagonist-base/realistic-literary-female.png.
 
 Face: natural soft round face. Eyes symmetrical with long thin window-light reflections in dark brown pupils; soft brown eyebrows matching hair color; light brown eyeshadow with faint rosy undertone; fine lashes with subtle eyeliner; faint pink blush on cheeks; slightly rosy natural lips. Skin is fair and bright, retaining fine pores on cheeks/nose tip/forehead and natural skin-tone variation — NOT porcelain-smooth, NOT doll-like.
 Hair: dark brown, mid-length to chest length. Loose S-shaped waves falling naturally past shoulders. Wispy air bangs (see-through, eyebrows partly visible). Fine layered cut from cheek to jaw; hair ends curl irregularly inward and outward. Surface catches window light with warm highlights; interior keeps dark brown shadow. Allow a few stray flyaway strands for natural feel — no repeated identical hair clumps, no hair clumping.
@@ -26,32 +26,32 @@ Figure: well-proportioned with natural gentle curves, slim waist, graceful relax
 Outfit: a pale apricot (or cream) V-neck or square-neck fitted midi dress in lightweight draped fabric (rayon/silk-feel), cinched at waist with a thin belt, knee-length. Visible fabric drape and subtle folds near the waist when seated or leaning. A delicate thin gold necklace with a small pendant; small gold stud earrings; a thin gold bracelet. (4 visible accessories max.)
 Expressions: serene, wistful, content, pensive, warm genuine smile — lips relaxed, not over-smiling. Natural and unforced, never stiff or posed.
 
-## Variant B — intellectual (知性职场美女)
-Identity locked to assets/protagonist-base/realistic-intellectual-ref.png.
+## Variant B — intellectual (知性职场美女·阳光青春时尚)
+Identity locked to assets/protagonist-base/realistic-intellectual-female.png.
 
-Face: natural soft oval face, confident yet gentle. Eyes symmetrical with bright reflections in dark brown pupils; defined soft brown brows; light brown eyeshadow; fine lashes; light rosy blush; natural rosy lips. Skin is fair and smooth, retaining fine pores and natural texture — NOT porcelain, NOT plastic.
-Hair: warm chestnut brown (warm chestnut with subtle caramel sheen, one shade lighter and warmer than dark brown), mid-length. Loose S-waves, silky layered shine in the light, a few face-framing strands. Allow natural flyaways — no clumping.
-Figure: full and upright with womanly curves, full bust, slim waist, long legs, graceful S-curve — dignified yet alluring. Relaxed confident posture, slender neck.
-Outfit: a crisp white short-sleeve shirt (tailored, waist-shaping, tucked in, top button slightly undone for softness) in cotton with visible weave texture and natural folds near the waist when moving; paired with a dark navy or deep grey high-waisted pencil skirt at knee length with smooth drape. A thin metal necklace with small pendant; small ear studs; a minimalist watch. (3-4 visible accessories.)
-Expressions: confident and serene, composed, warm poised smile — never stiff, never over-smiling.
+Face: natural soft oval face, confident yet gentle, ~24yo, radiant and youthful. Eyes symmetrical with bright clear window-light reflections in dark brown pupils; defined soft brown brows; light brown eyeshadow; fine lashes; light rosy blush; natural rosy lips. Skin is fair and bright, retaining fine pores and natural texture — NOT porcelain, NOT plastic.
+Hair: warm chestnut brown (warm chestnut with subtle caramel sheen, one shade lighter and warmer than dark brown), mid-length. Loose voluminous S-shaped waves with airy bounce; a few face-framing strands and wispy flyaways. No clumping.
+Figure: young woman with natural curves, full bust, slim waist, long legs, graceful S-curve — figure-flattering but NOT revealing. Relaxed confident posture, slender neck.
+Outfit: a fitted apricot-cream (奶杏色) knit top with a V-neckline that shapes the waist and softly follows the figure (fine ribbed knit texture, not bulky, tucked in); paired with a high-waisted houndstooth (千鸟格) A-line midi skirt at knee length in warm taupe-and-cream tones. A thin warm-brown leather belt cinching the waist; a thin gold necklace with small pendant; small gold ear studs; a minimalist watch. (3-4 visible accessories.) Retro-chic intellectual — elegant, figure-flattering, but NOT revealing.
+Expressions: confident, radiant, warm poised smile — sun-lit cheerful confidence, never stiff, never over-smiling.
 
-## Variant C — literary-male (温柔文艺男青年)
-Identity locked to assets/protagonist-base/realistic-literary-male-ref.png.
+## Variant C — literary-male (温柔文艺男青年·阳光帅气)
+Identity locked to assets/protagonist-base/realistic-literary-male.png.
 
-Face: natural soft oval face, East Asian man ~25yo, gentle literary temperament, quiet and warm. Eyes symmetrical with long thin window-light reflections in dark brown pupils; soft natural dark brown eyebrows; clean-shaven with subtle skin texture; faint natural skin redness on cheeks; natural soft lips. Skin fair and warm, retaining fine pores and natural skin-tone variation — NOT porcelain, NOT plastic.
-Hair: soft natural black, medium length, slightly tousled and relaxed. Loose natural waves over the forehead in a casual side-sweep, a few fine strands catching the light. Effortless, slightly messy but soft — no clumping.
-Figure: lean and relaxed, narrow gentle shoulders, slim, calm unhurried posture.
-Outfit: a soft cream-beige linen shirt (loose fit, breathable texture visible, top button undone, sleeves naturally pushed up), over a white crew-neck tee peeking at the collar; light khaki cotton chinos. A simple woven cord bracelet on left wrist.
-Expressions: serene, warm, contemplative, gentle soft smile — calm and quietly attentive, never stiff.
+Face: natural soft oval face, East Asian man ~25yo, gentle literary temperament, sunny and warm. Eyes symmetrical with long thin window-light reflections in dark brown pupils; soft natural dark brown eyebrows; clean-shaven with subtle skin texture; faint natural skin redness on cheeks; natural soft lips. Skin fair and warm, retaining fine pores and natural skin-tone variation — NOT porcelain, NOT plastic.
+Hair: soft natural black, medium length, slightly tousled and relaxed. Loose natural waves over the forehead in a casual side-sweep, a few fine strands catching the light. Effortless, slightly messy but soft and stylishly undone — no clumping.
+Figure: lean and relaxed, narrow gentle shoulders, slim, calm unhurried posture, modern youthful ease.
+Outfit: a soft camel-beige fine-gauge merino crewneck sweater (modern slim fit, refined knit texture) layered over a crisp white poplin shirt with the collar and cuffs peeking out neatly; paired with tailored warm-ivory cotton trousers. A simple woven cord bracelet on left wrist; a minimalist silver wristwatch. Contemporary literary-preppy — fashionable, cozy, youthful, NOT dated.
+Expressions: serene, warm, sunny, contemplative, gentle soft smile — bright and quietly attentive, never stiff.
 
-## Variant D — intellectual-male (知性职场男)
-Identity locked to assets/protagonist-base/realistic-intellectual-male-ref.png.
+## Variant D — intellectual-male (知性职场男·阳光帅气)
+Identity locked to assets/protagonist-base/realistic-intellectual-male.png.
 
-Face: natural soft angular face, East Asian man ~27yo, confident yet approachable, intellectual professional. Eyes symmetrical with bright reflections in dark brown pupils; defined neat dark brown eyebrows; clean-shaven with subtle skin texture; faint natural skin redness on cheeks; natural healthy lips. Skin fair and bright, retaining fine pores and natural skin-tone variation — NOT porcelain, NOT plastic.
-Hair: warm dark brown (natural warm brown, slightly lighter than black), short to medium length. Neatly styled with a natural side part, slight volume at the front, a few fine strands catching the light. Well-groomed but not stiff — no clumping.
-Figure: lean and upright, broad shoulders, slim waist, relaxed confident posture, tall.
-Outfit: a crisp light blue Oxford cotton shirt (tailored fit, top two buttons undone for smart-casual, sleeves rolled up to forearms), tucked into dark charcoal slim-fit trousers. A minimalist silver wristwatch; a thin brown leather belt.
-Expressions: confident and serene, composed warm approachable smile — never stiff, never over-smiling.
+Face: natural soft angular face, East Asian man ~27yo, confident yet approachable, intellectual professional, sunny and handsome. Eyes symmetrical with bright clear window-light reflections in dark brown pupils; defined neat dark brown eyebrows; clean-shaven with a sharp jawline and subtle skin texture; faint natural skin redness on cheeks; natural healthy lips. Skin fair and bright, retaining fine pores and natural skin-tone variation — NOT porcelain, NOT plastic.
+Hair: warm dark brown (natural warm brown, slightly lighter than black), short to medium length. Modern textured cut, natural side part with slight volume and movement at the front, a few fine strands catching the light. Stylishly effortless, well-groomed but not stiff — no clumping.
+Figure: lean and upright, broad shoulders, slim waist, relaxed confident posture, tall and modern.
+Outfit: a fine-gauge merino wool knit polo shirt in soft sage green (modern collared polo, fitted silhouette, refined knit texture), paired with tailored warm-taupe trousers cropped slightly above the ankle. A minimalist warm-brown leather belt; a sleek minimalist silver wristwatch. Contemporary smart-casual — fashionable, modern, youthful, NOT a dated corporate office uniform.
+Expressions: confident, sunny, warm approachable smile — fresh and contemporary, never stiff, never over-smiling.
 
 (Male variants) Negative: no feminine features, no makeup, no lipstick, no delicate jawline.
 
