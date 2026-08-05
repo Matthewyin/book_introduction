@@ -113,7 +113,7 @@ python3 scripts/cover-compose.py \
 - 品牌角标 320×80px（`height: 80px; width: auto;`，以 SKILL.md Step 0 为准）
 - 转场交叉淡入淡出 0.6s（GSAP opacity，首帧不淡入），金句之间呼吸停顿
 - 片尾 outro.mp4（3.2s）
-- 定位帧 + 书封叠入的完整规格见 `templates/quote-subtitle-style.md`
+- 书封快闪开头的完整规格见 `templates/quote-subtitle-style.md` 的「书封快闪开头」节
 
 时间轴：ffmpeg silencedetect 检测 voiceover.wav 的句子间隔 → 驱动字幕和素材切换。
 

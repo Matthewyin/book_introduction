@@ -153,8 +153,8 @@ quote:
   # 开头引入句（固定模板，学抖音博主"十二"）
   intro_template: "今天分享的书籍是：《{book}》作者：{author}。书中有这样一句话——"
 
-  # 书封特写叠入（从预建书封库取图）
-  book_cover_overlay: true      # 开头 t=3-5s 叠入真实书封
+  # 书封快闪开头（从预建书封库取图，先去白边）
+  book_cover_overlay: true      # 开头 t=1.0-2.0s 快闪 10 本 + t=2.0-4.0s 本集落定
   book_cover_dir: ${WORKSPACE}/assets/book-covers
 
   # 微信读书 API
