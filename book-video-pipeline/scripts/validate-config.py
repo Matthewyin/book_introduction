@@ -20,6 +20,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -68,7 +70,7 @@ ENUM_FIELDS = {
 
 # 路径类字段：展开后必须存在（缺文件报 error；显式标注可缺省的除外）
 REQUIRED_FILES = {
-    "cover.template_dir": "封面模板目录（应有 cover-3x4.png / cover-9x16.png）",
+    "cover.template_dir": "封面模板目录（应有 cover-3x4-realistic.png / cover-3x4-anime.png）",
     "cover.logo": "品牌 logo",
     "cover.font_title": "书名字体",
     "cover.font_title_viral": "病毒标题字体",
@@ -145,8 +147,8 @@ def check_files(flat: dict, base_dir: Path, book_dir: Path | None) -> tuple[list
             continue  # 缺失由 check_required 报
         p = expandpath(str(raw))
         if p.is_dir():
-            if not any(p.glob("cover-3x4*")):
-                errors.append(f"✗ {key}（{label}）目录下未找到 cover-3x4 母版：{p}")
+            if not any(p.glob("cover-3x4-*")):
+                errors.append(f"✗ {key}（{label}）目录下未找到 cover-3x4-* 母版：{p}")
         elif not p.is_file():
             errors.append(f"✗ {key}（{label}）不存在：{p}")
     # 工作区资产
@@ -156,6 +158,30 @@ def check_files(flat: dict, base_dir: Path, book_dir: Path | None) -> tuple[list
         if not p.is_file():
             errors.append(f"✗ 工作区资产缺失：{rel}（{label}）→ {p}")
     return errors, warnings
+
+
+def check_aline(book_dir: Path | None) -> list[str]:
+    """A 线（金句流）依赖检查：WEREAD_API_KEY / ego-browser / dreamina CLI。
+    仅当集目录的 book-overrides.yaml 声明 line: quote 时强制执行。"""
+    if not book_dir:
+        return []  # 无集目录时不检查
+    ovr = book_dir / "book-overrides.yaml"
+    if not ovr.is_file():
+        return []  # 无覆盖文件=默认 B 线
+    try:
+        data = _parse_yaml(ovr.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return []
+    if data.get("line") != "quote":
+        return []  # 非 A 线不检查
+    errors = []
+    if not os.environ.get("WEREAD_API_KEY"):
+        errors.append("✗ A线缺少 WEREAD_API_KEY 环境变量（微信读书 API，Q1 取划线依赖）")
+    if not shutil.which("ego-browser"):
+        errors.append("✗ A线缺少 ego-browser（Pixabay 素材搜索下载依赖，Q4 取实拍视频）")
+    if not shutil.which("dreamina"):
+        errors.append("✗ 缺少 dreamina CLI（封面/场景生图依赖，Q5/Step7 生图依赖）")
+    return errors
 
 
 def main() -> int:
@@ -194,6 +220,9 @@ def main() -> int:
     file_errors, file_warnings = check_files(flat, config_path.parent if config_path else PIPELINE_ROOT, cfg.book_dir)
     errors += file_errors
     warnings += file_warnings
+
+    # 3b) A 线依赖（环境变量 + 外部工具，仅 A 线集时强制）
+    errors += check_aline(cfg.book_dir)
 
     # 4) 单书覆盖文件本身可解析（若存在）
     if cfg.book_dir:

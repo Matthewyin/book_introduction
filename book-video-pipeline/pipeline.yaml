@@ -117,8 +117,9 @@ workspace:
 
 # ──────────────────────────────────────────────────────────── 封面（本地排版合成，无 Canva）
 cover:
-  # 统一封面模板目录（已验收的无字主视觉：cover-3x4.png + cover-9x16.png）
+  # 统一封面模板目录（双风格底图：cover-3x4-realistic.png + cover-3x4-anime.png）
   template_dir: ${WORKSPACE}/assets/cover-image
+  default_art: realistic                                # 默认画面风格（视频写实时用 realistic，动漫时覆盖为 anime）
   logo: ${WORKSPACE}/assets/brand/corner-lockup.png   # 左上角 logo 品牌卡（720×180，透明底）
   template_has_brand: true                          # 底图已含 logo，每集不再画 logo
   corner_right: 好书推荐                                 # 右上角文字

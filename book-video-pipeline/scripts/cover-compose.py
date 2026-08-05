@@ -3,12 +3,16 @@
 
 两段式架构：
   1. 底图（--base）：无字主视觉 + logo 品牌卡 → 保存为统一封面模板
-     （assets/cover-image/cover-3x4.png + cover-9x16.png，覆盖纯艺术模板）
+     （assets/cover-image/cover-3x4-{art}.png + cover-9x16-{art}.png）
   2. 每集：底图（已含 logo，template_has_brand=true 时跳过 logo）
      + 右上「好书推荐」+ EP + 书名 + 钩子/作者
      → 输出到该书 03-assets/cover/cover-final*.png
 
 文字 100% 保真（PIL 排版，不依赖 AI 渲染中文）。
+
+画面风格（--art）—— 跟随本集视频风格:
+  realistic  写实摄影（默认）——视频用写实人设时选
+  anime      动漫插画——视频用动漫人设时选
 
 样式系统（--style）:
   quiet  暖棕安静体（默认）——书名黑体常规 + 钩子仿宋描边
@@ -450,6 +454,8 @@ def main() -> int:
                    help="配色：sunny=阳光暖棕（默认）warm=秋冬暖橙 calm=冷静蓝灰")
     p.add_argument("--template", choices=["ambient", "bookshot", "bookshot-character"], default="ambient",
                    help="模板版式：ambient=氛围静物（默认）bookshot=书封特写 bookshot-character=书封+人物推荐")
+    p.add_argument("--art", choices=["realistic", "anime"], default="realistic",
+                   help="画面风格：realistic=写实摄影（默认）anime=动漫插画。跟随本集视频风格——视频写实用 realistic，视频动漫用 anime")
     p.add_argument("--safe-margin", type=float, default=0.10,
                    help="安全区边距比例（默认 0.10=10%%，元素超出时打印警告）")
     p.add_argument("--series", default=None, help="系列名（默认读 config）")
@@ -484,6 +490,7 @@ def main() -> int:
         "style": args.style,
         "palette": args.palette,
         "template": args.template,
+        "art": args.art,
         "safe_margin": args.safe_margin,
         "hook_y": args.hook_y,
         "font_title": _fonts("font_title", FONT_FALLBACK_TITLE),
@@ -492,13 +499,12 @@ def main() -> int:
         "font_body": _fonts("font_body", FONT_FALLBACK_BODY),
     }
 
-    # 模板文件名：ambient 用 cover-3x4.png；其他版式用 cover-3x4-{template}.png
-    if args.template == "ambient":
-        t34 = tdir / "cover-3x4.png"
-        t916 = tdir / "cover-9x16.png"
-    else:
-        t34 = tdir / f"cover-3x4-{args.template}.png"
-        t916 = tdir / f"cover-9x16-{args.template}.png"
+    # 模板文件名：cover-{ratio}-{template?}-{art}.png
+    # ambient（默认版式）省略 template 段：cover-3x4-realistic.png / cover-3x4-anime.png
+    # 其他版式带 template 段：cover-3x4-bookshot-anime.png
+    tmpl = "" if args.template == "ambient" else f"-{args.template}"
+    t34 = tdir / f"cover-3x4{tmpl}-{args.art}.png"
+    t916 = tdir / f"cover-9x16{tmpl}-{args.art}.png"
     if not t34.is_file() or not t916.is_file():
         raise SystemExit(f"模板缺失：{tdir} 下需要 {t34.name} 与 {t916.name}")
 

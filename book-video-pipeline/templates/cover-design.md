@@ -12,18 +12,25 @@
 | 小红书（主） | 1080×1440 (3:4) | `03-assets/cover/cover-final.png` |
 | 抖音/视频号 | 1080×1920 (9:16) | `03-assets/cover/cover-final-9x16.png` |
 
-## 模板（已验收 · 系列共用 · 两段式）
+## 模板（已验收 · 系列共用 · 两段式 · 双风格）
 
 - 位置：`assets/cover-image/`（模板目录可在 `pipeline.yaml` `cover.template_dir` 改）
-- **ambient 版**（默认）：`cover-3x4.png` + `cover-9x16.png`
-  = **底图 = 无字主视觉 + logo 品牌卡**，规范见 `cover-prompt.md`
-  （无人物 · 一体式留白 · 清爽阳光向上 · 书/手机小号英文圆体字）
-- **bookshot 版**（书封特写）：`cover-3x4-bookshot.png` + `cover-9x16-bookshot.png`
-  = 书封占 60-70%，文字落顶部窄带。prompt 见 `prompts/cover-examples.md` 范文 3。
+- **画面风格双轨**（`--art`，跟随视频风格）：
+  - `realistic`（默认）：写实摄影底图 `cover-3x4-realistic.png` + `cover-9x16-realistic.png`
+  - `anime`：动漫插画底图 `cover-3x4-anime.png` + `cover-9x16-anime.png`
+- **底图 = 无字主视觉 + logo 品牌卡**，规范见 `cover-prompt.md`
+  （无人物 · 一体式留白 · 暖调治愈 · 书页空白无字）
 - 每集封面 = 底图（已含 logo，`template_has_brand: true` 跳过画 logo）+ 文字层，
   输出到本书 cover 目录。
 - **重新生成主视觉后必须重跑底图**：`python3 scripts/cover-compose.py --base \
-  --out-dir assets/cover-image`（把 logo 贴回新艺术图）。
+  --art <realistic|anime> --out-dir assets/cover-image`（把 logo 贴回新艺术图）。
+
+## 画面风格（`--art`）—— 跟随视频风格
+
+| 风格 | 适用 | 底图文件 |
+|------|------|---------|
+| **realistic**（默认） | 视频用写实人设（`cinematic-girl.md`） | `cover-3x4-realistic.png` |
+| **anime** | 视频用动漫人设（`cute-anime-girl.md`） | `cover-3x4-anime.png` |
 
 ## 样式系统（`--style`）
 

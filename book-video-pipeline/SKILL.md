@@ -1,11 +1,15 @@
 ---
 name: book-video-pipeline
-description: 心理励志图书带货视频流水线。当用户需要为心理励志类图书制作小红书带货视频时触发，覆盖从选书、文案、口播稿、分镜、素材生成到视频合成的完整流程。视频规格：1080×1920 竖屏，基线 ≤199 秒 / 弹性 ≤244 秒，AI 插画 + 黄字字幕 + 旁白配音风格。工作流带 7 个审核点，每步停下等用户确认。
+description: 心理励志图书带货视频流水线（双产品线）。A线=金句流≤60s（写实摄影+微信读书划线+Pixabay实拍），B线=方法论流165-240s（动漫/写实人设+AI生图+深度拆解）。封面风格跟随视频风格。工作流带审核点，每步停下等用户确认。
 ---
 
-# 心理励志图书带货视频流水线
+# 心理励志图书带货视频流水线（双产品线）
 
-从小红书心理励志垂类出发，批量生产日系软萌 anime 水彩叙事插画风格的图书带货视频。当前主力风格卡：`templates/styles/people/cute-anime-girl.md`。
+从小红书/抖音心理励志垂类出发，批量生产图书带货视频。**两条产品线**：
+- **A 线·金句流**（≤60s）：微信读书划线金句 + Pixabay 实拍素材 + 写实暖调封面
+- **B 线·方法论流**（165-240s）：8 段螺旋结构 + AI 生图（动漫 `cute-anime-girl.md` 或写实 `cinematic-girl.md` 人设）
+
+**封面风格跟随视频风格**：视频写实用写实摄影封面（`--art realistic`），视频动漫用动漫插画封面（`--art anime`）。
 
 参考标杆：`ep001-v3-v9-jimeng-release-75mb.mp4`（1080×1920，119s；早期采用拼贴 / 剪贴簿插画，现已迁移至日系软萌 anime 水彩，见风格卡库 `templates/styles/`）。
 
@@ -28,6 +32,7 @@ description: 心理励志图书带货视频流水线。当用户需要为心理�
 | 未指定 | 默认推荐 A 线 | 制作快、爆款概率高 |
 
 **A 线流程（Step Q1-Q8）**：
+> 完整步骤（含命令模板 + 审核点 + 降级策略）见 `references/quote-workflow.md`，本节只列概要。
 1. **Q1 选书+获取金句**：`weread-highlights.py` 获取微信读书全书热门划线 Top20 → 🔴审核
 2. **Q2 金句筛选拼接**：DeepSeek 选 3-5 句拼成 90-150 字稿 → 🔴审核
 3. **Q3 配音**：TTS 0.9 倍速 → 🔴审核
@@ -368,12 +373,14 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 
 ### Step 7b：封面合成 → `03-assets/cover/cover-final.png`（本地排版，无 Canva）
 
-封面职责分离：**AI 出画（无字主视觉），本地排版出字**。流程与规格见
-`templates/cover-prompt.md` + `templates/cover-design.md`。
+封面职责分离：**AI 出画（无字主视觉），本地排版出字**。**封面风格跟随视频风格**——
+视频写实用 `--art realistic`（写实摄影底图），视频动漫用 `--art anime`（动漫插画底图）。
+流程与规格见 `templates/cover-prompt.md` + `templates/cover-design.md`。
 
-1. 确认模板就位：`assets/cover-image/cover-3x4.png`（3:4）+ `cover-9x16.png`（9:16）
-   ——已验收的统一封面（无人物 · 一体式留白 · 清爽阳光向上 · 书/手机小字）。
-   缺失时按 `cover-prompt.md` 用 dreamina_text 重新生成。
+1. 确认模板就位（按本集 `--art` 选）：
+   - 写实：`cover-3x4-realistic.png` + `cover-9x16-realistic.png`
+   - 动漫：`cover-3x4-anime.png` + `cover-9x16-anime.png`
+   缺失时按 `cover-prompt.md` 用 dreamina_text + 对应 prompt 文件重新生成。
 2. 取文案：书名（≤10 字，不加《》）、钩子（≤12 字，优先 book-profile 选定角度）、
    作者、集数。
 3. 本地合成（零 API，文字 100% 保真）：
@@ -381,9 +388,11 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
    python3 scripts/cover-compose.py \
      --book-title 非暴力沟通 --hook 你说的每句狠话，都在推开最亲的人 \
      --author 马歇尔·卢森堡 --episode EP03 \
+     --art realistic \
      --out-dir episodes/ep00X-书名/03-assets/cover \
-     [--style viral] [--palette calm] [--template bookshot]
+     [--style viral] [--palette warm] [--template bookshot]
    ```
+   - `--art`：`realistic`（写实摄影，默认）/ `anime`（动漫插画）——**跟随视频风格**
    - `--style`：`quiet`（默认暖棕安静体）/ `viral`（病毒标题体：超粗黑体+亮黄标签）
    - `--palette`：`sunny`（默认）/ `warm`（暖橙）/ `calm`（冷静蓝灰）
    - `--template`：`ambient`（默认氛围静物）/ `bookshot`（书封特写，需对应母版）

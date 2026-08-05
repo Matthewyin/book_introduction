@@ -61,16 +61,22 @@ python3 scripts/pixabay-fetch.py --query "cozy reading book warm" \
 - 下载 3-5 个 mp4，每个 5-15 秒
 - 🔴 **审核点 Q4**：用户确认素材
 
-### Step Q5：暖调封面生成
+### Step Q5：暖调封面生成（写实摄影）
+
+A 线是实拍素材 + 写实风格，封面用 `--art realistic`（写实摄影底图）。
 
 ```bash
-# Seedream 5.0 text2image 生成暖调封面
-dreamina text2image --prompt="$(cat templates/styles/warm-still-life.md + 书名上下文)" \
-  --ratio=9:16 --resolution_type=2k --model_version=5.0 --generate_num=1 --poll=240
+# 写实底图已预生成在 assets/cover-image/cover-3x4-realistic.png
+# 直接用 cover-compose.py 叠字（无需每集重生图）
+python3 scripts/cover-compose.py \
+  --book-title "书名" --hook "金句钩子" \
+  --art realistic --palette warm \
+  --out-dir episodes/ep00X-书名/03-assets/cover
 ```
 
-- 风格卡 `warm-still-life.md`（暖奶油/暖琥珀/暖棕，无人物）
-- PIL 叠加统一标题"今天分享《书名》"（暖棕色字体）
+- 底图 prompt：`assets/cover-image/prompts/cover-3x4-realistic.md`（暖调写实摄影）
+- 风格卡参考：`templates/styles/warm-still-life.md`（暖奶油/暖琥珀/暖棕，无人物）
+- 缺失时用 `genimage.py --promptfiles cover-3x4-realistic.md` 重新生成
 - 🔴 **审核点 Q5**：用户确认封面
 
 ### Step Q6：hyperframes 合成
