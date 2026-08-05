@@ -305,29 +305,14 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 
 ### 整体分层
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    ZCode Agent（编排层）                          │
-│   读 SKILL.md → 按步骤推进 → 7 个 AskUserQuestion 审核点          │
-└──────────────┬───────────────────────┬──────────────────────────┘
-               │                       │
-   ┌───────────▼──────────┐ ┌──────────▼───────────────────────┐
-   │   LLM 调用层          │ │      脚本 + 工具层                 │
-   │  (scripts/*.py)       │ │  realign-shots / make-cues /     │
-   │  kimi / deepseek /    │ │  check-script / validate-spec    │
-   │  tts-minimax          │ │                                  │
-   └───────┬──────────────┘ └──────────────┬───────────────────┘
-           │                               │
-   ┌───────▼──────────────────────────────▼───────────────────────┐
-   │                    产 出 层（episodes/ep00X/）                 │
-   │  01-profile/  02-script/  03-assets/  04-video/  05-publish/   │
-   └───────────────────────────────┬──────────────────────────────┘
-                                   │
-                ┌──────────────────▼──────────────────┐
-                │      渲染层（hyperframes）            │
-                │   HTML/CSS + GSAP → 逐帧 seek 渲染    │
-                │   → output.mp4 + subtitle.srt         │
-                └───────────────────────────────────────┘
+```mermaid
+graph TD
+    A["ZCode Agent（编排层）<br/>读 SKILL.md → 按步骤推进 → 审核点交互"]
+    A --> B["LLM 调用层（scripts/*.py）<br/>kimi / deepseek / tts-minimax"]
+    A --> C["脚本 + 工具层<br/>realign-shots / make-cues / check-script / validate-spec"]
+    B --> D["产出层（episodes/ep00X/）<br/>01-profile / 02-script / 03-assets / 04-video / 05-publish"]
+    C --> D
+    D --> E["渲染层（hyperframes）<br/>HTML/CSS + GSAP → 逐帧 seek 渲染<br/>→ output.mp4 + subtitle.srt"]
 ```
 
 ### 每集目录结构
@@ -384,56 +369,31 @@ episodes/ep00X-书名/
 
 ### 数据流（按步骤的输入输出）
 
-```
-Step 1 选书档案 ──────────────────────► (审核点①)
-        │
-        ▼
-Step 2 Kimi 文案策划 ──► script-brief ─► (审核点②)
-        │
-        ▼
-Step 3a Kimi 起草 ─► draft-01
-Step 3b grok 初审 ─► review-01（问题清单，不改稿）
-Step 3c DeepSeek 二审 ─► draft-03 ─────► (内容定稿)
-Step 3d humanizer-zh ─► draft-04 ─► SCRIPT.md
-        │   └─ check-script.py（20 项必须全绿）
-        ▼
-Step 3e 锁定旁白 + voiceover-text.txt ─► (审核点③)
-        │
-        ▼
-Step 4 MiniMax TTS ─► voiceover.wav ───► (审核点④)
-        │
-        ▼
-Step 5 ffmpeg silencedetect + realign-shots.py
-        │   └─ 从音频真实时长反推每镜 start/end
-        ▼
-        shot-timing.json
-        │
-        ├─► make-cues.py ─► subtitle-cues.json（字幕逐句）
-        │
-        ▼
-Step 6 DeepSeek 分镜 ─► STORYBOARD.md ─► (审核点⑤)
-        │   └─ duration 字段必须来自 shot-timing.json，不可估算
-        ▼
-Step 7 DeepSeek Flash 写 shot_*.scene.md（仅内容）
-        │   └─ 风格卡（styles/*.md）拼在前面，模型不碰风格
-        └─ genimage.py 分发（characters+charRef→Seedream，否则→openrouter）─► scenes/shot_*.png ─► (审核点⑥)
-        │
-        ▼
-Step 7b 封面本地合成 ─► cover-final.png + cover-final-9x16.png
-        │   └─ cover-compose.py（底图模板 + 文字层，零 API，文字 100% 保真）
-        ▼
-Step 8 动效设计
-   ├─ 8a 即梦 i2v（≤2 镜，seedance-prompt-zh 写词 → dreamina CLI → 剥离 BGM）
-   └─ 8b GSAP 动效层（其余所有镜头，seek-safe）
-        │
-        ▼
-Step 9 hyperframes 合成 ─► output.mp4 + subtitle.srt ─► (审核点⑦)
-        │   └─ validate-spec.py 校验规格
-        ▼
-Step 9b ego-browser 下 BGM ─► bgm.mp3 ──► (审核点⑦b)
-        │
-        ▼
-Step 10 发布物料 ─► publish-brief.md
+```mermaid
+graph TD
+    S1["Step 1 选书档案"] -->|审核点①| R1((🔴①))
+    R1 --> S2["Step 2 Kimi 文案策划 → script-brief"]
+    S2 -->|审核点②| R2((🔴②))
+    R2 --> S3a["Step 3a Kimi 起草 → draft-01"]
+    S3a --> S3b["Step 3b grok 初审 → review-01（问题清单）"]
+    S3b --> S3c["Step 3c DeepSeek 二审 → draft-03（内容定稿）"]
+    S3c --> S3d["Step 3d humanizer-zh → draft-04 → SCRIPT.md<br/>check-script.py 20 项必须全绿"]
+    S3d -->|审核点③| R3((🔴③))
+    R3 --> S4["Step 4 MiniMax TTS → voiceover.wav"]
+    S4 -->|审核点④| R4((🔴④))
+    R4 --> S5["Step 5 ffmpeg silencedetect + realign-shots.py<br/>→ shot-timing.json"]
+    S5 --> S5b["make-cues.py → subtitle-cues.json"]
+    S5 --> S6["Step 6 DeepSeek 分镜 → STORYBOARD.md<br/>duration 必须来自 shot-timing.json"]
+    S6 -->|审核点⑤| R5((🔴⑤))
+    R5 --> S7["Step 7 DeepSeek Flash 写 scene.md + 风格卡拼接<br/>genimage.py 分发 → scenes/shot_*.png"]
+    S7 -->|审核点⑥| R6((🔴⑥))
+    R6 --> S7b["Step 7b cover-compose.py 封面本地合成<br/>→ cover-final.png + cover-final-9x16.png"]
+    S7b --> S8["Step 8 动效设计<br/>8a 即梦 i2v（≤2 镜）+ 8b GSAP 动效层"]
+    S8 --> S9["Step 9 hyperframes 合成<br/>→ output.mp4 + subtitle.srt"]
+    S9 -->|审核点⑦| R7((🔴⑦))
+    R7 --> S9b["Step 9b ego-browser 下 BGM → bgm.mp3"]
+    S9b -->|审核点⑦b| R7b((🔴⑦b))
+    R7b --> S10["Step 10 发布物料 → publish-brief.md"]
 ```
 
 ### LLM 分工表
@@ -467,14 +427,14 @@ Step 10 发布物料 ─► publish-brief.md
 
 ### 认证读取链
 
-```
-脚本 get_api_key()
-   ├─ 1. 环境变量（$KIMI_API_KEY / $DEEPSEEK_API_KEY / ...）
-   ├─ 2. ~/.zshrc 中的 export 行
-   └─ 3. openrouter/MiniMax：环境变量 $OPENROUTER_API_KEY / $MINIMAX_API_KEY（~/.zshrc）
-
-❌ 项目内任何文件都不存储 key
-❌ 不读取 ~/.grok/auth.json（grok CLI 已退出主流程）
+```mermaid
+graph TD
+    K["脚本 get_api_key()"]
+    K -->|"1. 环境变量"| E["$KIMI_API_KEY / $DEEPSEEK_API_KEY / ..."]
+    K -->|"2. shell profile"| Z["~/.zshrc 中的 export 行"]
+    K -->|"3. openrouter/MiniMax"| O["$OPENROUTER_API_KEY / $MINIMAX_API_KEY（~/.zshrc）"]
+    N1["❌ 项目内任何文件都不存储 key"] -.-> K
+    N2["❌ 不读取 ~/.grok/auth.json（grok CLI 已退出主流程）"] -.-> K
 ```
 
 ---
