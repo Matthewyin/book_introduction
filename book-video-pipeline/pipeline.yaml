@@ -145,10 +145,17 @@ quote:
   max_duration: 60              # 正文最大秒数
   min_quotes: 3                 # 最少金句数
   max_quotes: 5                 # 最多金句数
-  min_chars: 90                 # 最少字数
-  max_chars: 150                # 最多字数
+  min_chars: 120                # 最少字数（含引入句）
+  max_chars: 175                # 最多字数（含引入句）
   voice: danya_xuejie           # 淡雅学姐
   voice_speed: 0.9              # 慢一档（适合金句留白）
+
+  # 开头引入句（固定模板，学抖音博主"十二"）
+  intro_template: "今天分享的书籍是：《{book}》作者：{author}。书中有这样一句话——"
+
+  # 书封特写叠入（从预建书封库取图）
+  book_cover_overlay: true      # 开头 t=3-5s 叠入真实书封
+  book_cover_dir: ${WORKSPACE}/assets/book-covers
 
   # 微信读书 API
   weread:

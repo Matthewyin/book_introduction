@@ -11,7 +11,7 @@
 
 ## 8 步工作流
 
-### Step Q1：选书 + 获取金句数据
+### Step Q1：选书 + 获取金句数据 + 确认书封
 
 ```bash
 python3 scripts/weread-highlights.py --book "一生 莫泊桑" --output 02-script/quotes-top20.json
@@ -19,6 +19,9 @@ python3 scripts/weread-highlights.py --book "一生 莫泊桑" --output 02-scrip
 
 - 调微信读书 `/store/search` 搜书 → bookId
 - 调 `/book/bestbookmarks` 获取全书热门划线 Top20（含划线原文 + 划线人数 + 章节）
+- **确认书封存在**：检查 `assets/book-covers/{书名}.png`（预建书封库，20 本）
+  - 存在 → 继续
+  - 不存在 → 🔴 blocked，提示用户先补充书封到书封库（见 `assets/book-covers/README.md`）
 - 展示 Top20 给用户审核
 - 🔴 **审核点 Q1**：用户确认要用的金句
 
@@ -27,8 +30,9 @@ python3 scripts/weread-highlights.py --book "一生 莫泊桑" --output 02-scrip
 调 DeepSeek V4 Flash，输入 Top20 划线，system prompt 约束：
 - 筛选 3-5 句（独立成句、情感冲击、口语化、15-35 字/句）
 - 按情绪递进排序：扎心 → 深入 → 升华
-- 加极少量过渡词，拼成 90-150 字朗读稿
-- 输出 `quote-script.md` + `voiceover-text.txt`
+- **开头加引入句**（固定模板）：`今天分享的书籍是：《{书名}》作者：{作者}。书中有这样一句话——`
+- 加极少量过渡词，拼成 120-175 字朗读稿（含引入句）
+- 输出 `quote-script.md` + `voiceover-text.txt`（voiceover-text.txt 第一行是引入句，后面是金句）
 
 ```bash
 python3 scripts/deepseek-call.py templates/quote-selector-system.md \
@@ -53,11 +57,18 @@ python3 scripts/tts-minimax.py 02-script/voiceover-text.txt \
 用 ego-browser 从 Pixabay 搜索暖调实拍视频素材：
 
 ```bash
-python3 scripts/pixabay-fetch.py --query "cozy reading book warm" \
+python3 scripts/pixabay-fetch.py --query "mountain lake reflection calm" \
   --count 5 --output-dir 03-assets/footage/
 ```
 
-- 搜索词由金句情绪决定（见 `pixabay-keywords.md`）
+**素材硬性要求（2026-08 起强制执行，脚本自动过滤）：**
+
+1. **素材方向：自然风光、山水**——搜索词围绕山水/森林/湖泊/日出/云雾等自然场景，
+   不选城市街景、人群、室内静物。自然画面与金句的内省气质同构，且不过时。
+2. **分辨率 720p-1080p**（竖边高度 720-1080px）。
+3. **单文件体积 ≤10MB**——超限脚本自动换 `_medium`/`_small` 变体重试，仍超则丢弃换下一候选。
+
+- 搜索词由金句情绪决定（见 `pixabay-keywords.md`，首选"自然风光·山水"分类）
 - 下载 3-5 个 mp4，每个 5-15 秒
 - 🔴 **审核点 Q4**：用户确认素材
 
@@ -82,11 +93,23 @@ python3 scripts/cover-compose.py \
 ### Step Q6：hyperframes 合成
 
 写 `composition.html`：
-- 每句金句对应一个 clip，嵌入 `<video>`（实拍素材）
-- 配音用独立 `<audio>`（src=voiceover.wav）
-- 字幕独立 `<div>` 图层（暖白大字居中，暖色底条，样式见 `quote-subtitle-style.md`）
-- 转场淡入，金句之间呼吸停顿
-- 片头 intro.mp4（1s）+ 片尾 outro.mp4（3.2s）
+- **开头三段式**（学抖音博主"十二"，让观众第一眼知道是什么书）：
+  1. **t=0-1.0s 品牌片头**：intro.mp4（保持不变）
+  2. **t=1.0-3.0s 定位帧**：第一段 Pixabay 风景素材 + 大字书名《XX》+ 作者/著 overlay（画面上方 18%）
+     - 对应口播："今天分享的书籍是：《书名》作者：XXX"
+     - GSAP：t=2.4 淡出（0.6s）
+  3. **t=3.0-5.0s 书封特写叠入**：书封库取图（`assets/book-covers/{书名}.png`），从右侧滑入+淡入，停留后淡出
+     - 对应口播过渡："书中有这样一句话——"
+     - GSAP：t=3.0 滑入(x:120→0)+淡入，t=4.4 淡出
+- 每句金句对应一个 clip，嵌入 `<video>`（实拍素材，必须是 root 直接子元素，`data-media-start` 选窗口；慢放镜头先用 ffmpeg `setpts` 预处理，不靠渲染器）
+- 配音用独立 `<audio>`（src=voiceover.wav，含引入句+过渡句+金句）
+- **BGM 必配**（2026-08 起）：ego-browser 从 Pixabay 音乐下载 2-3 首候选（calm piano / ambient 优先），
+  用户选定后 ffmpeg 裁到全片时长 + 淡入 1s 淡出 2s，`<audio data-volume="0.15">` 嵌入，不盖人声
+- 字幕独立 `<div>` 图层（样式以 `templates/video-spec.md` 为准）
+- 品牌角标 320×80px（`height: 80px; width: auto;`，以 SKILL.md Step 0 为准）
+- 转场交叉淡入淡出 0.6s（GSAP opacity，首帧不淡入），金句之间呼吸停顿
+- 片尾 outro.mp4（3.2s）
+- 定位帧 + 书封叠入的完整规格见 `templates/quote-subtitle-style.md`
 
 时间轴：ffmpeg silencedetect 检测 voiceover.wav 的句子间隔 → 驱动字幕和素材切换。
 

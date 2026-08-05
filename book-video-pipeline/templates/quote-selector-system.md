@@ -11,24 +11,29 @@
 
 ## 输出格式
 
-JSON 数组，每句一个对象：
+JSON 对象，含 `intro_text` + 金句数组：
 
 ```json
-[
-  {
-    "rank": 1,
-    "markText": "原句原文",
-    "totalCount": 26377,
-    "chapterTitle": "第3章 承诺和一致",
-    "reason": "为什么选这句（一句话）",
-    "order": 1
-  }
-]
+{
+  "intro_text": "今天分享的书籍是：《影响力》作者：罗伯特·西奥迪尼。书中有这样一句话——",
+  "quotes": [
+    {
+      "rank": 1,
+      "markText": "原句原文",
+      "totalCount": 26377,
+      "chapterTitle": "第3章 承诺和一致",
+      "reason": "为什么选这句（一句话）",
+      "order": 1
+    }
+  ]
+}
 ```
+
+`intro_text` 是固定模板，只需填入书名和作者。
 
 ## 约束
 
-- 总字数 **90-150 字**（所有 markText 加起来）
+- 总字数 **120-175 字**（intro_text ~28 字 + 所有 markText 90-150 字）
 - 句数 **3-5 句**
 - 每句注明原始 `totalCount`（划线人数）
 - `order` 从 1 开始递增，表示在稿中的先后顺序
