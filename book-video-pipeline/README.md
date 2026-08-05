@@ -1,10 +1,14 @@
 # book-video-pipeline
 
-心理励志图书带货短视频流水线 —— 把一本书变成一条 1080×1920、基线 ≤199 秒 / 弹性 ≤244 秒的竖屏带货视频。
+心理励志图书带货短视频流水线 —— 把一本书变成一条竖屏带货视频。
 
-本流水线是一个 **ZCode Skill**（也可作为独立的文档+脚本框架使用）。它不承诺播放量或成交额，只提供一套**带 7 个人工审核点**的确定性生产流程：从选书、文案、口播、分镜、素材生成、动效设计到最终合成，每一步都停下等你确认。
+**两条产品线**：
+- **A 线·金句流**（≤60s）：微信读书划线金句 + Pixabay 山水实拍 + 书封快闪开头，制作快、爆款概率高。详见 `references/quote-workflow.md`
+- **B 线·方法论流**（165-240s）：8 段螺旋结构 + AI 生图，深度拆解。即下方 10 步流程
 
-视觉风格支持两套主力风格卡，每集 Step 7.0 由用户选定并审核：
+本流水线是一个 **ZCode Skill**（也可作为独立的文档+脚本框架使用）。它不承诺播放量或成交额，只提供一套**带人工审核点**的确定性生产流程：从选书、文案、口播、分镜、素材生成、动效设计到最终合成，每一步都停下等你确认。
+
+视觉风格支持两套主力风格卡（B 线 Step 7.0 由用户选定并审核）：
 - **`people/cute-anime-girl.md`**（日系动漫水彩）：soft cel-shaded anime + 水彩边，五色低饱和色板。内含**两人设**可选：
   - variant **girl**（阳光青春时尚元气女孩）→ 定妆图 `anime-girl.png`
   - variant **boy**（阳光清爽少年感男孩）→ 定妆图 `anime-boy.png`
@@ -30,8 +34,10 @@
 
 ## 功能特性
 
-- **10 步确定性流程**：选书 → 文案策划 → 口播稿四道工序 → TTS 配音 → 真实时间轴提取 → 分镜 → 生图 → 动效设计 → hyperframes 合成 → 发布物料。
-- **7 个人工审核点**：每个 🔴 节点用 `AskUserQuestion` 弹出「通过 / 修改 / 重做」，不跳过、不自动推进。
+- **双产品线**：A 线金句流（≤60s，快速涨粉）+ B 线方法论流（165-240s，深度留存），同书双发策略。
+- **书封快闪开头**（A 线）：10 本书封毛玻璃快闪（0.1s/本）→ 本集书封落定，建立读书账号身份感。
+- **B 线 10 步确定性流程**：选书 → 文案策划 → 口播稿四道工序 → TTS 配音 → 真实时间轴提取 → 分镜 → 生图 → 动效设计 → hyperframes 合成 → 发布物料。
+- **人工审核点**：每个 🔴 节点用 `AskUserQuestion` 弹出「通过 / 修改 / 重做」，不跳过、不自动推进。
 - **顺序铁律**：配音必须在分镜与生图之前定稿——音频真实时长是分镜的输入，不是产物。
 - **去 AI 味闭环**：口播稿走 `Kimi 起草 → grok 初审 → DeepSeek 二审 → humanizer-zh 收尾` 四道工序，`check-script.py` 自动校验 20 项规则必须全绿。
 - **字幕图层化**：字幕作为 hyperframes 独立 `<div>` 渲染，不烧进像素，改一句字幕只需重渲染无需重烧帧；同时导出独立 SRT。
@@ -67,14 +73,15 @@ ffmpeg -version      # 任意版本，无需 libass（字幕由 hyperframes 渲�
 
 | 工具 | 触发阶段 | 安装 |
 |------|----------|------|
-| **hyperframes** | Step 9 合成 | `npx hyperframes@0.7.76`（首次自动下载） |
+| **hyperframes** | Step 9 / Q6 合成 | `npx hyperframes@0.7.76`（首次自动下载） |
 | **即梦 dreamina CLI** | Step 8a i2v 真动画 | 见即梦官方 CLI 文档 |
-| **ego-browser** | Step 9b BGM 下载（绕过 pixabay Cloudflare） | ZCode Skill `ego-browser` |
+| **ego-browser** | Step 9b BGM / Q4 素材下载（绕过 pixabay Cloudflare） | ZCode Skill `ego-browser` |
 | **humanizer-zh** | Step 3d 去 AI 味 | ZCode Skill `humanizer-zh` |
 | **seedance-prompt-zh** | Step 8a i2v 提示词 | ZCode Skill `seedance-prompt-zh` |
 | **Dreamina CLI（即梦）** | Step 7 生图（dreamina_text 通道：无主角镜头 + 定妆图 + 封面；dreamina image2image：主角镜头） | `dreamina text2image` / `dreamina image2image`（Seedream 5.0，9:16/2k），失败 fallback openrouter |
 | **dreamina CLI** | Step 7 主角镜头（Seedream 5.0 image2image）+ Step 8a i2v | `~/.local/bin/dreamina`，需 `dreamina login`（OAuth） |
 | **baoyu-image-gen** | Step 7 备用参考图通道（MiniMax） | ZCode Skill `baoyu-image-gen`，需 `bun`（`brew install oven-sh/bun/bun`） |
+| **weread-skills** | A 线 Q1 / B 线 Step 1 微信读书划线数据 | ZCode Skill `weread-skills`，需 `WEREAD_API_KEY` |
 
 ### 4. API 密钥
 
@@ -115,7 +122,11 @@ assets/
 ├── voices/            # 音色素材库
 │   ├── voice-library.json
 │   └── samples/       # 试听样本
-└── bgm/candidates/    # BGM 候选
+├── bgm/candidates/    # BGM 候选
+└── book-covers/       # 预建书封库（20 本，A 线书封快闪开头取图）
+    ├── *.png           # 已去白边（trim_whitespace.py 处理）
+    ├── *.png.bak       # 原始备份
+    └── trim_whitespace.py  # autocrop 去白边脚本（阈值 235）
 ```
 
 ---
@@ -132,7 +143,22 @@ assets/
 
 Agent 会自动：选书 → 写档案 → 弹出**审核点①**等你确认。
 
-### 10 步流程速览
+### A 线·金句流（8 步，≤60s）
+
+| 步骤 | 产出 | 审核点 |
+|------|------|--------|
+| **Q1** 选书 + 金句数据 | `02-script/quotes-top20.json` | 🔴 Q1 |
+| **Q2** 金句筛选 + 引入句 | `02-script/quote-script.md` + `voiceover-text.txt` | 🔴 Q2 |
+| **Q3** TTS 配音（0.9x） | `03-assets/audio/voiceover.wav` | 🔴 Q3 |
+| **Q4** Pixabay 山水素材（720p-1080p / ≤10MB） | `03-assets/footage/` | 🔴 Q4 |
+| **Q5** 暖调封面 | `03-assets/cover/cover-final*.png` | 🔴 Q5 |
+| **Q6** hyperframes 合成（书封快闪开头 + 山水金句） | `04-video/output.mp4` | 🔴 Q6 |
+| **Q7** 字幕校准 | `04-video/subtitle.srt` | — |
+| **Q8** 发布物料 | `05-publish/publish-brief.md` | — |
+
+> 完整步骤见 `references/quote-workflow.md`，字幕/书封快闪规格见 `templates/quote-subtitle-style.md`。
+
+### B 线·方法论流 10 步流程速览
 
 | 步骤 | 产出 | 负责人 | 审核点 |
 |------|------|--------|--------|
@@ -208,7 +234,7 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 
 ## 组件清单
 
-### 脚本（`scripts/`，10 个）
+### 脚本（`scripts/`，16 个）
 
 | 脚本 | 作用 | 输入 → 输出 | 依赖密钥 |
 |------|------|-------------|----------|
@@ -220,10 +246,16 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `make-cues.py` | 逐句字幕切分（按标点不破词） | `<shot-timing.json> --out` | — |
 | `check-script.py` | 去 AI 味自动校验（20 项规则） | `<script.md> [--before <early.md>]` | — |
 | `validate-spec.py` | 成片规格校验 | `<video.mp4>` | ffmpeg/ffprobe |
+| `validate-config.py` | 开工前字体/封面母版/定妆图/后端齐备校验 | `[--book <集目录>]` | — |
 | `genimage.py` | 生图统一入口（分发层：openrouter / dreamina Seedream / MiniMax） | `--style ... --promptfiles ... --image` 或 `--batchfile` | `OPENROUTER_API_KEY` / `MINIMAX_API_KEY` / dreamina OAuth |
-| `cover-compose.py` | 封面本地排版合成（无 Canva，零 API，支持 `--style viral`/`--palette`/`--template`） | `--book-title ... --hook ... --author ... --episode ... --out-dir [--style viral] [--palette calm]` | — |
+| `cover-compose.py` | 封面本地排版合成（无 Canva，零 API，支持 `--style viral`/`--palette`/`--template`/`--art`） | `--book-title ... --hook ... --author ... --episode ... --out-dir [--style viral] [--palette calm]` | — |
+| `openrouter_image.py` | OpenRouter 同步生图（fallback 通道） | 内部由 `genimage.py` 调用 | `OPENROUTER_API_KEY` |
+| `weread-highlights.py` | 微信读书全书热门划线 Top20（A 线 Q1 / B 线 Step 1） | `--book ... --output ...` | `WEREAD_API_KEY` |
+| `pixabay-fetch.py` | Pixabay 山水实拍素材搜索下载（A 线 Q4，强制 720p-1080p / ≤10MB） | `--query ... --count ... --output-dir ...` | ego-browser |
+| `manifest.py` | 每集 run-manifest.json 状态机（v3 schema） | `init/update/get/resume/migrate` | — |
+| `status.py` | 全集生产总览表（聚合所有集 manifest） | `--csv` 可选 | — |
 
-### 模板（`templates/`，12 个 + `styles/` 风格卡库）
+### 模板（`templates/`，17 个 + `styles/` 风格卡库）
 
 | 模板 | 步骤 | 产出文件 |
 |------|------|----------|
@@ -237,12 +269,17 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `style-prefix.en.md` | Step 7 | （旧版风格常量，已被 `styles/` 风格卡库取代，保留兼容） |
 | `styles/` 风格卡库 | Step 7.0 | 风格卡（主力：`people/cute-anime-girl.md` 动漫水彩 + `people/cinematic-girl.md` 写实电影，写实卡含 literary / intellectual / literary-male / intellectual-male 四人设）+ README |
 | `scene-content.en.md` | Step 7 | 单镜内容字段骨架（DeepSeek 填这个） |
+| `scene-examples.md` | Step 7 | 场景内容示例 |
 | `cover-prompt.md` | Step 7b | 封面主视觉提示词（无字 · openrouter） |
 | `cover-design.md` | Step 7b | 封面本地排版规格（PIL 文字层 · 唯一规格源） |
-| `publish-brief.md` | Step 10 | 发布物料简报 |
+| `cover-examples.md` | Step 7b | 封面排版示例 |
+| `publish-brief.md` | Step 10 / Q8 | 发布物料简报 |
+| `quote-script-template.md` | A 线 Q2 | 金句流锁定旁白模板 |
+| `quote-selector-system.md` | A 线 Q2 | DeepSeek 金句筛选 system prompt |
+| `quote-subtitle-style.md` | A 线 Q6 | 书封快闪开头 + 金句字幕样式规范 |
 | `baoyu-image-gen-EXTEND.md` | 安装 | 拷到仓库根 `.baoyu-skills/baoyu-image-gen/EXTEND.md`，覆盖用户级默认值 |
 
-### 参考（`references/`，11 个）
+### 参考（`references/`，15 个）
 
 | 参考 | 内容 |
 |------|------|
@@ -251,12 +288,16 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `hyperframes-usage.md` | hyperframes 合成规范、seek-safe 动效规则、常见坑 |
 | `video-style-guide.md` | **插画风格管理唯一控制源**（风格卡库 + 五色固定色板） |
 | `shot-structure.md` | **结构唯一控制源**：7 段式 + 能量曲线 + 审美规则清单 |
-| `subtitle-style.md` | 字幕层 / 金句层视觉规范 |
+| `subtitle-style.md` | 字幕层 / 金句层视觉规范（B 线） |
 | `motion-recipes.md` | GSAP seek-safe 动效配方卡（5 类） |
 | `sound-design.md` | BGM 选型、SFX 词汇表、钉帧方法 |
 | `final-review.md` | 成片独立终检清单（干净上下文子 Agent 执行） |
 | `book-category-playbook.md` | 心理励志垂类选题库与带货策略 |
 | `xhs-publish-rules.md` | 小红书发布合规要点 |
+| `style-vocabulary.md` | 风格增强词库（质感微调） |
+| `quote-workflow.md` | **A 线·金句流完整工作流**（8 步 + 书封快闪开头） |
+| `pixabay-keywords.md` | Pixabay 搜索关键词库（自然风光·山水首选） |
+| `douyin-competitive-research.md` | 抖音竞品调研方法 |
 
 ---
 
@@ -448,8 +489,8 @@ Step 10 发布物料 ─► publish-brief.md
 | 帧率 | 30 fps CFR |
 | 视频编码 | H.264 High@4.0 |
 | 音频编码 | AAC 48kHz |
-| 时长 | ≤ 244 秒（基线 199s / 弹性 244s，intro + 正文 + outro，单镜 ≤ 15 秒） |
-| 字幕 | 金黄 #FFD700、黑描边、底部 1/3（数值见 `templates/video-spec.md`） |
+| 时长 | A 线 ≤60s（intro + 正文 + outro）/ B 线 ≤244s（基线 199s，单镜 ≤15s） |
+| 字幕 | B 线金黄 #FFD700 黑描边 底部 1/3 / A 线暖白 #FFF8F0 暖棕描边 居中偏上（数值见 `templates/video-spec.md` 和 `templates/quote-subtitle-style.md`） |
 | 音量 | 旁白 1.0、BGM 0.15（不盖人声） |
 | 片头片尾 | 静音（`-an` 去除原视频背景音） |
 
