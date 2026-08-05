@@ -394,15 +394,19 @@ def compose(template: Path, out: Path, spec: dict) -> None:
             _draw_hook_line(draw, spec["hook"], hook_font, hx, hy, W, H, sty, hook_color,
                             hook_stroke, max_w)
 
-    # ── 5) 作者（跟随 hook 对齐）──
+    # ── 5) 作者（跟随 hook 对齐；深色半透明标签底 + 暖白字，保证亮底图上的对比度）──
     if spec["author"]:
         author_font = load_font(spec["font_hook"], int(H * L["author"]["size"]))
         aw = draw.textlength(spec["author"], font=author_font)
         ax = _element_x(aw, L["author"])
         ay = H * L["author"]["y"] + author_y_offset
-        hook_stroke = max(1, int(H * 0.0014))
+        # 深色半透明圆角标签底（与钩子标签同体系，解决作者行压亮部看不清的问题）
+        pad_x, pad_y = H * 0.012, H * 0.004
+        draw.rounded_rectangle(
+            (ax - pad_x, ay - pad_y, ax + aw + pad_x, ay + author_font.size + pad_y),
+            radius=int(H * 0.006), fill=(46, 28, 14, 150))
         draw.text((ax, ay), spec["author"], font=author_font,
-                  fill=pal["meta"], stroke_width=hook_stroke, stroke_fill=pal["meta"])
+                  fill=(255, 246, 235, 255))
         _check_safe_zone(draw, "author", (ax, ay, ax + aw, ay + author_font.size), W, H, margin)
 
     out.parent.mkdir(parents=True, exist_ok=True)

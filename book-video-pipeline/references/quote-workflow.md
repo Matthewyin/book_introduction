@@ -98,9 +98,9 @@ python3 scripts/cover-compose.py \
   2. **t=1.0-3.0s 定位帧**：第一段 Pixabay 风景素材 + 大字书名《XX》+ 作者/著 overlay（画面上方 18%）
      - 对应口播："今天分享的书籍是：《书名》作者：XXX"
      - GSAP：t=2.4 淡出（0.6s）
-  3. **t=3.0-5.0s 书封特写叠入**：书封库取图（`assets/book-covers/{书名}.png`），从右侧滑入+淡入，停留后淡出
+  3. **t=3.0-6.0s 书封特写叠入**：书封库取图（`assets/book-covers/{书名}.png`），**背景暗化 + 缩放弹性入场 + 呼吸 + 放大退场**（书封 62% 高度 + 深投影 + 暗化层，让书封成为独立视觉焦点）
      - 对应口播过渡："书中有这样一句话——"
-     - GSAP：t=3.0 滑入(x:120→0)+淡入，t=4.4 淡出
+     - 定位帧文字保持到 t=5.4 与书封同步退场（不提前淡出）
 - 每句金句对应一个 clip，嵌入 `<video>`（实拍素材，必须是 root 直接子元素，`data-media-start` 选窗口；慢放镜头先用 ffmpeg `setpts` 预处理，不靠渲染器）
 - 配音用独立 `<audio>`（src=voiceover.wav，含引入句+过渡句+金句）
 - **BGM 必配**（2026-08 起）：ego-browser 从 Pixabay 音乐下载 2-3 首候选（calm piano / ambient 优先），

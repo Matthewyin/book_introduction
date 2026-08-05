@@ -2,10 +2,15 @@
 """pixabay-fetch.py — 从 Pixabay 搜索并下载暖调实拍视频素材
 
 用法:
-    python3 pixabay-fetch.py --query "cozy reading book warm" --count 5 --output-dir footage/
+    python3 pixabay-fetch.py --query "mountain lake reflection calm" --count 5 --output-dir footage/
 
 通过 ego-browser 搜索 Pixabay 视频页面，提取视频详情页 URL，
 逐个打开详情页抓取 <video> 标签的 CDN 链接，然后 curl 下载 mp4。
+
+素材硬性约束（下载后自动过滤，不合格即删并试下一候选）：
+    - 素材方向：自然风光、山水（搜索词应围绕山水/森林/湖泊/日出等自然场景）
+    - 分辨率：720p-1080p（竖边高度 720-1080px）
+    - 单文件大小：≤10MB（超限自动换 _medium 变体重试，仍超则丢弃）
 
 Pixabay 内容许可证：免费可商用，无需署名。
 """
@@ -114,11 +119,65 @@ def download(url: str, output: pathlib.Path) -> bool:
     return output.exists() and output.stat().st_size > 10000
 
 
+def probe(path: pathlib.Path) -> tuple[int | None, float]:
+    """返回 (视频高度 px, 大小 MB)。无视频流时高度为 None。"""
+    height = None
+    try:
+        out = subprocess.run(
+            ["ffprobe", "-v", "error", "-select_streams", "v:0",
+             "-show_entries", "stream=height", "-of", "csv=p=0", str(path)],
+            capture_output=True, text=True, timeout=30,
+        ).stdout.strip()
+        if out:
+            height = int(out.split(",")[0])
+    except Exception:
+        pass
+    size_mb = path.stat().st_size / 1024 / 1024 if path.exists() else 0.0
+    return height, size_mb
+
+
+def smaller_variant(url: str) -> str | None:
+    """Pixabay CDN 多档变体：_large → _medium → _small。返回下一档 URL。"""
+    for big, small in (("_large.", "_medium."), ("_medium.", "_small.")):
+        if big in url:
+            return url.replace(big, small)
+    return None
+
+
+def fetch_within_limits(cdn: str, out: pathlib.Path, args) -> bool:
+    """下载并校验分辨率/体积约束；超限自动降档重试。成功保留返回 True。"""
+    url = cdn
+    while True:
+        if not download(url, out):
+            return False
+        height, size_mb = probe(out)
+        h_ok = height is not None and args.min_height <= height <= args.max_height
+        s_ok = size_mb <= args.max_size_mb
+        if h_ok and s_ok:
+            print(f"    ✓ 规格合格: {height}p / {size_mb:.1f}MB")
+            return True
+        reason = []
+        if not h_ok:
+            reason.append(f"高度={height}px 超出 {args.min_height}-{args.max_height}")
+        if not s_ok:
+            reason.append(f"体积={size_mb:.1f}MB 超过 {args.max_size_mb}MB")
+        nxt = smaller_variant(url)
+        if not nxt:
+            print(f"    ✗ 不合格（{'; '.join(reason)}），无更小变体，丢弃")
+            out.unlink(missing_ok=True)
+            return False
+        print(f"    … 不合格（{'; '.join(reason)}），换 {nxt.rsplit('_', 1)[-1][:-4]} 档重试")
+        url = nxt
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Pixabay 实拍视频素材搜索下载")
-    p.add_argument("--query", required=True, help="搜索关键词（英文）")
+    p.add_argument("--query", required=True, help="搜索关键词（英文，自然风光/山水方向）")
     p.add_argument("--count", type=int, default=5, help="下载数量（默认 5）")
     p.add_argument("--output-dir", required=True, help="输出目录")
+    p.add_argument("--max-size-mb", type=float, default=10, help="单文件体积上限 MB（默认 10）")
+    p.add_argument("--min-height", type=int, default=720, help="视频高度下限 px（默认 720）")
+    p.add_argument("--max-height", type=int, default=1080, help="视频高度上限 px（默认 1080）")
     args = p.parse_args()
 
     output_dir = pathlib.Path(args.output_dir)
@@ -147,14 +206,14 @@ def main() -> int:
 
         print(f"    CDN: {cdn[:70]}…")
 
-        # 下载
+        # 下载（含 720p-1080p / ≤max-size-mb 过滤）
         out = output_dir / f"clip-{downloaded + 1:02d}.mp4"
-        if download(cdn, out):
+        if fetch_within_limits(cdn, out, args):
             size_mb = out.stat().st_size / 1024 / 1024
             print(f"    ✓ 已下载: {out} ({size_mb:.1f}MB)\n")
             downloaded += 1
         else:
-            print(f"    ✗ 下载失败\n")
+            print(f"    ✗ 下载失败或不合规格\n")
 
     print(f"完成：共下载 {downloaded}/{args.count} 个素材到 {output_dir}")
     if downloaded == 0:
