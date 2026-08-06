@@ -6,10 +6,10 @@ description: 心理励志图书带货视频流水线（双产品线）。A线=�
 # 心理励志图书带货视频流水线（双产品线）
 
 从小红书/抖音心理励志垂类出发，批量生产图书带货视频。**两条产品线**：
-- **A 线·金句流**（≤60s）：微信读书划线金句 + Pixabay 实拍素材 + 写实暖调封面
+- **A 线·金句流**（≤60s）：微信读书划线金句 + Pixabay 实拍素材 + 视频截图手写体封面
 - **B 线·方法论流**（165-240s）：8 段螺旋结构 + AI 生图（动漫 `cute-anime-girl.md` 或写实 `cinematic-girl.md` 人设）
 
-**封面风格跟随视频风格**：视频写实用写实摄影封面（`--art realistic`），视频动漫用动漫插画封面（`--art anime`）。
+**封面风格统一**（A/B 线共用）：视频截图 + LXGW 霞鹜文楷白色手写体 + 无底条无描边（复刻抖音「十二..」），见 Step 7b / Q5。
 
 参考标杆：`ep001-v3-v9-jimeng-release-75mb.mp4`（1080×1920，119s；早期采用拼贴 / 剪贴簿插画，现已迁移至日系软萌 anime 水彩，见风格卡库 `templates/styles/`）。
 
@@ -37,7 +37,7 @@ description: 心理励志图书带货视频流水线（双产品线）。A线=�
 2. **Q2 金句筛选拼接**：DeepSeek 选 3-5 句拼成 90-150 字稿 → 🔴审核
 3. **Q3 配音**：TTS 0.9 倍速 → 🔴审核
 4. **Q4 实拍素材**：`pixabay-fetch.py` 搜 Pixabay 下载暖调 mp4 → 🔴审核
-5. **Q5 暖调封面**：Seedream 5.0 text2image + PIL 排字 → 🔴审核
+5. **Q5 封面**：视频截图 + LXGW 手写体排版（复刻「十二..」风格）→ 🔴审核
 6. **Q6 hyperframes 合成**：`<video>` + `<audio>` + 字幕图层 → 🔴审核
 7. **Q7 字幕校准**：静音检测驱动时间轴
 8. **Q8 发布准备**：统一标题 `今天分享《书名》——金句…` + 标签 `#读书 #好书推荐 #情感共鸣`
@@ -371,34 +371,25 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 > ② image2image 必须用单变体风格卡（如 `cinematic-girl.intellectual.md`），
 > 多人设合卡+跨性别负向词+ref 同发必触发 `final generation failed`。
 
-### Step 7b：封面合成 → `03-assets/cover/cover-final.png`（本地排版，无 Canva）
+### Step 7b：封面合成 → `03-assets/cover/cover-final.png`（视频截图 + 手写体排版）
 
-封面职责分离：**AI 出画（无字主视觉），本地排版出字**。**封面风格跟随视频风格**——
-视频写实用 `--art realistic`（写实摄影底图），视频动漫用 `--art anime`（动漫插画底图）。
-流程与规格见 `templates/cover-prompt.md` + `templates/cover-design.md`。
+A 线 B 线统一用同一封面风格（复刻抖音「十二..」）：**成片视频截图做背景 + LXGW 霞鹜文楷白色手写体 + 无底条无描边 + 低饱和治愈调**。
 
-1. 确认模板就位（按本集 `--art` 选）：
-   - 写实：`cover-3x4-realistic.png` + `cover-9x16-realistic.png`
-   - 动漫：`cover-3x4-anime.png` + `cover-9x16-anime.png`
-   缺失时按 `cover-prompt.md` 用 dreamina_text + 对应 prompt 文件重新生成。
-2. 取文案：书名（≤10 字，不加《》）、钩子（≤12 字，优先 book-profile 选定角度）、
-   作者、集数。
-3. 本地合成（零 API，文字 100% 保真）：
+1. Step 9 合成完成后，从成片抽一帧干净风景帧（无书封、无字幕的时段）做背景。
+2. 本地合成（零 API，文字 100% 保真）：
    ```bash
-   python3 scripts/cover-compose.py \
-     --book-title 非暴力沟通 --hook 你说的每句狠话，都在推开最亲的人 \
-     --author 马歇尔·卢森堡 --episode EP03 \
-     --art realistic \
-     --out-dir episodes/ep00X-书名/03-assets/cover \
-     [--style viral] [--palette warm] [--template bookshot]
+   python3 scripts/cover-shier.py \
+     --video 04-video/output.mp4 \
+     --timestamp 5.0 \
+     --book-title 影响力 \
+     --author 罗伯特·西奥迪尼 \
+     --out-dir 03-assets/cover
    ```
-   - `--art`：`realistic`（写实摄影，默认）/ `anime`（动漫插画）——**跟随视频风格**
-   - `--style`：`quiet`（默认暖棕安静体）/ `viral`（病毒标题体：超粗黑体+亮黄标签）
-   - `--palette`：`sunny`（默认）/ `warm`（暖橙）/ `calm`（冷静蓝灰）
-   - `--template`：`ambient`（默认氛围静物）/ `bookshot`（书封特写，需对应母版）
-4. 核对：书名/钩子无错字、无溢出、顶部留白区干净、主视觉未被文字遮挡、安全区无越界警告。
-   产出 `cover-final.png`（3:4 小红书）+ `cover-final-9x16.png`（9:16 抖音/视频号）。
-5. **状态机**：`manifest.py update <集目录> --step step7b_cover --status completed --artifacts 03-assets/cover/cover-final.png 03-assets/cover/cover-final-9x16.png`
+   - `--timestamp`：选干净风景帧的时间点（无书封、无金句字幕的空旷画面）
+   - 字体：LXGW 霞鹜文楷 Regular（`~/Library/Fonts/LxgwWenKai-Regular.ttf`）
+   - 文字：白色、上半部居中（书名 88px + 作者 42px + 底部标签 30px）
+3. 产出 `cover-final.png`（3:4 小红书 1080×1440）+ `cover-final-9x16.png`（9:16 抖音 1080×1920）。
+4. **状态机**：`manifest.py update <集目录> --step step7b_cover --status completed --artifacts 03-assets/cover/cover-final.png 03-assets/cover/cover-final-9x16.png`
 
 ### Step 8：动效设计 → `02-script/motion-plan.md`
 

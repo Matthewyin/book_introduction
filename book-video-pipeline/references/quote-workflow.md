@@ -72,23 +72,31 @@ python3 scripts/pixabay-fetch.py --query "mountain lake reflection calm" \
 - 下载 3-5 个 mp4，每个 5-15 秒
 - 🔴 **审核点 Q4**：用户确认素材
 
-### Step Q5：暖调封面生成（写实摄影）
+### Step Q5：封面生成（视频截图 + 手写体排版，复刻「十二..」风格）
 
-A 线是实拍素材 + 写实风格，封面用 `--art realistic`（写实摄影底图）。
+A 线封面从视频本身截图做背景 + LXGW 霞鹜文楷手写体排版（A/B 线统一风格，见 SKILL.md Step 7b）。
+
+**风格**（学抖音「十二..」）：空旷风景 + 白色手写体 + 无底条无描边 + 低饱和治愈调。
+
+1. **Q6 合成完成后**，从成片抽取一帧干净风景帧（无书封、无金句字幕的时段）做背景。
+2. 用 PIL 排版（`cover-shier.py`）：
 
 ```bash
-# 写实底图已预生成在 assets/cover-image/cover-3x4-realistic.png
-# 直接用 cover-compose.py 叠字（无需每集重生图）
-python3 scripts/cover-compose.py \
-  --book-title "书名" --hook "金句钩子" \
-  --art realistic --palette warm \
-  --out-dir episodes/ep00X-书名/03-assets/cover
+# cover-shier.py 在集目录 03-assets/cover/ 下，改 VIDEO/TIMESTAMP/BOOK_TITLE/AUTHOR 后运行
+python3 03-assets/cover/cover-shier.py
 ```
 
-- 底图 prompt：`assets/cover-image/prompts/cover-3x4-realistic.md`（暖调写实摄影）
-- 风格卡参考：`templates/styles/warm-still-life.md`（暖奶油/暖琥珀/暖棕，无人物）
-- 缺失时用 `genimage.py --promptfiles cover-3x4-realistic.md` 重新生成
-- 🔴 **审核点 Q5**：用户确认封面
+3. 封面规格：
+   - 背景：视频截图（空旷云海/天空/田野），饱和度 ×0.85、亮度 ×1.05
+   - 字体：LXGW 霞鹜文楷 Regular（`~/Library/Fonts/LxgwWenKai-Regular.ttf`）
+   - 文字：白色、上半部居中
+     - 书名《书名》88px
+     - 作者：XXX 42px
+     - 底部标签 `#读书 #好书推荐 #情感共鸣` 30px
+   - 无底条、无描边（文字直接印在风景上）
+   - 上半部极淡白色渐变（alpha 0→40）柔和文字区
+4. 产出 `cover-final.png`（3:4 小红书 1080×1440）+ `cover-final-9x16.png`（9:16 抖音 1080×1920）。
+5. 🔴 **审核点 Q5**：用户确认封面
 
 ### Step Q6：hyperframes 合成
 

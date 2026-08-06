@@ -248,7 +248,8 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `validate-spec.py` | 成片规格校验 | `<video.mp4>` | ffmpeg/ffprobe |
 | `validate-config.py` | 开工前字体/封面母版/定妆图/后端齐备校验 | `[--book <集目录>]` | — |
 | `genimage.py` | 生图统一入口（分发层：openrouter / dreamina Seedream / MiniMax） | `--style ... --promptfiles ... --image` 或 `--batchfile` | `OPENROUTER_API_KEY` / `MINIMAX_API_KEY` / dreamina OAuth |
-| `cover-compose.py` | 封面本地排版合成（无 Canva，零 API，支持 `--style viral`/`--palette`/`--template`/`--art`） | `--book-title ... --hook ... --author ... --episode ... --out-dir [--style viral] [--palette calm]` | — |
+| `cover-compose.py` | （旧版封面排版，已被 cover-shier.py 取代，保留兼容） | — | — |
+| `cover-shier.py` | **封面排版（A/B 线通用）**：视频截图 + LXGW 手写体白色文字 | `--video ... --timestamp ... --book-title ... --author ... --out-dir ...` | — |
 | `openrouter_image.py` | OpenRouter 同步生图（fallback 通道） | 内部由 `genimage.py` 调用 | `OPENROUTER_API_KEY` |
 | `weread-highlights.py` | 微信读书全书热门划线 Top20（A 线 Q1 / B 线 Step 1） | `--book ... --output ...` | `WEREAD_API_KEY` |
 | `pixabay-fetch.py` | Pixabay 山水实拍素材搜索下载（A 线 Q4，强制 720p-1080p / ≤10MB） | `--query ... --count ... --output-dir ...` | ego-browser |
@@ -270,9 +271,9 @@ python3 ../../..//book-video-pipeline/scripts/validate-spec.py ../04-video/outpu
 | `styles/` 风格卡库 | Step 7.0 | 风格卡（主力：`people/cute-anime-girl.md` 动漫水彩 + `people/cinematic-girl.md` 写实电影，写实卡含 literary / intellectual / literary-male / intellectual-male 四人设）+ README |
 | `scene-content.en.md` | Step 7 | 单镜内容字段骨架（DeepSeek 填这个） |
 | `scene-examples.md` | Step 7 | 场景内容示例 |
-| `cover-prompt.md` | Step 7b | 封面主视觉提示词（无字 · openrouter） |
-| `cover-design.md` | Step 7b | 封面本地排版规格（PIL 文字层 · 唯一规格源） |
-| `cover-examples.md` | Step 7b | 封面排版示例 |
+| `cover-prompt.md` | ~~Step 7b~~ | （旧版 AI 底图 prompt，cover-shier.py 不使用，保留兼容） |
+| `cover-design.md` | ~~Step 7b~~ | （旧版 cover-compose.py 排版规格，已被 cover-shier.py 取代，保留兼容） |
+| `cover-examples.md` | ~~Step 7b~~ | （旧版封面排版示例，保留兼容） |
 | `publish-brief.md` | Step 10 / Q8 | 发布物料简报 |
 | `quote-script-template.md` | A 线 Q2 | 金句流锁定旁白模板 |
 | `quote-selector-system.md` | A 线 Q2 | DeepSeek 金句筛选 system prompt |
@@ -387,7 +388,7 @@ graph TD
     S6 -->|审核点⑤| R5((🔴⑤))
     R5 --> S7["Step 7 DeepSeek Flash 写 scene.md + 风格卡拼接<br/>genimage.py 分发 → scenes/shot_*.png"]
     S7 -->|审核点⑥| R6((🔴⑥))
-    R6 --> S7b["Step 7b cover-compose.py 封面本地合成<br/>→ cover-final.png + cover-final-9x16.png"]
+    R6 --> S7b["Step 7b cover-shier.py 封面合成<br/>视频截图 + 手写体 → cover-final.png + cover-final-9x16.png"]
     S7b --> S8["Step 8 动效设计<br/>8a 即梦 i2v（≤2 镜）+ 8b GSAP 动效层"]
     S8 --> S9["Step 9 hyperframes 合成<br/>→ output.mp4 + subtitle.srt"]
     S9 -->|审核点⑦| R7((🔴⑦))
