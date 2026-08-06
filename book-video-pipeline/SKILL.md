@@ -371,25 +371,32 @@ batch.json 用 `style` + `charRef` 字段，task 标 `characters: true/false` �
 > ② image2image 必须用单变体风格卡（如 `cinematic-girl.intellectual.md`），
 > 多人设合卡+跨性别负向词+ref 同发必触发 `final generation failed`。
 
-### Step 7b：封面合成 → `03-assets/cover/cover-final.png`（视频截图 + 手写体排版）
+### Step 7b：封面合成 → `03-assets/cover/cover-final.png`（素材截图 + 手写体排版）
 
-A 线 B 线统一用同一封面风格（复刻抖音「十二..」）：**成片视频截图做背景 + LXGW 霞鹜文楷白色手写体 + 无底条无描边 + 低饱和治愈调**。
+A 线 B 线统一用同一封面风格（复刻抖音「十二..」）：**素材视频截图做背景 + LXGW 霞鹜文楷白色手写体 + 无底条无描边 + 低饱和治愈调**。
 
-1. Step 9 合成完成后，从成片抽一帧干净风景帧（无书封、无字幕的时段）做背景。
-2. 本地合成（零 API，文字 100% 保真）：
+#### 7b-1：截 6 张候选图 → 审核
+
+1. 从 `03-assets/footage/`（A 线）或 `03-assets/scenes/`（B 线）的素材视频各取一帧，共截 6 张候选。
+   - 选空旷、干净、上半部留白多的帧
+   - 编号 `cover-cand-01.jpg` ~ `cover-cand-06.jpg`，存到 `03-assets/cover/candidates/`
+2. 拼成 6 宫格预览图展示给用户。
+3. 🔴 **审核点**：用户从 6 张中选定 1 张做封面背景。
+
+#### 7b-2：排版生成封面
+
+用户选定后，用选中的候选图 + `cover-shier.py` 排版：
    ```bash
    python3 scripts/cover-shier.py \
-     --video 04-video/output.mp4 \
-     --timestamp 5.0 \
+     --image 03-assets/cover/candidates/cover-cand-03.jpg \
      --book-title 影响力 \
      --author 罗伯特·西奥迪尼 \
      --out-dir 03-assets/cover
    ```
-   - `--timestamp`：选干净风景帧的时间点（无书封、无金句字幕的空旷画面）
    - 字体：LXGW 霞鹜文楷 Regular（`~/Library/Fonts/LxgwWenKai-Regular.ttf`）
    - 文字：白色、上半部居中（书名 88px + 作者 42px + 底部标签 30px）
-3. 产出 `cover-final.png`（3:4 小红书 1080×1440）+ `cover-final-9x16.png`（9:16 抖音 1080×1920）。
-4. **状态机**：`manifest.py update <集目录> --step step7b_cover --status completed --artifacts 03-assets/cover/cover-final.png 03-assets/cover/cover-final-9x16.png`
+4. 产出 `cover-final.png`（3:4 小红书 1080×1440）+ `cover-final-9x16.png`（9:16 抖音 1080×1920）。
+5. **状态机**：`manifest.py update <集目录> --step step7b_cover --status completed --artifacts 03-assets/cover/cover-final.png 03-assets/cover/cover-final-9x16.png`
 
 ### Step 8：动效设计 → `02-script/motion-plan.md`
 

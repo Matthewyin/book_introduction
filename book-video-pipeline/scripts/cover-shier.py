@@ -1,39 +1,25 @@
 #!/usr/bin/env python3
-"""cover-shier.py — 视频截图手写体封面（A/B 线通用）
+"""cover-shier.py — 素材截图手写体封面（A/B 线通用）
 
 复刻抖音「十二..」封面风格：空旷风景截图 + LXGW 霞鹜文楷白色手写体 + 无底条无描边。
 
 用法（在集目录下运行）:
     python3 scripts/cover-shier.py \
-        --video 04-video/output.mp4 \
-        --timestamp 5.0 \
+        --image 03-assets/cover/candidates/cover-cand-03.jpg \
         --book-title 影响力 \
         --author 罗伯特·西奥迪尼 \
         --out-dir 03-assets/cover
 
-需在集目录下运行（输出 03-assets/cover/cover-final.png + cover-final-9x16.png）。
+前置：先从素材视频截 6 张候选图（见 quote-workflow.md Q5a），用户审核选定后传入 --image。
+输出：03-assets/cover/cover-final.png（3:4）+ cover-final-9x16.png（9:16）。
 字体：~/Library/Fonts/LxgwWenKai-Regular.ttf（霞鹜文楷，需预装）。
 """
-import argparse, subprocess, sys
+import argparse, sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 FONT_PATH = str(Path.home() / "Library/Fonts/LxgwWenKai-Regular.ttf")
 TAGS = "#读书  #好书推荐  #情感共鸣"
-
-
-def extract_frame(video: str, ts: float) -> Image.Image:
-    """从视频抽取一帧作为封面背景。"""
-    import tempfile, os
-    tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
-    tmp.close()
-    subprocess.run(
-        ["ffmpeg", "-y", "-v", "error", "-ss", str(ts), "-i", video, "-frames:v", "1", tmp.name],
-        check=True,
-    )
-    im = Image.open(tmp.name).convert("RGB")
-    os.unlink(tmp.name)
-    return im
 
 
 def make_cover(bg_im: Image.Image, out_path: Path, target_w: int, target_h: int,
@@ -95,16 +81,15 @@ def make_cover(bg_im: Image.Image, out_path: Path, target_w: int, target_h: int,
 
 
 def main():
-    p = argparse.ArgumentParser(description="视频截图手写体封面（复刻十二..风格）")
-    p.add_argument("--video", required=True, help="成片视频路径（如 04-video/output.mp4）")
-    p.add_argument("--timestamp", type=float, default=5.0, help="截图时间点（秒，选干净风景帧）")
+    p = argparse.ArgumentParser(description="素材截图手写体封面（复刻十二..风格）")
+    p.add_argument("--image", required=True, help="用户审核选定的候选图路径（如 03-assets/cover/candidates/cover-cand-03.jpg）")
     p.add_argument("--book-title", required=True, help="书名（不含《》）")
     p.add_argument("--author", required=True, help="作者")
     p.add_argument("--out-dir", default="03-assets/cover", help="输出目录")
     args = p.parse_args()
 
-    bg = extract_frame(args.video, args.timestamp)
-    print(f"背景帧: {bg.size} (t={args.timestamp}s)")
+    bg = Image.open(args.image).convert("RGB")
+    print(f"背景图: {bg.size} ({args.image})")
 
     out_dir = Path(args.out_dir)
     make_cover(bg, out_dir / "cover-final.png", 1080, 1440, args.book_title, args.author)

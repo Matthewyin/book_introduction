@@ -72,22 +72,44 @@ python3 scripts/pixabay-fetch.py --query "mountain lake reflection calm" \
 - 下载 3-5 个 mp4，每个 5-15 秒
 - 🔴 **审核点 Q4**：用户确认素材
 
-### Step Q5：封面生成（视频截图 + 手写体排版，复刻「十二..」风格）
+### Step Q5：封面生成（素材截图 + 手写体排版，复刻「十二..」风格）
 
-A 线封面从视频本身截图做背景 + LXGW 霞鹜文楷手写体排版（A/B 线统一风格，见 SKILL.md Step 7b）。
+A 线封面从**下载的素材视频**截图做背景 + LXGW 霞鹜文楷手写体排版（A/B 线统一风格，见 SKILL.md Step 7b）。
 
 **风格**（学抖音「十二..」）：空旷风景 + 白色手写体 + 无底条无描边 + 低饱和治愈调。
 
-1. **Q6 合成完成后**，从成片抽取一帧干净风景帧（无书封、无金句字幕的时段）做背景。
-2. 用 PIL 排版（`cover-shier.py`）：
+#### Q5a：截 6 张候选图 → 审核
+
+1. 从 `03-assets/footage/` 下的**素材视频**（不是合成成片）各取一帧，共截 6 张候选图。
+   - 选空旷、干净、上半部留白多的帧（天空/云海/田野/海面）
+   - 避开有书封、有字幕、画面太满的帧
+   - 编号 `cover-cand-01.jpg` ~ `cover-cand-06.jpg`，存到 `03-assets/cover/candidates/`
+2. 拼成一张 6 宫格预览图展示给用户。
+3. 🔴 **审核点 Q5a**：用户从 6 张中选定 1 张做封面背景。
 
 ```bash
-# cover-shier.py 在集目录 03-assets/cover/ 下，改 VIDEO/TIMESTAMP/BOOK_TITLE/AUTHOR 后运行
-python3 03-assets/cover/cover-shier.py
+# 从素材视频截 6 张候选（每条素材取一帧）
+for f in 03-assets/footage/q*/*.mp4; do
+  mid=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$f" | python3 -c "print(float(input())/2)")
+  ffmpeg -y -v error -ss "$mid" -i "$f" -frames:v 1 -vf "scale=540:720:force_original_aspect_ratio=increase,crop=540:720" \
+    "03-assets/cover/candidates/cover-cand-$(printf '%02d' $((++n))).jpg"
+done
 ```
 
-3. 封面规格：
-   - 背景：视频截图（空旷云海/天空/田野），饱和度 ×0.85、亮度 ×1.05
+#### Q5b：排版生成封面
+
+用户选定后，用选中的候选图 + `cover-shier.py` 排版：
+
+```bash
+python3 scripts/cover-shier.py \
+  --image 03-assets/cover/candidates/cover-cand-XX.jpg \
+  --book-title 影响力 \
+  --author 罗伯特·西奥迪尼 \
+  --out-dir 03-assets/cover
+```
+
+封面规格：
+   - 背景：素材截图（空旷云海/天空/田野），饱和度 ×0.85、亮度 ×1.05
    - 字体：LXGW 霞鹜文楷 Regular（`~/Library/Fonts/LxgwWenKai-Regular.ttf`）
    - 文字：白色、上半部居中
      - 书名《书名》88px
@@ -96,7 +118,7 @@ python3 03-assets/cover/cover-shier.py
    - 无底条、无描边（文字直接印在风景上）
    - 上半部极淡白色渐变（alpha 0→40）柔和文字区
 4. 产出 `cover-final.png`（3:4 小红书 1080×1440）+ `cover-final-9x16.png`（9:16 抖音 1080×1920）。
-5. 🔴 **审核点 Q5**：用户确认封面
+5. 🔴 **审核点 Q5b**：用户确认最终封面
 
 ### Step Q6：hyperframes 合成
 
