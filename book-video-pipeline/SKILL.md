@@ -33,14 +33,15 @@ description: 心理励志图书带货视频流水线（双产品线）。A线=�
 
 **A 线流程（Step Q1-Q8）**：
 > 完整步骤（含命令模板 + 审核点 + 降级策略）见 `references/quote-workflow.md`，本节只列概要。
-1. **Q1 选书+获取金句**：`weread-highlights.py` 获取微信读书全书热门划线 Top20 → 🔴审核
-2. **Q2 金句筛选拼接**：DeepSeek 选 3-5 句拼成 90-150 字稿 → 🔴审核
-3. **Q3 配音**：TTS 0.9 倍速 → 🔴审核
-4. **Q4 实拍素材**：`pixabay-fetch.py` 搜 Pixabay 下载暖调 mp4 → 🔴审核
-5. **Q5 封面**：视频截图 + LXGW 手写体排版（复刻「十二..」风格）→ 🔴审核
-6. **Q6 hyperframes 合成**：`<video>` + `<audio>` + 字幕图层 → 🔴审核
-7. **Q7 字幕校准**：静音检测驱动时间轴
-8. **Q8 发布准备**：统一标题 `今天分享《书名》——金句…` + 标签 `#读书 #好书推荐 #情感共鸣`
+> **每步完成后查 `references/step-checklists.md` 对应 Q 检查项，全绿才提交审核。**
+1. **Q1 选书+获取金句**：`weread-highlights.py` 获取微信读书全书热门划线 Top20 → 🔴审核（→ 查 step-checklists Q1）
+2. **Q2 金句筛选拼接**：DeepSeek 选 3-5 句拼成 90-150 字稿 → 🔴审核（→ 查 step-checklists Q2）
+3. **Q3 配音**：TTS 1.0 倍速 → 🔴审核（→ 查 step-checklists Q3）
+4. **Q4 实拍素材**：`pixabay-fetch.py` 搜 Pixabay 下载暖调 mp4 → 🔴审核（→ 查 step-checklists Q4）
+5. **Q5 封面**：素材截图 + LXGW 手写体排版（复刻「十二..」风格）→ 🔴审核（→ 查 step-checklists Q5）
+6. **Q6 hyperframes 合成**：`<video>` + `<audio>` + 字幕图层 → 🔴审核（→ 查 step-checklists Q6）
+7. **Q7 字幕校准**：静音检测驱动时间轴（→ 查 step-checklists Q7）
+8. **Q8 发布准备**：统一标题 `今天分享《书名》——金句…` + 标签 `#读书 #好书推荐 #情感共鸣`（→ 查 step-checklists Q8）
 
 ## 认证管理红线（不可违反）
 
@@ -63,6 +64,7 @@ description: 心理励志图书带货视频流水线（双产品线）。A线=�
 
 | 阶段 | 参考文件 |
 |------|----------|
+| **每步完成后自检（必读）** | `references/step-checklists.md` |
 | 工具与认证规范 | `references/tool-usage.md` |
 | **口播稿去 AI 味（Step 3d 必读）** | `references/deai-checklist.md` |
 | **插画风格唯一控制源** | `references/video-style-guide.md` |
@@ -121,6 +123,19 @@ description: 心理励志图书带货视频流水线（双产品线）。A线=�
 ```
 口播稿 → TTS 定稿 → 从音频提取真实时间轴 → 分镜（含动效字段）→ 生图 → hyperframes 合成
 ```
+
+### 自检铁律（每步必执行）
+
+**每完成一个流程节点（标 `needs_review` 之前），必须对照 `references/step-checklists.md` 对应步骤的检查项逐条核对。**
+
+1. **完成即查**：节点产物生成后，立即拿出 checklist 逐项检查
+2. **有问题就修**：发现 ✗ 直接修复，不累积到后面步骤
+3. **修完再查**：修复后重新核对受影响的项，确认转 ✓
+4. **正确不动**：已 ✓ 的项不反复改动，避免引入新问题
+5. **全绿才提交**：所有项转 ✓ 后才提交审核点（AskUserQuestion）
+6. **记录过程**：在 manifest note 记录自检摘要（如 `--note "Q6自检：10项查，9绿1修（修复黑屏）"`）
+
+> checklist 收录的是**真实踩过的坑**（黑屏、封面缺 logo、字幕重叠、素材规格等），每条标注坑源。新增坑随时追加到 `references/step-checklists.md`。
 
 ### Step 0：片头片尾 + 品牌角标（一次性，已完成）
 

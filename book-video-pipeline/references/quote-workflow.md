@@ -23,6 +23,7 @@ python3 scripts/weread-highlights.py --book "一生 莫泊桑" --output 02-scrip
   - 存在 → 继续
   - 不存在 → 🔴 blocked，提示用户先补充书封到书封库（见 `assets/book-covers/README.md`）
 - 展示 Top20 给用户审核
+- **自检**：查 `step-checklists.md` Q1 项（书封库/bookId/章节精准/与前集去重）
 - 🔴 **审核点 Q1**：用户确认要用的金句
 
 ### Step Q2：金句筛选 + 拼接
@@ -40,16 +41,18 @@ python3 scripts/deepseek-call.py templates/quote-selector-system.md \
   02-script/quote-script.md --model deepseek-v4-flash
 ```
 
+- **自检**：查 `step-checklists.md` Q2 项（字数120-175/单句≤35字/与前集去重/情绪递进）
 - 🔴 **审核点 Q2**：用户确认金句稿
 
 ### Step Q3：配音
 
 ```bash
 python3 scripts/tts-minimax.py 02-script/voiceover-text.txt \
-  03-assets/audio/voiceover.wav --voice danya_xuejie --speed 0.9
+  03-assets/audio/voiceover.wav --voice danya_xuejie --speed 1.0
 ```
 
-- 慢一档（0.9 倍速），适合金句的留白感
+- 1.0 倍速，适合金句的留白感
+- **自检**：查 `step-checklists.md` Q3 项（倍速参数/样本用本集真实文本/时长记录）
 - 🔴 **审核点 Q3**：用户确认配音
 
 ### Step Q4：搜索 + 下载实拍素材
@@ -118,7 +121,8 @@ python3 scripts/cover-shier.py \
    - 无底条、无描边（文字直接印在风景上）
    - 上半部极淡白色渐变（alpha 0→40）柔和文字区
 4. 产出 `cover-final.png`（3:4 小红书 1080×1440）+ `cover-final-9x16.png`（9:16 抖音 1080×1920）。
-5. 🔴 **审核点 Q5b**：用户确认最终封面
+5. **自检**：查 `step-checklists.md` Q5 项（素材视频抽帧/6宫格/品牌卡logo/LXGW手写体/双尺寸/低饱和）
+6. 🔴 **审核点 Q5b**：用户确认最终封面
 
 ### Step Q6：hyperframes 合成
 
@@ -151,17 +155,20 @@ python3 scripts/cover-shier.py \
 npx hyperframes render composition.html --output 04-output/quote-video.mp4
 ```
 
+- **自检**：查 `step-checklists.md` Q6 项（**无黑屏**/书封快闪10本/字幕无重叠/字幕领先旁白0.3s/品牌角标常驻/BGM 0.15/intro-outro静音/lint+check 0错/抽帧验证非黑帧/总时长≤60s）
 - 🔴 **审核点 Q6**：用户确认成片
 
 ### Step Q7：字幕校准
 
 - 检查字幕与配音对齐（字幕领先旁白 0.3-0.5 秒）
 - 金句停留 ≥3 秒
+- **自检**：查 `step-checklists.md` Q7 项（每条≥3s/SRT导出/断行可读）
 
 ### Step Q8：发布准备
 
 - 标题统一格式：`今天分享《{书名}》——{最扎心金句前半句}…`
 - 标签统一：`#读书 #好书推荐 #情感共鸣`
+- **自检**：查 `step-checklists.md` Q8 项（标题≤20字/三大固定标签/合规检查全绿/封面图就位）
 - 生成发布文案（1-2 句书的核心价值主张）
 
 ## 与 B 线的关系
@@ -176,7 +183,7 @@ npx hyperframes render composition.html --output 04-output/quote-video.mp4
 | 制作成本 | 低 | 高 |
 | 爆款概率 | 高 | 中等 |
 | 粉丝粘性 | 中 | 高 |
-| 配音 | 0.9 倍速（慢） | 1.1 倍速（正常） |
+| 配音 | 1.0 倍速 | 1.1 倍速（正常） |
 
 ## 同书双发策略
 
